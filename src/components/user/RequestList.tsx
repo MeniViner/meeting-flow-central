@@ -37,10 +37,10 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
       {showFilters && (
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search requests..."
-              className="pl-8"
+              placeholder="חפש בקשות..."
+              className="pr-8"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -50,15 +50,15 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
             onValueChange={(value) => setStatusFilter(value as RequestStatus | "all")}
           >
             <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="סנן לפי סטטוס" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="scheduled">Scheduled</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="all">כל הסטטוסים</SelectItem>
+              <SelectItem value="pending">ממתין</SelectItem>
+              <SelectItem value="approved">מאושר</SelectItem>
+              <SelectItem value="scheduled">מתוזמן</SelectItem>
+              <SelectItem value="completed">הושלם</SelectItem>
+              <SelectItem value="rejected">נדחה</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -66,7 +66,7 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
 
       {filteredRequests.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No meeting requests found.</p>
+          <p className="text-muted-foreground">לא נמצאו בקשות פגישה.</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -78,7 +78,7 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
                   <RequestStatusBadge status={request.status} />
                 </div>
                 <CardDescription className="flex items-center mt-1">
-                  <Calendar className="h-3.5 w-3.5 mr-1" />
+                  <Calendar className="h-3.5 w-3.5 ml-1" />
                   <DateDisplay date={request.createdAt} className="text-xs" />
                 </CardDescription>
               </CardHeader>
@@ -91,16 +91,16 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
                   )}
                   
                   <div className="flex items-center text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5 mr-1" />
-                    <span>Deadline: </span>
-                    <DateDisplay date={request.deadline} className="ml-1" />
+                    <Clock className="h-3.5 w-3.5 ml-1" />
+                    <span>תאריך יעד: </span>
+                    <DateDisplay date={request.deadline} className="mr-1" />
                   </div>
                   
                   {request.documents.length > 0 && (
                     <div className="flex items-center mt-1">
-                      <FileText className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                      <FileText className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
                       <Badge variant="secondary" className="text-xs">
-                        {request.documents.length} {request.documents.length === 1 ? "document" : "documents"}
+                        {request.documents.length} {request.documents.length === 1 ? "מסמך" : "מסמכים"}
                       </Badge>
                     </div>
                   )}
@@ -113,7 +113,7 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
                   className="w-full"
                   onClick={() => setSelectedRequest(request)}
                 >
-                  View Details
+                  הצג פרטים
                 </Button>
               </CardFooter>
             </Card>
@@ -140,47 +140,47 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
             <div className="space-y-4">
               {selectedRequest.description && (
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Description</h4>
+                  <h4 className="text-sm font-medium mb-1">תיאור</h4>
                   <p className="text-sm text-muted-foreground">{selectedRequest.description}</p>
                 </div>
               )}
               
               <div>
-                <h4 className="text-sm font-medium mb-1">Deadline</h4>
+                <h4 className="text-sm font-medium mb-1">תאריך יעד</h4>
                 <DateDisplay date={selectedRequest.deadline} showIcon />
               </div>
               
               {selectedRequest.scheduledTime && (
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Scheduled Time</h4>
+                  <h4 className="text-sm font-medium mb-1">זמן מתוזמן</h4>
                   <DateDisplay date={selectedRequest.scheduledTime} showIcon showTime />
                 </div>
               )}
               
               {selectedRequest.adminNotes && (
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Admin Notes</h4>
+                  <h4 className="text-sm font-medium mb-1">הערות מנהל</h4>
                   <p className="text-sm text-muted-foreground">{selectedRequest.adminNotes}</p>
                 </div>
               )}
               
               {selectedRequest.meetingSummary && (
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Meeting Summary</h4>
+                  <h4 className="text-sm font-medium mb-1">סיכום פגישה</h4>
                   <p className="text-sm text-muted-foreground">{selectedRequest.meetingSummary}</p>
                 </div>
               )}
               
               {selectedRequest.documents.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Documents</h4>
+                  <h4 className="text-sm font-medium mb-2">מסמכים</h4>
                   <ul className="space-y-2">
                     {selectedRequest.documents.map((doc) => (
                       <li 
                         key={doc.id}
                         className="flex items-center p-2 border rounded-md text-sm"
                       >
-                        <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <FileText className="h-4 w-4 ml-2 text-muted-foreground" />
                         <span className="truncate">{doc.name}</span>
                       </li>
                     ))}

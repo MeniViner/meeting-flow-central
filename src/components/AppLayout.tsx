@@ -16,7 +16,7 @@ export function AppLayout() {
       ) : (
         <div className="flex min-h-screen">
           <MainNav />
-          <div className="flex-1 md:ml-64">
+          <div className="flex-1 md:mr-64">
             <main className="container py-6 md:py-10">
               <Outlet />
             </main>

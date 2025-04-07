@@ -19,20 +19,22 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AppProvider>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/meeting-requests" element={<MeetingRequests />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/documents" element={<DocumentsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
+        <div dir="rtl" lang="he" className="rtl">
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/meeting-requests" element={<MeetingRequests />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/documents" element={<DocumentsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </div>
       </TooltipProvider>
     </AppProvider>
   </QueryClientProvider>

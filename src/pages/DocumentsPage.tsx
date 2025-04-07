@@ -42,21 +42,21 @@ export default function DocumentsPage() {
   };
   
   const documentTypes = [
-    { id: "all", label: "All Documents" },
-    { id: "pdf", label: "PDF Files", count: documentsByType.pdf?.length || 0 },
-    { id: "word", label: "Word Documents", count: documentsByType.word?.length || 0 },
-    { id: "excel", label: "Excel Spreadsheets", count: documentsByType.excel?.length || 0 },
-    { id: "powerpoint", label: "Presentations", count: documentsByType.powerpoint?.length || 0 },
-    { id: "image", label: "Images", count: documentsByType.image?.length || 0 },
-    { id: "other", label: "Other Files", count: documentsByType.other?.length || 0 },
+    { id: "all", label: "כל המסמכים" },
+    { id: "pdf", label: "קבצי PDF", count: documentsByType.pdf?.length || 0 },
+    { id: "word", label: "מסמכי Word", count: documentsByType.word?.length || 0 },
+    { id: "excel", label: "גליונות Excel", count: documentsByType.excel?.length || 0 },
+    { id: "powerpoint", label: "מצגות", count: documentsByType.powerpoint?.length || 0 },
+    { id: "image", label: "תמונות", count: documentsByType.image?.length || 0 },
+    { id: "other", label: "קבצים אחרים", count: documentsByType.other?.length || 0 },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Documents</h1>
+        <h1 className="text-3xl font-bold tracking-tight">מסמכים</h1>
         <p className="text-muted-foreground">
-          View and manage all meeting-related documents
+          צפה ונהל את כל המסמכים הקשורים לפגישות
         </p>
       </div>
       
@@ -76,20 +76,20 @@ export default function DocumentsPage() {
                 <CardTitle>{type.label}</CardTitle>
                 <CardDescription>
                   {type.id === "all" 
-                    ? "All documents from meeting requests"
-                    : `All ${type.label.toLowerCase()} from meeting requests`}
+                    ? "כל המסמכים מבקשות פגישה"
+                    : `כל ${type.label} מבקשות פגישה`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {type.id === "all" && allDocuments.length === 0 && (
                   <p className="text-center py-12 text-muted-foreground">
-                    No documents have been uploaded yet.
+                    לא הועלו מסמכים עדיין.
                   </p>
                 )}
                 
                 {type.id !== "all" && (!documentsByType[type.id] || documentsByType[type.id].length === 0) && (
                   <p className="text-center py-12 text-muted-foreground">
-                    No {type.label.toLowerCase()} have been uploaded yet.
+                    לא הועלו {type.label} עדיין.
                   </p>
                 )}
                 
@@ -137,10 +137,10 @@ export default function DocumentsPage() {
                             {doc.name}
                           </h3>
                           <p className="text-sm text-muted-foreground truncate mt-1">
-                            From: {doc.requestTitle}
+                            מקור: {doc.requestTitle}
                           </p>
                           <p className="text-xs text-muted-foreground mt-2">
-                            Uploaded: <DateDisplay date={doc.uploadedAt} />
+                            הועלה: <DateDisplay date={doc.uploadedAt} />
                           </p>
                         </CardContent>
                       </Card>

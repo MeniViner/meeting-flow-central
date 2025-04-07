@@ -16,31 +16,31 @@ import { useApp } from "@/contexts/AppContext";
 
 const navItems = [
   {
-    title: "Dashboard",
+    title: "לוח בקרה",
     href: "/",
     icon: LayoutDashboard,
     showFor: ["user", "admin"],
   },
   {
-    title: "Meeting Requests",
+    title: "בקשות פגישה",
     href: "/meeting-requests",
     icon: Calendar,
     showFor: ["user", "admin"],
   },
   {
-    title: "Admin Dashboard",
+    title: "ניהול מערכת",
     href: "/admin",
     icon: Users,
     showFor: ["admin"],
   },
   {
-    title: "Documents",
+    title: "מסמכים",
     href: "/documents",
     icon: FileText,
     showFor: ["user", "admin"],
   },
   {
-    title: "Settings",
+    title: "הגדרות",
     href: "/settings",
     icon: Settings,
     showFor: ["user", "admin"],
@@ -62,12 +62,12 @@ export function MainNav({ className }: { className?: string }) {
     <>
       <div className="block md:hidden sticky top-0 z-50 bg-background border-b py-3 px-4">
         <div className="flex items-center justify-between">
-          <div className="font-semibold text-lg">Office Management</div>
+          <div className="font-semibold text-lg">ניהול משרד</div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileMenuOpen ? "סגור תפריט" : "פתח תפריט"}
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </Button>
@@ -76,14 +76,14 @@ export function MainNav({ className }: { className?: string }) {
 
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r shadow-lg transition-transform duration-200 transform md:translate-x-0",
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+          "fixed inset-y-0 right-0 z-50 w-64 bg-card border-l shadow-lg transition-transform duration-200 transform md:translate-x-0",
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full",
           className
         )}
       >
         <div className="flex flex-col h-full">
           <div className="p-4 border-b">
-            <h2 className="font-semibold text-lg">Office Management</h2>
+            <h2 className="font-semibold text-lg">ניהול משרד</h2>
           </div>
 
           <nav className="flex-1 p-4 space-y-1">
@@ -99,7 +99,7 @@ export function MainNav({ className }: { className?: string }) {
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <item.icon className="mr-2 h-4 w-4" />
+                <item.icon className="ml-2 h-4 w-4" />
                 {item.title}
               </Link>
             ))}
@@ -116,7 +116,7 @@ export function MainNav({ className }: { className?: string }) {
               className="w-full"
               onClick={logout}
             >
-              Log out
+              התנתק
             </Button>
           </div>
         </div>

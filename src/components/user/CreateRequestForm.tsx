@@ -29,11 +29,11 @@ export function CreateRequestForm({
     const newErrors: Record<string, string> = {};
     
     if (!title.trim()) {
-      newErrors.title = "Title is required";
+      newErrors.title = "נדרשת כותרת";
     }
     
     if (!deadline) {
-      newErrors.deadline = "Deadline is required";
+      newErrors.deadline = "נדרש תאריך יעד";
     }
     
     setErrors(newErrors);
@@ -73,13 +73,13 @@ export function CreateRequestForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <label htmlFor="title" className="text-sm font-medium">
-          Meeting Title *
+          כותרת פגישה *
         </label>
         <Input
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter meeting title"
+          placeholder="הזן כותרת פגישה"
           className={errors.title ? "border-red-500" : ""}
         />
         {errors.title && (
@@ -89,20 +89,20 @@ export function CreateRequestForm({
       
       <div className="space-y-2">
         <label htmlFor="description" className="text-sm font-medium">
-          Description
+          תיאור
         </label>
         <Textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Provide details about the meeting"
+          placeholder="ספק פרטים על הפגישה"
           rows={4}
         />
       </div>
       
       <div className="space-y-2">
         <label className="text-sm font-medium">
-          Documents
+          מסמכים
         </label>
         <FileUploader
           onFilesChange={setDocuments}
@@ -112,20 +112,20 @@ export function CreateRequestForm({
       
       <div className="space-y-2">
         <label className="text-sm font-medium">
-          Deadline *
+          תאריך יעד *
         </label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               className={cn(
-                "w-full justify-start text-left font-normal",
+                "w-full justify-start text-right font-normal",
                 !deadline && "text-muted-foreground",
                 errors.deadline ? "border-red-500" : ""
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {deadline ? format(deadline, "PPP") : <span>Pick a date</span>}
+              <CalendarIcon className="ml-2 h-4 w-4" />
+              {deadline ? format(deadline, "PPP") : <span>בחר תאריך</span>}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -147,11 +147,11 @@ export function CreateRequestForm({
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? (
           <>
-            <LoadingSpinner className="mr-2 h-4 w-4" />
-            Submitting...
+            <LoadingSpinner className="ml-2 h-4 w-4" />
+            שולח...
           </>
         ) : (
-          "Submit Request"
+          "שלח בקשה"
         )}
       </Button>
     </form>

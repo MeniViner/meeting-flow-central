@@ -18,28 +18,28 @@ export default function MeetingRequests() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Meeting Requests</h1>
+        <h1 className="text-3xl font-bold tracking-tight">בקשות פגישה</h1>
         <p className="text-muted-foreground">
-          Submit and manage your meeting requests
+          הגש ונהל את בקשות הפגישה שלך
         </p>
       </div>
 
       <Tabs defaultValue="all">
         <TabsList>
-          <TabsTrigger value="all">All Requests</TabsTrigger>
-          <TabsTrigger value="pending">Pending ({pendingRequests.length})</TabsTrigger>
-          <TabsTrigger value="approved">Approved ({approvedRequests.length})</TabsTrigger>
-          <TabsTrigger value="scheduled">Scheduled ({scheduledRequests.length})</TabsTrigger>
-          <TabsTrigger value="completed">Completed ({completedRequests.length})</TabsTrigger>
-          <TabsTrigger value="rejected">Rejected ({rejectedRequests.length})</TabsTrigger>
-          <TabsTrigger value="create">Create New</TabsTrigger>
+          <TabsTrigger value="all">כל הבקשות</TabsTrigger>
+          <TabsTrigger value="pending">ממתינות ({pendingRequests.length})</TabsTrigger>
+          <TabsTrigger value="approved">מאושרות ({approvedRequests.length})</TabsTrigger>
+          <TabsTrigger value="scheduled">מתוזמנות ({scheduledRequests.length})</TabsTrigger>
+          <TabsTrigger value="completed">הושלמו ({completedRequests.length})</TabsTrigger>
+          <TabsTrigger value="rejected">נדחו ({rejectedRequests.length})</TabsTrigger>
+          <TabsTrigger value="create">בקשה חדשה</TabsTrigger>
         </TabsList>
         
         <TabsContent value="all">
           <Card>
             <CardHeader>
-              <CardTitle>All Meeting Requests</CardTitle>
-              <CardDescription>View all your submitted meeting requests</CardDescription>
+              <CardTitle>כל בקשות הפגישה</CardTitle>
+              <CardDescription>צפה בכל בקשות הפגישה שהוגשו</CardDescription>
             </CardHeader>
             <CardContent>
               <RequestList requests={requests} />
@@ -50,8 +50,8 @@ export default function MeetingRequests() {
         <TabsContent value="pending">
           <Card>
             <CardHeader>
-              <CardTitle>Pending Requests</CardTitle>
-              <CardDescription>Requests awaiting approval</CardDescription>
+              <CardTitle>בקשות ממתינות</CardTitle>
+              <CardDescription>בקשות בהמתנה לאישור</CardDescription>
             </CardHeader>
             <CardContent>
               <RequestList requests={pendingRequests} showFilters={false} />
@@ -62,8 +62,8 @@ export default function MeetingRequests() {
         <TabsContent value="approved">
           <Card>
             <CardHeader>
-              <CardTitle>Approved Requests</CardTitle>
-              <CardDescription>Requests that have been approved and are waiting to be scheduled</CardDescription>
+              <CardTitle>בקשות מאושרות</CardTitle>
+              <CardDescription>בקשות שאושרו וממתינות לתזמון</CardDescription>
             </CardHeader>
             <CardContent>
               <RequestList requests={approvedRequests} showFilters={false} />
@@ -74,8 +74,8 @@ export default function MeetingRequests() {
         <TabsContent value="scheduled">
           <Card>
             <CardHeader>
-              <CardTitle>Scheduled Meetings</CardTitle>
-              <CardDescription>Requests that have been scheduled for a specific time</CardDescription>
+              <CardTitle>פגישות מתוזמנות</CardTitle>
+              <CardDescription>בקשות שתוזמנו לזמן מסוים</CardDescription>
             </CardHeader>
             <CardContent>
               <RequestList requests={scheduledRequests} showFilters={false} />
@@ -86,8 +86,8 @@ export default function MeetingRequests() {
         <TabsContent value="completed">
           <Card>
             <CardHeader>
-              <CardTitle>Completed Meetings</CardTitle>
-              <CardDescription>Meetings that have been completed</CardDescription>
+              <CardTitle>פגישות שהושלמו</CardTitle>
+              <CardDescription>פגישות שהסתיימו</CardDescription>
             </CardHeader>
             <CardContent>
               <RequestList requests={completedRequests} showFilters={false} />
@@ -98,8 +98,8 @@ export default function MeetingRequests() {
         <TabsContent value="rejected">
           <Card>
             <CardHeader>
-              <CardTitle>Rejected Requests</CardTitle>
-              <CardDescription>Requests that have been rejected</CardDescription>
+              <CardTitle>בקשות שנדחו</CardTitle>
+              <CardDescription>בקשות שנדחו</CardDescription>
             </CardHeader>
             <CardContent>
               <RequestList requests={rejectedRequests} showFilters={false} />
@@ -110,8 +110,8 @@ export default function MeetingRequests() {
         <TabsContent value="create">
           <Card>
             <CardHeader>
-              <CardTitle>Create New Meeting Request</CardTitle>
-              <CardDescription>Fill out the form to submit a new meeting request</CardDescription>
+              <CardTitle>צור בקשת פגישה חדשה</CardTitle>
+              <CardDescription>מלא את הטופס כדי להגיש בקשת פגישה חדשה</CardDescription>
             </CardHeader>
             <CardContent>
               <CreateRequestForm />
