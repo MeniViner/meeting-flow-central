@@ -19,23 +19,23 @@ export function LoginForm() {
     try {
       await login(email, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "ההתחברות נכשלה");
     }
   };
 
   return (
-    <Card className="w-full max-w-md shadow-lg">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Office Management System</CardTitle>
+    <Card className="w-full max-w-md shadow-lg glass-card overflow-hidden">
+      <CardHeader className="space-y-1 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900">
+        <CardTitle className="text-2xl font-bold">מערכת ניהול משרד</CardTitle>
         <CardDescription>
-          Enter your credentials to sign in to your account
+          הזן את פרטי הכניסה שלך כדי להתחבר לחשבונך
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <CardContent className="pt-6">
+        <form onSubmit={handleSubmit} className="space-y-4 animate-fadeIn">
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
-              Email
+              דואר אלקטרוני
             </label>
             <Input
               id="email"
@@ -44,11 +44,12 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="transition-all duration-300 focus:ring-2 focus:ring-blue-400"
             />
           </div>
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">
-              Password
+              סיסמה
             </label>
             <Input
               id="password"
@@ -56,28 +57,29 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="transition-all duration-300 focus:ring-2 focus:ring-blue-400"
             />
           </div>
           {error && (
-            <div className="text-sm text-red-500">{error}</div>
+            <div className="text-sm text-red-500 animate-scaleIn">{error}</div>
           )}
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 transition-all duration-300" disabled={isLoading}>
             {isLoading ? (
               <>
-                <LoadingSpinner className="mr-2 h-4 w-4" />
-                Signing in...
+                <LoadingSpinner className="ml-2 h-4 w-4" />
+                מתחבר...
               </>
             ) : (
-              "Sign in"
+              "התחבר"
             )}
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
+      <CardFooter className="flex flex-col space-y-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-slate-800">
         <div className="text-sm text-center text-muted-foreground">
-          <p>Demo Credentials:</p>
-          <p>User: john@example.com / Password: password</p>
-          <p>Admin: jane@example.com / Password: password</p>
+          <p>פרטי התחברות לדוגמה:</p>
+          <p>משתמש: john@example.com / סיסמה: password</p>
+          <p>מנהל: jane@example.com / סיסמה: password</p>
         </div>
       </CardFooter>
     </Card>
