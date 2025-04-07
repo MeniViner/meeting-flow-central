@@ -62,7 +62,6 @@ export function MainNav({ className }: { className?: string }) {
     <>
       <div className="block md:hidden sticky top-0 z-50 glass shadow-md py-3 px-4">
         <div className="flex items-center justify-between">
-          <div className="font-semibold text-lg">ניהול משרד</div>
           <Button
             variant="ghost"
             size="sm"
@@ -72,13 +71,14 @@ export function MainNav({ className }: { className?: string }) {
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </Button>
+          <div className="font-semibold text-lg">ניהול משרד</div>
         </div>
       </div>
 
       <div
         className={cn(
-          "fixed inset-y-0 right-0 z-50 w-64 glass-card border-l shadow-lg transition-all duration-300 ease-in-out md:translate-x-0",
-          mobileMenuOpen ? "translate-x-0" : "translate-x-full",
+          "fixed inset-y-0 left-0 z-50 w-64 glass-card border-r shadow-lg transition-all duration-300 ease-in-out md:translate-x-0",
+          mobileMenuOpen ? "translate-x-0" : "translate-x-[-100%]",
           className
         )}
       >

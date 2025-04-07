@@ -17,14 +17,14 @@ export function AppLayout() {
         </div>
       ) : (
         <div className="flex min-h-screen">
-          <MainNav />
-          <div className="flex-1 md:mr-64 animate-fadeIn">
+          <div className="flex-1 md:ml-64 animate-fadeIn">
             <main className="container py-6 md:py-10">
               <div className="animate-scaleIn">
                 <Outlet />
               </div>
             </main>
           </div>
+          <MainNav />
         </div>
       )}
     </div>
