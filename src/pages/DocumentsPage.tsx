@@ -1,15 +1,13 @@
-
 import { useApp } from "@/contexts/AppContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, File, FileImage, FileSpreadsheet, FilePresentation } from "lucide-react";
+import { FileText, File, FileImage, FileSpreadsheet, FilePresentation as FilePresentationIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DateDisplay } from "@/components/DateDisplay";
 
 export default function DocumentsPage() {
   const { requests } = useApp();
   
-  // Extract all documents from all requests
   const allDocuments = requests.flatMap(request => 
     request.documents.map(doc => ({
       ...doc,
@@ -19,7 +17,6 @@ export default function DocumentsPage() {
     }))
   );
   
-  // Group documents by type
   const documentsByType = allDocuments.reduce((acc, doc) => {
     let type = "other";
     
@@ -38,7 +35,7 @@ export default function DocumentsPage() {
     if (type === "pdf") return FileText;
     if (type === "word") return File;
     if (type === "excel") return FileSpreadsheet;
-    if (type === "powerpoint") return FilePresentation;
+    if (type === "powerpoint") return FilePresentationIcon;
     if (type === "image") return FileImage;
     return FileText;
   };
