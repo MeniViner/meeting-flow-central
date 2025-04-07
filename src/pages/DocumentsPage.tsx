@@ -1,7 +1,8 @@
+
 import { useApp } from "@/contexts/AppContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, File, FileImage, FileSpreadsheet, FilePresentation as FilePresentationIcon } from "lucide-react";
+import { FileText, File, FileImage, FileSpreadsheet, PresentationIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DateDisplay } from "@/components/DateDisplay";
 
@@ -35,7 +36,7 @@ export default function DocumentsPage() {
     if (type === "pdf") return FileText;
     if (type === "word") return File;
     if (type === "excel") return FileSpreadsheet;
-    if (type === "powerpoint") return FilePresentationIcon;
+    if (type === "powerpoint") return PresentationIcon;
     if (type === "image") return FileImage;
     return FileText;
   };
