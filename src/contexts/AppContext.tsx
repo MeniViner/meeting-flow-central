@@ -93,7 +93,12 @@ const MOCK_REQUESTS: MeetingRequest[] = [
     status: "completed",
     createdAt: new Date(2023, 3, 22),
     scheduledTime: new Date(2023, 4, 1, 10, 0),
-    meetingSummary: "הוחלט על פעילויות הרפתקאות בחוץ לגיבוש צוות. התקציב אושר.",
+    meetingSummaryDescription: "הוחלט על פעילויות הרפתקאות בחוץ לגיבוש צוות. התקציב אושר.",
+    meetingSummaryFile: {
+      name: "סיכום פגישת גיבוש צוות.pdf",
+      url: "https://example.com/files/summary.pdf",
+      type: "application/pdf"
+    }
   },
   {
     id: "5",
