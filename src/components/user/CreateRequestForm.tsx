@@ -185,7 +185,7 @@ export function CreateRequestForm({
             <Textarea
               id="notes"
               placeholder="הערות או דגשים נוספים"
-              className="min-h-[120px]"
+              className="min-h-[90px]"
             />
           </div>
         </div>
