@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -11,6 +10,7 @@ import {
   Settings,
   Menu,
   X,
+  UserCog,
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
@@ -34,16 +34,22 @@ const navItems = [
     showFor: ["admin"],
   },
   {
+    title: "ניהול משתמשים",
+    href: "/users",
+    icon: UserCog,
+    showFor: ["admin"],
+  },
+  {
     title: "מסמכים",
     href: "/documents",
     icon: FileText,
     showFor: ["user", "admin"],
   },
   {
-    title: "הגדרות",
+    title: "הרשאות",
     href: "/settings",
     icon: Settings,
-    showFor: ["user", "admin"],
+    showFor: ["admin"],
   },
 ];
 
@@ -77,8 +83,8 @@ export function MainNav({ className }: { className?: string }) {
 
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 glass-card border-r shadow-lg transition-all duration-300 ease-in-out md:translate-x-0",
-          mobileMenuOpen ? "translate-x-0" : "translate-x-[-100%]",
+          "fixed inset-y-0 right-0 z-50 w-64 glass-card border-l shadow-lg transition-all duration-300 ease-in-out md:translate-x-0",
+          mobileMenuOpen ? "translate-x-0" : "translate-x-[100%]",
           className
         )}
       >
@@ -101,7 +107,7 @@ export function MainNav({ className }: { className?: string }) {
                     : "text-muted-foreground hover:text-foreground hover:bg-blue-50 dark:hover:bg-slate-800"
                 )}
               >
-                <item.icon className="ml-2 h-4 w-4" />
+                <item.icon className="mr-2 h-4 w-4" />
                 {item.title}
               </Link>
             ))}

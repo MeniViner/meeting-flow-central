@@ -1,4 +1,3 @@
-
 export type UserRole = "user" | "admin";
 
 export type RequestStatus = "pending" | "approved" | "scheduled" | "completed" | "rejected";
@@ -30,7 +29,12 @@ export interface MeetingRequest {
   createdAt: Date;
   scheduledTime?: Date;
   adminNotes?: string;
-  meetingSummary?: string;
+  meetingSummaryDescription?: string;
+  meetingSummaryFile?: {
+    name: string;
+    url: string;
+    type: string;
+  };
 }
 
 export interface FilterOptions {

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MeetingRequest, RequestStatus } from "@/types";
 import { RequestStatusBadge } from "@/components/RequestStatusBadge";
@@ -80,15 +79,15 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle>Request Management</CardTitle>
+          <CardTitle>ניהול בקשות</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by title, requester, or description..."
-                className="pl-8"
+                placeholder="חיפוש לפי כותרת, מבקש או תיאור..."
+                className="pr-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -96,17 +95,18 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
             <Select
               value={statusFilter}
               onValueChange={(value) => setStatusFilter(value as RequestStatus | "all")}
+              dir="rtl"
             >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by status" />
+              <SelectTrigger className="w-full sm:w-[180px] flex flex-row-reverse justify-end">
+                <SelectValue placeholder="סנן לפי סטטוס"/>
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectContent align="end" className="w-full sm:w-[180px]">
+                <SelectItem value="all">כל הסטטוסים</SelectItem>
+                <SelectItem value="pending">ממתין</SelectItem>
+                <SelectItem value="approved">מאושר</SelectItem>
+                <SelectItem value="scheduled">מתוזמן</SelectItem>
+                <SelectItem value="completed">הושלם</SelectItem>
+                <SelectItem value="rejected">נדחה</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -115,52 +115,52 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[280px]">Title</TableHead>
-                  <TableHead>Requester</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Documents</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-left">פעולות</TableHead>
+                  <TableHead>מסמכים</TableHead>
+                  <TableHead>סטטוס</TableHead>
+                  <TableHead>מועד אחרון</TableHead>
+                  <TableHead>מבקש</TableHead>
+                  <TableHead className="w-[280px]">כותרת</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sortedRequests.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
-                      No requests found.
+                      לא נמצאו בקשות.
                     </TableCell>
                   </TableRow>
                 ) : (
                   sortedRequests.map((request) => (
                     <TableRow key={request.id}>
-                      <TableCell className="font-medium">
-                        {request.title}
-                      </TableCell>
-                      <TableCell>{request.requesterName}</TableCell>
-                      <TableCell>
-                        <DateDisplay date={request.deadline} />
-                      </TableCell>
-                      <TableCell>
-                        <RequestStatusBadge status={request.status} />
-                      </TableCell>
-                      <TableCell>
-                        {request.documents.length > 0 ? (
-                          <Badge variant="secondary" className="flex items-center w-fit">
-                            <FileText className="h-3 w-3 mr-1" />
-                            {request.documents.length}
-                          </Badge>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">None</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-left">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedRequest(request)}
                         >
-                          View
+                          צפה
                         </Button>
+                      </TableCell>
+                      <TableCell>
+                        {request.documents.length > 0 ? (
+                          <Badge variant="secondary" className="flex items-center w-fit">
+                            <FileText className="h-3 w-3 ml-1" />
+                            {request.documents.length}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">אין</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <RequestStatusBadge status={request.status} />
+                      </TableCell>
+                      <TableCell>
+                        <DateDisplay date={request.deadline} />
+                      </TableCell>
+                      <TableCell>{request.requesterName}</TableCell>
+                      <TableCell className="font-medium">
+                        {request.title}
                       </TableCell>
                     </TableRow>
                   ))
@@ -175,7 +175,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
         {selectedRequest && (
           <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Request Details</DialogTitle>
+              <DialogTitle>פרטי בקשה</DialogTitle>
             </DialogHeader>
             <RequestDetails 
               request={selectedRequest} 

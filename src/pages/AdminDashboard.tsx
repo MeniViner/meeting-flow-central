@@ -1,4 +1,3 @@
-
 import { useApp } from "@/contexts/AppContext";
 import { AdminRequestList } from "@/components/admin/AdminRequestList";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +15,9 @@ export default function AdminDashboard() {
     return (
       <div className="flex items-center justify-center h-[70vh]">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+          <h1 className="text-2xl font-bold mb-2">אין גישה</h1>
           <p className="text-muted-foreground">
-            You don't have permission to access the admin dashboard.
+            אין לך הרשאה לצפות בלוח הבקרה
           </p>
         </div>
       </div>
@@ -53,16 +52,16 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">לוח בקרה</h1>
         <p className="text-muted-foreground">
-          Manage all meeting requests and approvals
+          ניהול בקשות פגישה
         </p>
       </div>
       
       <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="requests">All Requests</TabsTrigger>
+          <TabsTrigger value="overview">סקירה כללית</TabsTrigger>
+          <TabsTrigger value="requests">כל הבקשות</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
@@ -78,7 +77,11 @@ export default function AdminDashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold">{count}</div>
                   <p className="text-xs text-muted-foreground capitalize">
-                    {status} requests
+                    {status === "pending" ? "ממתינות" :
+                     status === "approved" ? "מאושרות" :
+                     status === "scheduled" ? "מתוזמנות" :
+                     status === "completed" ? "הושלמו" :
+                     "נדחו"}
                   </p>
                 </CardContent>
               </Card>
@@ -90,12 +93,12 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <AlertTriangle className="h-5 w-5 mr-2 text-yellow-500" />
-                  <span>Upcoming Deadlines</span>
+                  <span>מועדים קרובים</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {upcomingDeadlines.length === 0 ? (
-                  <p className="text-muted-foreground">No upcoming deadlines</p>
+                  <p className="text-muted-foreground">אין מועדים קרובים</p>
                 ) : (
                   <ul className="space-y-4">
                     {upcomingDeadlines.map((request) => (
@@ -114,7 +117,7 @@ export default function AdminDashboard() {
                         <div>
                           <p className="font-medium">{request.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            Requested by: {request.requesterName}
+                            מבקש: {request.requesterName}
                           </p>
                           <div className="mt-1">
                             <RequestStatusBadge status={request.status} />
@@ -131,12 +134,12 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <CalendarDays className="h-5 w-5 mr-2 text-blue-500" />
-                  <span>Upcoming Meetings</span>
+                  <span>פגישות קרובות</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {upcomingMeetings.length === 0 ? (
-                  <p className="text-muted-foreground">No upcoming meetings</p>
+                  <p className="text-muted-foreground">אין פגישות קרובות</p>
                 ) : (
                   <ul className="space-y-4">
                     {upcomingMeetings.map((request) => (
@@ -151,12 +154,12 @@ export default function AdminDashboard() {
                         <div>
                           <p className="font-medium">{request.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            Requested by: {request.requesterName}
+                            מבקש: {request.requesterName}
                           </p>
                           <div className="flex items-center mt-1">
                             <Clock className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                             <span className="text-xs text-muted-foreground">
-                              Deadline: <DateDisplay date={request.deadline} />
+                              מועד אחרון: <DateDisplay date={request.deadline} />
                             </span>
                           </div>
                         </div>
@@ -170,7 +173,7 @@ export default function AdminDashboard() {
           
           <Card>
             <CardHeader>
-              <CardTitle>Recent Requests</CardTitle>
+              <CardTitle>בקשות אחרונות</CardTitle>
             </CardHeader>
             <CardContent>
               <AdminRequestList 
@@ -181,7 +184,7 @@ export default function AdminDashboard() {
             </CardContent>
             <CardFooter>
               <p className="text-sm text-muted-foreground">
-                Showing 5 most recent requests. View all in the Requests tab.
+                מציג 5 בקשות אחרונות. צפה בכל הבקשות בלשונית הבקשות.
               </p>
             </CardFooter>
           </Card>

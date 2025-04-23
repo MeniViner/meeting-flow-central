@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApp } from "@/contexts/AppContext";
@@ -26,25 +25,25 @@ export default function Dashboard() {
   // Stats for the dashboard
   const stats = [
     {
-      title: "Pending Requests",
+      title: "בקשות ממתינות",
       value: pendingRequests.length,
-      description: "Awaiting approval",
+      description: "ממתינות לאישור",
       icon: Clock,
       iconColor: "text-yellow-500",
       bgColor: "bg-yellow-50",
     },
     {
-      title: "Scheduled Meetings",
+      title: "פגישות מתוזמנות",
       value: scheduledRequests.length,
-      description: "Ready to happen",
+      description: "מוכנות להתקיים",
       icon: Calendar,
       iconColor: "text-blue-500",
       bgColor: "bg-blue-50",
     },
     {
-      title: "Completed Meetings",
+      title: "פגישות שהושלמו",
       value: completedRequests.length,
-      description: "Successfully finished",
+      description: "הסתיימו בהצלחה",
       icon: CheckCircle,
       iconColor: "text-green-500",
       bgColor: "bg-green-50",
@@ -54,17 +53,17 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">לוח בקרה</h1>
         <p className="text-muted-foreground">
-          Welcome back, {currentUser?.name}!
+          ברוך הבא, {currentUser?.name}!
         </p>
       </div>
 
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="create">Create Request</TabsTrigger>
-          <TabsTrigger value="view">View Requests</TabsTrigger>
+          <TabsTrigger value="overview">סקירה כללית</TabsTrigger>
+          <TabsTrigger value="create">יצירת בקשה</TabsTrigger>
+          <TabsTrigger value="view">צפייה בבקשות</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
@@ -92,14 +91,14 @@ export default function Dashboard() {
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Upcoming Deadlines</CardTitle>
+                <CardTitle>מועדי סיום מתקרבים</CardTitle>
                 <CardDescription>
-                  Requests with the closest deadlines
+                  בקשות עם המועדים הקרובים ביותר
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {upcomingDeadlines.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No upcoming deadlines</p>
+                  <p className="text-sm text-muted-foreground">אין מועדים קרובים</p>
                 ) : (
                   <ul className="space-y-4">
                     {upcomingDeadlines.map((request) => (
@@ -130,14 +129,14 @@ export default function Dashboard() {
             
             <Card>
               <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle>פעילות אחרונה</CardTitle>
                 <CardDescription>
-                  Latest updates on your requests
+                  עדכונים אחרונים על הבקשות שלך
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {requests.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No recent activity</p>
+                  <p className="text-sm text-muted-foreground">אין פעילות אחרונה</p>
                 ) : (
                   <ul className="space-y-4">
                     {[...requests]
@@ -155,7 +154,7 @@ export default function Dashboard() {
                             </div>
                           </div>
                           <span className="text-xs">
-                            <span className="sr-only">Status:</span>
+                            <span className="sr-only">סטטוס:</span>
                             <span className="capitalize">{request.status}</span>
                           </span>
                         </li>
@@ -170,9 +169,9 @@ export default function Dashboard() {
         <TabsContent value="create">
           <Card>
             <CardHeader>
-              <CardTitle>Create New Meeting Request</CardTitle>
+              <CardTitle>יצירת בקשת פגישה חדשה</CardTitle>
               <CardDescription>
-                Fill out the form to submit a new meeting request
+                מלא את הטופס כדי להגיש בקשת פגישה חדשה
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -186,9 +185,9 @@ export default function Dashboard() {
         <TabsContent value="view">
           <Card>
             <CardHeader>
-              <CardTitle>Your Meeting Requests</CardTitle>
+              <CardTitle>בקשות הפגישה שלך</CardTitle>
               <CardDescription>
-                View and track all your submitted requests
+                צפה ועקוב אחר כל הבקשות שהגשת
               </CardDescription>
             </CardHeader>
             <CardContent>
