@@ -9,9 +9,12 @@ import { Clock, AlertTriangle, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AdminDashboard() {
-  const { requests, currentUser } = useApp();
+  const { requests, user } = useApp();
   
-  if (currentUser?.role !== "admin") {
+  // Allow access in development mode or if user is admin
+  const isAdmin = process.env.NODE_ENV === "development" || user?.role === "admin";
+  
+  if (!isAdmin) {
     return (
       <div className="flex items-center justify-center h-[70vh]">
         <div className="text-center">

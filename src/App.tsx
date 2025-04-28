@@ -2,42 +2,78 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-import MeetingRequests from "./pages/MeetingRequests";
 import DocumentsPage from "./pages/DocumentsPage";
 import PermissionsPage from "./pages/PermissionsPage";
 import UsersPage from "./pages/UsersPage";
 import NotFound from "./pages/NotFound";
+import DevHelper from "@/components/DevHelper";
+import LandingPage from "@/pages/LandingPage";
+import AccessRequestPage from "@/pages/AccessRequestPage";
+import AccessRequestsPage from "@/pages/AccessRequestsPage";
+import MeetingsPage from "@/pages/MeetingsPage";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AppProvider>
-      <TooltipProvider>
-        <div dir="rtl" lang="he" className="rtl">
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <TooltipProvider>
+      <div dir="rtl" lang="he" className="rtl">
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppProvider>
             <Routes>
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/request-access" element={<AccessRequestPage />} />
               <Route element={<AppLayout />}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/meeting-requests" element={<MeetingRequests />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/users" element={<UsersPage />} />
+                <Route index element={<Dashboard />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/documents" element={<DocumentsPage />} />
-                <Route path="/settings" element={<PermissionsPage />} />
+                <Route
+                  path="/access-requests"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <AccessRequestsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/users"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <UsersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/meetings"
+                  element={
+                    <ProtectedRoute>
+                      <MeetingsPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
-          </BrowserRouter>
-        </div>
-      </TooltipProvider>
-    </AppProvider>
+            <DevHelper />
+          </AppProvider>
+        </BrowserRouter>
+      </div>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 

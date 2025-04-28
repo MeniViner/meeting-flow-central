@@ -1,12 +1,13 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, Edit, Trash2, Plus, Filter } from "lucide-react";
-import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { txtStore } from "@/services/txtStore";
 import {
   Select,
   SelectContent,
@@ -34,97 +35,124 @@ interface User {
   role: UserRole;
   status: "active" | "inactive";
   lastLogin: string;
+  cardId: string;
+  department: string;
 }
 
 export default function UsersPage() {
   const { currentUser } = useApp();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
     role: "viewer" as UserRole,
+    department: "",
+    cardId: "",
   });
-  
-  // Mock data - replace with actual data from your backend
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      name: "ישראל ישראלי",
-      email: "israel@example.com",
-      role: "admin",
-      status: "active",
-      lastLogin: "2024-03-20 10:30",
-    },
-    {
-      id: "2",
-      name: "שרה כהן",
-      email: "sarah@example.com",
-      role: "editor",
-      status: "active",
-      lastLogin: "2024-03-19 15:45",
-    },
-    {
-      id: "3",
-      name: "דוד לוי",
-      email: "david@example.com",
-      role: "viewer",
-      status: "inactive",
-      lastLogin: "2024-03-15 09:20",
-    },
-  ]);
 
-  const handleEditUser = (userId: string) => {
-    // Navigate to user edit page or open edit modal
-    toast({
-      title: "עריכת משתמש",
-      description: `מעבר לעריכת משתמש ${userId}`,
-    });
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      const usersList = await txtStore.getStrictSP("users");
+      setUsers(usersList || []);
+    } catch (error) {
+      console.error("Error loading users:", error);
+      toast({
+        title: "שגיאה",
+        description: "אירעה שגיאה בטעינת המשתמשים",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteUser = (userId: string) => {
-    // Show confirmation dialog and delete user
-    toast({
-      title: "מחיקת משתמש",
-      description: `מחיקת משתמש ${userId}`,
-    });
+  const handleAddUser = async () => {
+    try {
+      const newUserWithId = {
+        ...newUser,
+        id: `user-${Date.now()}`,
+        status: "active" as const,
+        lastLogin: new Date().toLocaleString(),
+      };
+
+      await txtStore.appendStrictSP("users", newUserWithId);
+      setUsers([...users, newUserWithId]);
+      setNewUser({
+        name: "",
+        email: "",
+        role: "viewer",
+        department: "",
+        cardId: "",
+      });
+      setIsAddUserDialogOpen(false);
+
+      toast({
+        title: "משתמש נוסף",
+        description: "המשתמש החדש נוסף בהצלחה",
+      });
+    } catch (error) {
+      toast({
+        title: "שגיאה",
+        description: "אירעה שגיאה בהוספת המשתמש",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleAddUser = () => {
-    // Add new user to the list
-    const newUserWithId = {
-      ...newUser,
-      id: (users.length + 1).toString(),
-      status: "active" as const,
-      lastLogin: new Date().toLocaleString(),
-    };
-    
-    setUsers([...users, newUserWithId]);
-    setNewUser({ name: "", email: "", role: "viewer" });
-    setIsAddUserDialogOpen(false);
-    
-    toast({
-      title: "משתמש נוסף",
-      description: "המשתמש החדש נוסף בהצלחה",
-    });
+  const handleEditUser = async (userId: string, updatedUser: Partial<User>) => {
+    try {
+      const updatedUsers = users.map(user =>
+        user.id === userId ? { ...user, ...updatedUser } : user
+      );
+      await txtStore.updateStrictSP("users", updatedUsers);
+      setUsers(updatedUsers);
+
+      toast({
+        title: "משתמש עודכן",
+        description: "פרטי המשתמש עודכנו בהצלחה",
+      });
+    } catch (error) {
+      toast({
+        title: "שגיאה",
+        description: "אירעה שגיאה בעדכון המשתמש",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleRoleChange = (userId: string, newRole: UserRole) => {
-    setUsers(users.map(user => 
-      user.id === userId ? { ...user, role: newRole } : user
-    ));
-    
-    toast({
-      title: "תפקיד עודכן",
-      description: "תפקיד המשתמש עודכן בהצלחה",
-    });
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const updatedUsers = users.filter(user => user.id !== userId);
+      await txtStore.updateStrictSP("users", updatedUsers);
+      setUsers(updatedUsers);
+
+      toast({
+        title: "משתמש נמחק",
+        description: "המשתמש נמחק בהצלחה",
+      });
+    } catch (error) {
+      toast({
+        title: "שגיאה",
+        description: "אירעה שגיאה במחיקת המשתמש",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
       user.name.includes(searchQuery) || 
-      user.email.includes(searchQuery);
+      user.email.includes(searchQuery) ||
+      user.department.includes(searchQuery);
     
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     
@@ -156,6 +184,10 @@ export default function UsersPage() {
         return role;
     }
   };
+
+  if (isLoading) {
+    return <div>טוען...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -205,6 +237,22 @@ export default function UsersPage() {
                       type="email"
                       value={newUser.email}
                       onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="department">מחלקה</Label>
+                    <Input
+                      id="department"
+                      value={newUser.department}
+                      onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="cardId">מספר כרטיס</Label>
+                    <Input
+                      id="cardId"
+                      value={newUser.cardId}
+                      onChange={(e) => setNewUser({ ...newUser, cardId: e.target.value })}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -267,6 +315,8 @@ export default function UsersPage() {
                 <TableRow>
                   <TableHead>שם</TableHead>
                   <TableHead>אימייל</TableHead>
+                  <TableHead>מחלקה</TableHead>
+                  <TableHead>מספר כרטיס</TableHead>
                   <TableHead>תפקיד</TableHead>
                   <TableHead>סטטוס</TableHead>
                   <TableHead>כניסה אחרונה</TableHead>
@@ -278,10 +328,12 @@ export default function UsersPage() {
                   <TableRow key={user.id}>
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.department}</TableCell>
+                    <TableCell>{user.cardId}</TableCell>
                     <TableCell>
                       <Select
                         value={user.role}
-                        onValueChange={(value) => handleRoleChange(user.id, value as UserRole)}
+                        onValueChange={(value) => handleEditUser(user.id, { role: value as UserRole })}
                       >
                         <SelectTrigger className="w-[120px]">
                           <SelectValue>
@@ -308,7 +360,7 @@ export default function UsersPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleEditUser(user.id)}
+                          onClick={() => handleEditUser(user.id, { status: user.status === "active" ? "inactive" : "active" })}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>

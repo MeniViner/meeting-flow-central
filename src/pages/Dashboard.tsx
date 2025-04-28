@@ -10,11 +10,14 @@ import { cn } from "@/lib/utils";
 export default function Dashboard() {
   const { requests, currentUser } = useApp();
   const [activeTab, setActiveTab] = useState("overview");
+  const [requestTypeTab, setRequestTypeTab] = useState("all");
   
   // Group requests by status
   const pendingRequests = requests.filter(r => r.status === "pending");
   const scheduledRequests = requests.filter(r => r.status === "scheduled");
   const completedRequests = requests.filter(r => r.status === "completed");
+  const approvedRequests = requests.filter(r => r.status === "approved");
+  const rejectedRequests = requests.filter(r => r.status === "rejected");
   
   // Find upcoming deadlines
   const upcomingDeadlines = [...requests]
@@ -49,6 +52,11 @@ export default function Dashboard() {
       bgColor: "bg-green-50",
     },
   ];
+
+  // Filter requests based on selected type
+  const filteredRequests = requestTypeTab === "all" 
+    ? requests 
+    : requests.filter(r => r.status === requestTypeTab);
 
   return (
     <div className="space-y-6">
@@ -191,7 +199,27 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <RequestList requests={requests} />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                <Tabs defaultValue="all" value={requestTypeTab} onValueChange={setRequestTypeTab}>
+                  <TabsList>
+                    <TabsTrigger value="all">כל הבקשות</TabsTrigger>
+                    <TabsTrigger value="pending">ממתינות ({pendingRequests.length})</TabsTrigger>
+                    <TabsTrigger value="approved">מאושרות ({approvedRequests.length})</TabsTrigger>
+                    <TabsTrigger value="scheduled">מתוזמנות ({scheduledRequests.length})</TabsTrigger>
+                    <TabsTrigger value="completed">הושלמו ({completedRequests.length})</TabsTrigger>
+                    <TabsTrigger value="rejected">נדחו ({rejectedRequests.length})</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              <RequestList requests={
+                requestTypeTab === "all" ? requests :
+                requestTypeTab === "pending" ? pendingRequests :
+                requestTypeTab === "approved" ? approvedRequests :
+                requestTypeTab === "scheduled" ? scheduledRequests :
+                requestTypeTab === "completed" ? completedRequests :
+                requestTypeTab === "rejected" ? rejectedRequests :
+                requests
+              } showFilters={false} />
             </CardContent>
           </Card>
         </TabsContent>

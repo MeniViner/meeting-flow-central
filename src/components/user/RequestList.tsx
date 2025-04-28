@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MeetingRequest, RequestStatus, FilterOptions } from "@/types";
 import { RequestStatusBadge } from "@/components/RequestStatusBadge";
@@ -34,17 +33,22 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-row items-center justify-between gap-4 mb-4">
+        {/* Tabs will be rendered by the parent, so nothing here */}
+        <div className="relative flex-1 max-w-xs ml-auto">
+          <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            dir="rtl"
+            placeholder="חפש בקשות..."
+            className="pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
       {showFilters && (
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="חפש בקשות..."
-              className="pr-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
           <Select
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value as RequestStatus | "all")}
@@ -164,10 +168,10 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
                 </div>
               )}
               
-              {selectedRequest.meetingSummary && (
+              {selectedRequest.meetingSummaryFile && (
                 <div>
                   <h4 className="text-sm font-medium mb-1">סיכום פגישה</h4>
-                  <p className="text-sm text-muted-foreground">{selectedRequest.meetingSummary}</p>
+                  <p className="text-sm text-muted-foreground">{selectedRequest.meetingSummaryFile}</p>
                 </div>
               )}
               

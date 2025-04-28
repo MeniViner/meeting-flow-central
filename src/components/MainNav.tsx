@@ -11,26 +11,28 @@ import {
   Menu,
   X,
   UserCog,
+  Shield,
+  LockOpen,
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
 const navItems = [
   {
-    title: "לוח בקרה",
+    title: "לוח בקרה אישי",
     href: "/",
     icon: LayoutDashboard,
     showFor: ["user", "admin"],
   },
-  {
-    title: "בקשות פגישה",
-    href: "/meeting-requests",
-    icon: Calendar,
-    showFor: ["user", "admin"],
-  },
+  // {
+  //   title: "בקשות פגישה",
+  //   href: "/meeting-requests",
+  //   icon: Calendar,
+  //   showFor: ["user", "admin"],
+  // },
   {
     title: "ניהול מערכת",
     href: "/admin",
-    icon: Users,
+    icon: Shield,
     showFor: ["admin"],
   },
   {
@@ -46,23 +48,30 @@ const navItems = [
     showFor: ["user", "admin"],
   },
   {
-    title: "הרשאות",
-    href: "/settings",
-    icon: Settings,
+    title: "ניהול בקשות גישה",
+    href: "/access-requests",
+    icon: LockOpen,
     showFor: ["admin"],
   },
+  // {
+  //   title: "הרשאות",
+  //   href: "/settings",
+  //   icon: Settings,
+  //   showFor: ["admin"],
+  // },
 ];
 
 export function MainNav({ className }: { className?: string }) {
   const { pathname } = useLocation();
-  const { currentUser, logout } = useApp();
+  const { user } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  if (!currentUser) return null;
+  if (!user) return null;
 
-  const filteredNavItems = navItems.filter((item) =>
-    item.showFor.includes(currentUser.role)
-  );
+  // In development, show all items for admin
+  const filteredNavItems = process.env.NODE_ENV === "development" && user.role === "admin"
+    ? navItems
+    : navItems.filter((item) => item.showFor.includes(user.role));
 
   return (
     <>
@@ -91,39 +100,36 @@ export function MainNav({ className }: { className?: string }) {
         <div className="flex flex-col h-full">
           <div className="p-4 border-b bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900">
             <h2 className="font-semibold text-lg">ניהול משרד</h2>
+            {process.env.NODE_ENV === "development" && (
+              <p className="text-xs text-muted-foreground">מצב פיתוח - גישה מלאה</p>
+            )}
           </div>
 
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {filteredNavItems.map((item, index) => (
+            {filteredNavItems.map((item) => (
               <Link
                 key={item.href}
                 to={item.href}
-                onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  "flex items-center px-3 py-2 text-sm rounded-md transition-all duration-300 animate-slideIn",
-                  `animate-delay-${index * 100 + 100}`,
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-blue-100 dark:hover:bg-slate-700",
                   pathname === item.href
-                    ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md"
-                    : "text-muted-foreground hover:text-foreground hover:bg-blue-50 dark:hover:bg-slate-800"
+                    ? "bg-blue-100 dark:bg-slate-700"
+                    : "transparent"
                 )}
               >
-                <item.icon className="mr-2 h-4 w-4" />
+                <item.icon className="h-4 w-4" />
                 {item.title}
               </Link>
             ))}
           </nav>
 
-          <div className="p-4 border-t bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-slate-800">
-            <div className="mb-4">
-              <p className="text-sm font-medium">{currentUser.name}</p>
-              <p className="text-xs text-muted-foreground">{currentUser.email}</p>
-            </div>
+          <div className="p-4 border-t">
             <Button
-              variant="outline"
-              size="sm"
-              className="w-full transition-all duration-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300 dark:hover:bg-red-900/30"
-              onClick={logout}
+              variant="ghost"
+              className="w-full justify-start gap-2"
+              onClick={() => window.location.href = "/landing"}
             >
+              <X className="h-4 w-4" />
               התנתק
             </Button>
           </div>

@@ -1,12 +1,16 @@
-export type UserRole = "user" | "admin";
+export type UserRole = "admin" | "editor" | "viewer";
 
-export type RequestStatus = "pending" | "approved" | "scheduled" | "completed" | "rejected";
+export type RequestStatus = "pending" | "approved" | "rejected" | "scheduled" | "completed";
 
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  status: "active" | "inactive";
+  lastLogin: string;
+  cardId: string;
+  department: string;
 }
 
 export interface Document {
@@ -20,7 +24,7 @@ export interface Document {
 export interface MeetingRequest {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   requesterId: string;
   requesterName: string;
   documents: Document[];
