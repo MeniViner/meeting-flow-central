@@ -1,31 +1,28 @@
-let mockStorage: Record<string, any> = {};
+interface StorageData {
+  [key: string]: any;
+}
 
-export const txtStore = {
-  // Mock SharePoint createStrictSP
-  createStrictSP: async (key: string, data: any): Promise<void> => {
-    mockStorage[key] = data;
-    return Promise.resolve();
-  },
-  // Mock SharePoint getStrictSP
-  getStrictSP: async (key: string): Promise<any> => {
-    return Promise.resolve(mockStorage[key] || []);
-  },
-  // Mock SharePoint updateStrictSP
-  updateStrictSP: async (key: string, data: any): Promise<void> => {
-    mockStorage[key] = data;
-    return Promise.resolve();
-  },
-  // Mock SharePoint appendStrictSP
-  appendStrictSP: async (key: string, data: any): Promise<void> => {
-    const existing = mockStorage[key] || [];
-    mockStorage[key] = [...existing, data];
-    return Promise.resolve();
+class TxtStore {
+  private storage: StorageData = {};
+
+  async getStrictSP(key: string): Promise<any> {
+    try {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error(`Error getting data for key ${key}:`, error);
+      return null;
+    }
   }
-};
 
-export const getCurrentUserCardId = (): string => {
-  // In development, we'll use a mock card ID
-  // In production, this will be replaced with actual card reading logic
-  return "DEV-12345";
-};
-// ... existing code ... 
+  async updateStrictSP(key: string, value: any): Promise<void> {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(`Error updating data for key ${key}:`, error);
+      throw error;
+    }
+  }
+}
+
+export const txtStore = new TxtStore(); 

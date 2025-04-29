@@ -14,7 +14,7 @@ interface AccessRequest {
   email: string;
   department: string;
   reason: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "scheduled" | "ended" | "completed" | "rejected";
   createdAt: Date;
   cardId: string;
 }

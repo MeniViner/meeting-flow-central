@@ -59,12 +59,12 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
     return matchesSearch && matchesStatus;
   });
 
-  // Sort requests: pending first, then scheduled, then approved, then completed/rejected
+  // Sort requests: pending first, then scheduled, then ended, then completed, then rejected
   const sortedRequests = [...filteredRequests].sort((a, b) => {
     const statusOrder: Record<RequestStatus, number> = {
       pending: 0,
       scheduled: 1,
-      approved: 2,
+      ended: 2,
       completed: 3,
       rejected: 4,
     };
@@ -107,8 +107,8 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                 <SelectContent align="end" className="w-full sm:w-[180px]">
                   <SelectItem value="all">כל הסטטוסים</SelectItem>
                   <SelectItem value="pending">ממתין</SelectItem>
-                  <SelectItem value="approved">מאושר</SelectItem>
                   <SelectItem value="scheduled">מתוזמן</SelectItem>
+                  <SelectItem value="ended">הסתיים (ממתין לסיכום)</SelectItem>
                   <SelectItem value="completed">הושלם</SelectItem>
                   <SelectItem value="rejected">נדחה</SelectItem>
                 </SelectContent>

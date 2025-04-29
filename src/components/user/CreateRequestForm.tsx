@@ -121,7 +121,6 @@ export function CreateRequestForm({
                   onSelect={setDeadline}
                   initialFocus
                   locale={he}
-                  disabled={(date) => date < new Date()}
                   className={cn("p-3 pointer-events-auto")}
                 />
               </PopoverContent>
@@ -178,15 +177,6 @@ export function CreateRequestForm({
                 </div>
               )}
             </Card>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">הערות נוספות</Label>
-            <Textarea
-              id="notes"
-              placeholder="הערות או דגשים נוספים"
-              className="min-h-[90px]"
-            />
           </div>
         </div>
       </div>

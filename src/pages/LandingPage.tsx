@@ -21,9 +21,12 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <img src="/logo1.png" alt="Logo 1" className="h-8" />
-            <img src="/logo2.png" alt="Logo 2" className="h-8" />
-            <img src="/logo3.png" alt="Logo 3" className="h-8" />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Mazi_IDF_Symbol.svg/330px-Mazi_IDF_Symbol.svg.png"
+             alt="Logo 1" className="h-16" />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Mafhash-tag.png/330px-Mafhash-tag.png"
+             alt="Logo 2" className="h-16" />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/IDF_GOC_Army_Headquarters_From_2020_%28Alternative%29.svg/330px-IDF_GOC_Army_Headquarters_From_2020_%28Alternative%29.svg.png" 
+             alt="Logo 3" className="h-16" />
           </div>
         </header>
 

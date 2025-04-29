@@ -14,11 +14,6 @@ export function RequestStatusBadge({ status, className }: RequestStatusBadgeProp
       variant: "outline",
       className: "bg-yellow-100 text-status-pending border-status-pending"
     },
-    approved: {
-      label: "Approved",
-      variant: "outline",
-      className: "bg-green-100 text-status-approved border-status-approved"
-    },
     scheduled: {
       label: "Scheduled",
       variant: "outline",
@@ -33,10 +28,24 @@ export function RequestStatusBadge({ status, className }: RequestStatusBadgeProp
       label: "Rejected",
       variant: "outline",
       className: "bg-red-100 text-status-rejected border-status-rejected"
+    },
+    ended: {
+      label: "Ended",
+      variant: "outline",
+      className: "bg-gray-100 text-status-ended border-status-ended"
     }
   };
 
   const config = statusConfig[status];
+
+  if (!config) {
+    // Fallback for unknown status
+    return (
+      <Badge variant="outline" className={className}>
+        Unknown Status
+      </Badge>
+    );
+  }
 
   return (
     <Badge 

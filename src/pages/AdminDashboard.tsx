@@ -29,8 +29,8 @@ export default function AdminDashboard() {
   
   // Group requests by status
   const pendingRequests = requests.filter(r => r.status === "pending");
-  const approvedRequests = requests.filter(r => r.status === "approved");
   const scheduledRequests = requests.filter(r => r.status === "scheduled");
+  const endedRequests = requests.filter(r => r.status === "ended");
   
   // Find upcoming deadlines
   const upcomingDeadlines = [...requests]
@@ -46,8 +46,8 @@ export default function AdminDashboard() {
 
   const statusCounts: Record<RequestStatus, number> = {
     pending: pendingRequests.length,
-    approved: approvedRequests.length,
     scheduled: scheduledRequests.length,
+    ended: endedRequests.length,
     completed: requests.filter(r => r.status === "completed").length,
     rejected: requests.filter(r => r.status === "rejected").length,
   };
@@ -81,8 +81,8 @@ export default function AdminDashboard() {
                   <div className="text-2xl font-bold">{count}</div>
                   <p className="text-xs text-muted-foreground capitalize">
                     {status === "pending" ? "ממתינות" :
-                     status === "approved" ? "מאושרות" :
                      status === "scheduled" ? "מתוזמנות" :
+                     status === "ended" ? "הסתיימו (ממתינות לסיכום)" :
                      status === "completed" ? "הושלמו" :
                      "נדחו"}
                   </p>

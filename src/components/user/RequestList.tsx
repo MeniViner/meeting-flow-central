@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { RequestStepper } from "@/components/RequestStepper";
+import { useApp } from "@/contexts/AppContext";
 
 interface RequestListProps {
   requests: MeetingRequest[];
@@ -17,9 +19,11 @@ interface RequestListProps {
 }
 
 export function RequestList({ requests, showFilters = true }: RequestListProps) {
+  const { addMeetingSummary } = useApp();
   const [selectedRequest, setSelectedRequest] = useState<MeetingRequest | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">("all");
+  const [meetingSummaryFile, setMeetingSummaryFile] = useState<File | null>(null);
   
   // Filter requests
   const filteredRequests = requests.filter(request => {
@@ -59,7 +63,6 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
             <SelectContent>
               <SelectItem value="all">כל הסטטוסים</SelectItem>
               <SelectItem value="pending">ממתין</SelectItem>
-              <SelectItem value="approved">מאושר</SelectItem>
               <SelectItem value="scheduled">מתוזמן</SelectItem>
               <SelectItem value="completed">הושלם</SelectItem>
               <SelectItem value="rejected">נדחה</SelectItem>
@@ -140,7 +143,7 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
                 </div>
               </DialogDescription>
             </DialogHeader>
-            
+            <RequestStepper status={selectedRequest.status} />
             <div className="space-y-4">
               {selectedRequest.description && (
                 <div>
@@ -168,10 +171,41 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
                 </div>
               )}
               
+              {selectedRequest.status === "ended" && !selectedRequest.meetingSummaryFile && (
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded mb-4 flex flex-col gap-2">
+                  <strong>לתשומת לבך:</strong> טרם הועלה קובץ סיכום פגישה. נא להעלות קובץ סיכום.
+                  <input
+                    type="file"
+                    id="meetingSummary"
+                    className="mt-2"
+                    onChange={e => setMeetingSummaryFile(e.target.files?.[0] || null)}
+                    accept=".pdf,.doc,.docx,.txt"
+                  />
+                  <Button
+                    className="w-fit mt-2"
+                    onClick={async () => {
+                      if (meetingSummaryFile) {
+                        await addMeetingSummary(selectedRequest.id, meetingSummaryFile);
+                        setMeetingSummaryFile(null);
+                      }
+                    }}
+                    disabled={!meetingSummaryFile}
+                  >
+                    העלה וסיים פגישה
+                  </Button>
+                </div>
+              )}
               {selectedRequest.meetingSummaryFile && (
                 <div>
-                  <h4 className="text-sm font-medium mb-1">סיכום פגישה</h4>
-                  <p className="text-sm text-muted-foreground">{selectedRequest.meetingSummaryFile}</p>
+                  <h4 className="text-sm font-medium mb-1">קובץ סיכום פגישה</h4>
+                  <a
+                    href={selectedRequest.meetingSummaryFile.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    {selectedRequest.meetingSummaryFile.name || 'הורד קובץ'}
+                  </a>
                 </div>
               )}
               

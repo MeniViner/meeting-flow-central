@@ -1,8 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, MeetingRequest, RequestStatus, Document } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
-import { txtStore, getCurrentUserCardId } from "@/services/txtStore";
+import { txtStore } from "@/services/txtStore";
 import { useNavigate } from "react-router-dom";
+
+interface Notification {
+  id: string;
+  userId: string;
+  message: string;
+  createdAt: Date;
+  read?: boolean;
+}
 
 interface AppContextType {
   user: User | null;
@@ -14,8 +22,10 @@ interface AppContextType {
   logout: () => void;
   submitRequest: (request: Omit<MeetingRequest, "id" | "createdAt" | "requesterId" | "requesterName" | "status">) => Promise<void>;
   updateRequestStatus: (requestId: string, status: RequestStatus, notes?: string) => Promise<void>;
-  scheduleMeeting: (requestId: string, scheduledTime: Date) => Promise<void>;
-  addMeetingSummary: (requestId: string, file: File, description: string) => Promise<void>;
+  scheduleMeeting: (requestId: string, scheduledTime: Date, adminNotes?: string) => Promise<void>;
+  addMeetingSummary: (requestId: string, file: File, description?: string) => Promise<void>;
+  notifications: Notification[];
+  addNotification: (notification: Omit<Notification, "id" | "createdAt" | "read">) => void;
   // Development only
   devLoginAsAdmin?: () => void;
 }
@@ -34,20 +44,40 @@ const DEV_ADMIN_USER: User = {
   cardId: "DEV-12345",
 };
 
+// Helper to fix legacy/invalid statuses
+const fixStatus = (status: string): RequestStatus => {
+  if (["pending", "scheduled", "ended", "completed", "rejected"].includes(status)) {
+    return status as RequestStatus;
+  }
+  if (status === "approved") return "scheduled";
+  // Add more mappings if needed
+  return "pending";
+};
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [requests, setRequests] = useState<MeetingRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Load initial data and check user access
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         await checkUserAccess();
-        // Load other initial data here
-        setRequests([]); // Replace with actual data loading
+        // Load meeting requests from storage
+        let loadedRequests = await txtStore.getStrictSP("meetingRequests");
+        if (!loadedRequests) loadedRequests = [];
+        // Fix legacy/invalid statuses
+        const cleanedRequests = loadedRequests.map(r => ({ ...r, status: fixStatus(r.status) }));
+        // If any were fixed, save back to storage
+        const needsSave = cleanedRequests.some((r, i) => r.status !== loadedRequests[i].status);
+        if (needsSave) {
+          await txtStore.updateStrictSP("meetingRequests", cleanedRequests);
+        }
+        setRequests(cleanedRequests);
       } catch (error) {
         console.error("Error loading initial data:", error);
       } finally {
@@ -58,10 +88,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
     loadInitialData();
   }, []);
 
+  // Automatically move scheduled requests to 'ended' after meeting date
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRequests(prev => prev.map(req => {
+        // If meeting time has passed and not completed/rejected, set to 'ended'
+        if (
+          req.status === "scheduled" &&
+          req.scheduledTime &&
+          new Date(req.scheduledTime) < new Date()
+        ) {
+          return { ...req, status: "ended" };
+        }
+        // If already ended, check if 2 days passed and no summary file, set warning
+        if (
+          req.status === "ended" &&
+          req.scheduledTime &&
+          !req.summaryReminderSent &&
+          !req.meetingSummaryFile &&
+          (new Date().getTime() - new Date(req.scheduledTime).getTime() > 2 * 24 * 60 * 60 * 1000)
+        ) {
+          return { ...req, summaryReminderSent: true };
+        }
+        return req;
+      }));
+    }, 60 * 1000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
+
   const checkUserAccess = async () => {
     setIsLoading(true);
     try {
-      const cardId = getCurrentUserCardId();
+      const cardId = "DEV-12345"; // TODO: Replace with real card ID logic if needed
       const users = await txtStore.getStrictSP("users");
       
       const user = users.find((u: User) => u.cardId === cardId);
@@ -158,7 +216,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       toast({
         title: "הסטטוס עודכן",
-        description: `הבקשה ${status === "approved" ? "אושרה" : status === "rejected" ? "נדחתה" : "עודכנה"}`,
+        description: `הבקשה ${status === "rejected" ? "נדחתה" : status === "scheduled" ? "תוזמנה" : status === "ended" ? "הסתיימה" : status === "completed" ? "הושלמה" : "עודכנה"}`,
       });
     } catch (error) {
       toast({
@@ -172,18 +230,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const scheduleMeeting = async (requestId: string, scheduledTime: Date) => {
-    setIsLoading(true);
+  const addNotification = (notification: Omit<Notification, "id" | "createdAt" | "read">) => {
+    setNotifications((prev) => [
+      {
+        ...notification,
+        id: `notif-${Date.now()}`,
+        createdAt: new Date(),
+        read: false,
+      },
+      ...prev,
+    ]);
+  };
 
+  const scheduleMeeting = async (requestId: string, scheduledTime: Date, adminNotes?: string) => {
+    setIsLoading(true);
     try {
-      setRequests(prev => 
-        prev.map(req => 
-          req.id === requestId 
-            ? { ...req, scheduledTime, status: "scheduled" } 
+      setRequests(prev =>
+        prev.map(req =>
+          req.id === requestId
+            ? { ...req, scheduledTime, status: "scheduled", adminNotes }
             : req
         )
       );
-
+      // Notify user
+      if (user) {
+        addNotification({
+          userId: user.id,
+          message: "הפגישה שלך תוזמנה. בדוק את פרטי הבקשה.",
+        });
+      }
       toast({
         title: "הפגישה נקבעה",
         description: "הפגישה נקבעה בהצלחה",
@@ -200,7 +275,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addMeetingSummary = async (requestId: string, file: File, description: string) => {
+  const addMeetingSummary = async (requestId: string, file: File, description?: string) => {
     setIsLoading(true);
 
     try {
@@ -209,7 +284,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setRequests(prev => 
         prev.map(req => 
           req.id === requestId 
-            ? { ...req, summary: { fileUrl: mockFileUrl, description } } 
+            ? { ...req, summary: { fileUrl: mockFileUrl, ...(description ? { description } : {}) }, status: "completed" } 
             : req
         )
       );
@@ -242,6 +317,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateRequestStatus,
     scheduleMeeting,
     addMeetingSummary,
+    notifications,
+    addNotification,
     devLoginAsAdmin: process.env.NODE_ENV === "development" ? devLoginAsAdmin : undefined,
   };
 

@@ -14,7 +14,7 @@ interface AccessRequest {
   email: string;
   department: string;
   reason: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "scheduled" | "ended" | "completed" | "rejected";
   createdAt: Date;
   cardId: string;
 }
@@ -63,18 +63,18 @@ export default function AccessRequestsPage() {
 
       // Update request status
       const updatedRequests = requests.map(r =>
-        r.id === requestId ? { ...r, status: "approved" } : r
+        r.id === requestId ? { ...r, status: "scheduled" } : r
       );
 
       // Save changes
       await txtStore.updateStrictSP("accessRequests", updatedRequests);
       await txtStore.appendStrictSP("users", newUser);
 
-      setRequests(updatedRequests);
+      setRequests(updatedRequests.map(r => ({ ...r, status: fixStatus(r.status) })));
 
       toast({
         title: "בקשה אושרה",
-        description: "המשתמש נוסף למערכת בהצלחה",
+        description: "הבקשה תוזמנה והמשתמש נוסף למערכת בהצלחה",
       });
     } catch (error) {
       toast({
@@ -92,7 +92,7 @@ export default function AccessRequestsPage() {
       );
 
       await txtStore.updateStrictSP("accessRequests", updatedRequests);
-      setRequests(updatedRequests);
+      setRequests(updatedRequests.map(r => ({ ...r, status: fixStatus(r.status) })));
 
       toast({
         title: "בקשה נדחתה",
@@ -111,8 +111,12 @@ export default function AccessRequestsPage() {
     switch (status) {
       case "pending":
         return "secondary";
-      case "approved":
-        return "default";
+      case "scheduled":
+        return "secondary";
+      case "ended":
+        return "secondary";
+      case "completed":
+        return "secondary";
       case "rejected":
         return "destructive";
       default:
@@ -124,13 +128,24 @@ export default function AccessRequestsPage() {
     switch (status) {
       case "pending":
         return "ממתין";
-      case "approved":
-        return "אושר";
+      case "scheduled":
+        return "מתוכננת";
+      case "ended":
+        return "הסתיימה";
+      case "completed":
+        return "הושלמה";
       case "rejected":
         return "נדחה";
       default:
         return status;
     }
+  };
+
+  const fixStatus = (status: string): AccessRequest["status"] => {
+    if (["pending", "scheduled", "ended", "completed", "rejected"].includes(status)) {
+      return status as AccessRequest["status"];
+    }
+    return "pending";
   };
 
   if (isLoading) {

@@ -1,16 +1,18 @@
-
 import { useApp } from "@/contexts/AppContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateRequestForm } from "@/components/user/CreateRequestForm";
 import { RequestList } from "@/components/user/RequestList";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function MeetingRequests() {
   const { requests } = useApp();
+  const [open, setOpen] = useState(false);
   
   // Group requests by status
   const pendingRequests = requests.filter(r => r.status === "pending");
-  const approvedRequests = requests.filter(r => r.status === "approved");
   const scheduledRequests = requests.filter(r => r.status === "scheduled");
   const completedRequests = requests.filter(r => r.status === "completed");
   const rejectedRequests = requests.filter(r => r.status === "rejected");
@@ -28,14 +30,24 @@ export default function MeetingRequests() {
         <TabsList>
           <TabsTrigger value="all">כל הבקשות</TabsTrigger>
           <TabsTrigger value="pending">ממתינות ({pendingRequests.length})</TabsTrigger>
-          <TabsTrigger value="approved">מאושרות ({approvedRequests.length})</TabsTrigger>
           <TabsTrigger value="scheduled">מתוזמנות ({scheduledRequests.length})</TabsTrigger>
           <TabsTrigger value="completed">הושלמו ({completedRequests.length})</TabsTrigger>
           <TabsTrigger value="rejected">נדחו ({rejectedRequests.length})</TabsTrigger>
-          <TabsTrigger value="create">בקשה חדשה</TabsTrigger>
         </TabsList>
         
         <TabsContent value="all">
+          <div className="flex justify-end mb-4">
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => setOpen(true)}>
+                  צור בקשה חדשה
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <CreateRequestForm onRequestCreated={() => setOpen(false)} />
+              </DialogContent>
+            </Dialog>
+          </div>
           <Card>
             <CardHeader>
               <CardTitle>כל בקשות הפגישה</CardTitle>
@@ -55,18 +67,6 @@ export default function MeetingRequests() {
             </CardHeader>
             <CardContent>
               <RequestList requests={pendingRequests} showFilters={false} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="approved">
-          <Card>
-            <CardHeader>
-              <CardTitle>בקשות מאושרות</CardTitle>
-              <CardDescription>בקשות שאושרו וממתינות לתזמון</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RequestList requests={approvedRequests} showFilters={false} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -103,18 +103,6 @@ export default function MeetingRequests() {
             </CardHeader>
             <CardContent>
               <RequestList requests={rejectedRequests} showFilters={false} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="create">
-          <Card>
-            <CardHeader>
-              <CardTitle>צור בקשת פגישה חדשה</CardTitle>
-              <CardDescription>מלא את הטופס כדי להגיש בקשת פגישה חדשה</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CreateRequestForm />
             </CardContent>
           </Card>
         </TabsContent>

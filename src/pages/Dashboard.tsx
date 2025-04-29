@@ -4,19 +4,22 @@ import { useApp } from "@/contexts/AppContext";
 import { CreateRequestForm } from "@/components/user/CreateRequestForm";
 import { RequestList } from "@/components/user/RequestList";
 import { useState } from "react";
-import { Calendar, Clock, CheckCircle, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, CheckCircle, AlertTriangle, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
-  const { requests, currentUser } = useApp();
+  const { requests, currentUser, notifications, user } = useApp();
   const [activeTab, setActiveTab] = useState("overview");
   const [requestTypeTab, setRequestTypeTab] = useState("all");
+  const [open, setOpen] = useState(false);
   
   // Group requests by status
   const pendingRequests = requests.filter(r => r.status === "pending");
   const scheduledRequests = requests.filter(r => r.status === "scheduled");
+  const endedRequests = requests.filter(r => r.status === "ended");
   const completedRequests = requests.filter(r => r.status === "completed");
-  const approvedRequests = requests.filter(r => r.status === "approved");
   const rejectedRequests = requests.filter(r => r.status === "rejected");
   
   // Find upcoming deadlines
@@ -70,8 +73,16 @@ export default function Dashboard() {
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview">סקירה כללית</TabsTrigger>
-          <TabsTrigger value="create">יצירת בקשה</TabsTrigger>
           <TabsTrigger value="view">צפייה בבקשות</TabsTrigger>
+          <TabsTrigger value="notifications">
+            <Bell className="inline h-4 w-4 ml-1" />
+            התראות
+            {notifications.filter(n => !n.read && n.userId === user?.id).length > 0 && (
+              <span className="ml-2 bg-red-500 text-white rounded-full px-2 text-xs">
+                {notifications.filter(n => !n.read && n.userId === user?.id).length}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
@@ -174,52 +185,84 @@ export default function Dashboard() {
           </div>
         </TabsContent>
         
-        <TabsContent value="create">
-          <Card>
-            <CardHeader>
-              <CardTitle>יצירת בקשת פגישה חדשה</CardTitle>
-              <CardDescription>
-                מלא את הטופס כדי להגיש בקשת פגישה חדשה
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CreateRequestForm 
-                onRequestCreated={() => setActiveTab("overview")} 
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
         <TabsContent value="view">
           <Card>
-            <CardHeader>
-              <CardTitle>בקשות הפגישה שלך</CardTitle>
-              <CardDescription>
-                צפה ועקוב אחר כל הבקשות שהגשת
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>בקשות הפגישה שלך</CardTitle>
+                <CardDescription>צפה ועקוב אחר כל הבקשות שהגשת</CardDescription>
+              </div>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => setOpen(true)}>
+                    צור בקשה חדשה
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <CreateRequestForm onRequestCreated={() => setOpen(false)} />
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                <Tabs defaultValue="all" value={requestTypeTab} onValueChange={setRequestTypeTab}>
-                  <TabsList>
-                    <TabsTrigger value="all">כל הבקשות</TabsTrigger>
-                    <TabsTrigger value="pending">ממתינות ({pendingRequests.length})</TabsTrigger>
-                    <TabsTrigger value="approved">מאושרות ({approvedRequests.length})</TabsTrigger>
-                    <TabsTrigger value="scheduled">מתוזמנות ({scheduledRequests.length})</TabsTrigger>
-                    <TabsTrigger value="completed">הושלמו ({completedRequests.length})</TabsTrigger>
-                    <TabsTrigger value="rejected">נדחו ({rejectedRequests.length})</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+                <div className="flex-1">
+                  <Tabs defaultValue="all" value={requestTypeTab} onValueChange={setRequestTypeTab}>
+                    <TabsList>
+                      <TabsTrigger value="all">כל הבקשות</TabsTrigger>
+                      <TabsTrigger value="pending">ממתינות ({pendingRequests.length})</TabsTrigger>
+                      <TabsTrigger value="scheduled">מתוזמנות ({scheduledRequests.length})</TabsTrigger>
+                      <TabsTrigger value="ended">הסתיימו (ממתין לסיכום) ({endedRequests.length})</TabsTrigger>
+                      <TabsTrigger value="completed">הושלמו ({completedRequests.length})</TabsTrigger>
+                      <TabsTrigger value="rejected">נדחו ({rejectedRequests.length})</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+                <div className="flex-1 flex justify-end">
+                  <div className="w-full max-w-xs">
+                    {/* Search input is inside RequestList, so move it here if needed. Otherwise, style the container for alignment. */}
+                  </div>
+                </div>
               </div>
               <RequestList requests={
                 requestTypeTab === "all" ? requests :
                 requestTypeTab === "pending" ? pendingRequests :
-                requestTypeTab === "approved" ? approvedRequests :
                 requestTypeTab === "scheduled" ? scheduledRequests :
+                requestTypeTab === "ended" ? endedRequests :
                 requestTypeTab === "completed" ? completedRequests :
                 requestTypeTab === "rejected" ? rejectedRequests :
                 requests
               } showFilters={false} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>התראות</CardTitle>
+              <CardDescription>כל ההתראות האחרונות שלך</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {notifications.filter(n => n.userId === user?.id).length === 0 ? (
+                <p className="text-muted-foreground">אין התראות חדשות.</p>
+              ) : (
+                <ul className="space-y-4">
+                  {notifications
+                    .filter(n => n.userId === user?.id)
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .map((notif) => (
+                      <li key={notif.id} className={notif.read ? "opacity-70" : "font-bold bg-blue-50 rounded p-2"}>
+                        <div className="flex items-center gap-2">
+                          <Bell className="h-4 w-4 text-blue-400" />
+                          <span>{notif.message}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {new Date(notif.createdAt).toLocaleString()}
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
