@@ -188,10 +188,6 @@ export default function Dashboard() {
         <TabsContent value="view">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>בקשות הפגישה שלך</CardTitle>
-                <CardDescription>צפה ועקוב אחר כל הבקשות שהגשת</CardDescription>
-              </div>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={() => setOpen(true)}>
@@ -202,6 +198,10 @@ export default function Dashboard() {
                   <CreateRequestForm onRequestCreated={() => setOpen(false)} />
                 </DialogContent>
               </Dialog>
+              <div>
+                <CardTitle>בקשות הפגישה שלך</CardTitle>
+                <CardDescription>צפה ועקוב אחר כל הבקשות שהגשת</CardDescription>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
