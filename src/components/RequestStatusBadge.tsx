@@ -32,7 +32,7 @@ export function RequestStatusBadge({ status, className }: RequestStatusBadgeProp
     ended: {
       label: "Ended",
       variant: "outline",
-      className: "bg-gray-100 text-status-ended border-status-ended"
+      className: "bg-orange-100 text-orange-800 border-orange-800"
     }
   };
 

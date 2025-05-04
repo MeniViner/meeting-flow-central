@@ -240,15 +240,9 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
           {request.meetingSummaryFile && (
             <div>
               <h4 className="text-sm font-medium mb-1">קובץ סיכום פגישה</h4>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-                onClick={() => window.open(request.meetingSummaryFile.url, '_blank')}
-              >
-                <Download className="h-4 w-4" />
-                <span>הורד קובץ</span>
-              </Button>
+              <div className="text-sm text-muted-foreground">
+                {request.meetingSummaryFile.name}
+              </div>
             </div>
           )}
         </>

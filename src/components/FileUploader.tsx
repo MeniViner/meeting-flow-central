@@ -1,4 +1,3 @@
-
 import { ChangeEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Document } from "@/types";
@@ -24,7 +23,7 @@ export function FileUploader({
         id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         name: file.name,
         type: file.type,
-        url: URL.createObjectURL(file),
+        url: file.name,
         uploadedAt: new Date()
       }));
       
@@ -59,7 +58,7 @@ export function FileUploader({
           <div className="flex flex-col items-center justify-center pt-5 pb-6">
             <Upload className="w-8 h-8 mb-3 text-muted-foreground" />
             <p className="mb-2 text-sm text-foreground/80">
-              <span className="font-semibold">Click to upload</span> or drag and drop
+              <span className="font-semibold">לחץ להעלאה</span> או גרור לכאן קבצים
             </p>
             <p className="text-xs text-muted-foreground">
               PDF, Word, Excel, PowerPoint, Images
@@ -77,12 +76,11 @@ export function FileUploader({
 
       {files.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium">Uploaded Files</h4>
+          <h4 className="text-sm font-medium">קבצים שהועלו</h4>
           <ul className="space-y-2">
             {files.map((file) => (
               <li key={file.id} className="flex items-center justify-between p-2 bg-background rounded-md border">
                 <div className="flex items-center space-x-2">
-                  <span className="text-lg">{getFileIcon(file.type)}</span>
                   <span className="text-sm truncate max-w-[200px]">{file.name}</span>
                 </div>
                 <Button
@@ -93,7 +91,7 @@ export function FileUploader({
                   onClick={() => removeFile(file.id)}
                 >
                   <X className="h-4 w-4" />
-                  <span className="sr-only">Remove file</span>
+                  <span className="sr-only">הסר קובץ</span>
                 </Button>
               </li>
             ))}

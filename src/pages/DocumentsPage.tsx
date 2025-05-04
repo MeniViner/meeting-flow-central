@@ -1,4 +1,3 @@
-
 import { useApp } from "@/contexts/AppContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -60,7 +59,7 @@ export default function DocumentsPage() {
         </p>
       </div>
       
-      <Tabs defaultValue="all">
+      <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
           {documentTypes.map(type => (
             <TabsTrigger key={type.id} value={type.id}>
@@ -93,7 +92,7 @@ export default function DocumentsPage() {
                   </p>
                 )}
                 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {(type.id === "all" ? allDocuments : documentsByType[type.id] || []).map((doc) => {
                     const docType = type.id === "all" 
                       ? (doc.type.includes("pdf") 
@@ -133,15 +132,15 @@ export default function DocumentsPage() {
                           )} />
                         </div>
                         <CardContent className="p-4">
-                          <h3 className="font-medium truncate" title={doc.name}>
-                            {doc.name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground truncate mt-1">
-                            מקור: {doc.requestTitle}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            הועלה: <DateDisplay date={doc.uploadedAt} />
-                          </p>
+                          <div className="space-y-2">
+                            <h3 className="font-medium truncate" title={doc.name}>
+                              {doc.name}
+                            </h3>
+                            <div className="text-sm text-muted-foreground">
+                              <p className="truncate">מקור: {doc.requestTitle}</p>
+                              <p className="text-xs mt-1">הועלה: <DateDisplay date={doc.uploadedAt} /></p>
+                            </div>
+                          </div>
                         </CardContent>
                       </Card>
                     );

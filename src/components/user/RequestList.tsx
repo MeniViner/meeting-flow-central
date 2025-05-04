@@ -5,25 +5,30 @@ import { DateDisplay } from "@/components/DateDisplay";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, FileText, Calendar, Clock } from "lucide-react";
+import { Search, FileText, Calendar, Clock, LayoutGrid, LayoutList, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { RequestStepper } from "@/components/RequestStepper";
 import { useApp } from "@/contexts/AppContext";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area"
+
 
 interface RequestListProps {
   requests: MeetingRequest[];
   showFilters?: boolean;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
 }
 
-export function RequestList({ requests, showFilters = true }: RequestListProps) {
+export function RequestList({ requests, showFilters = true, searchTerm, setSearchTerm }: RequestListProps) {
   const { addMeetingSummary } = useApp();
   const [selectedRequest, setSelectedRequest] = useState<MeetingRequest | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">("all");
   const [meetingSummaryFile, setMeetingSummaryFile] = useState<File | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   
   // Filter requests
   const filteredRequests = requests.filter(request => {
@@ -37,18 +42,24 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-row items-center justify-between gap-4 mb-4">
-        {/* Tabs will be rendered by the parent, so nothing here */}
-        <div className="relative flex-1 max-w-xs ml-auto">
-          <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            dir="rtl"
-            placeholder="חפש בקשות..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      {/* Toggle view mode */}
+      <div className="flex absolute  top-[230px] gap-1 border rounded-md w-fit mb-2">
+        <Button
+          variant={viewMode === "grid" ? "secondary" : "ghost"}
+          size="icon"
+          onClick={() => setViewMode("grid")}
+          className="rounded-r-none"
+        >
+          <LayoutGrid className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={viewMode === "table" ? "secondary" : "ghost"}
+          size="icon"
+          onClick={() => setViewMode("table")}
+          className="rounded-l-none"
+        >
+          <LayoutList className="h-4 w-4" />
+        </Button>
       </div>
 
       {showFilters && (
@@ -72,59 +83,139 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
       )}
 
       {filteredRequests.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">לא נמצאו בקשות פגישה.</p>
+
+
+        <div className="rounded-md border flex items-center justify-center min-h-[200px] px-4" >
+          <div className="flex flex-col items-center justify-center text-muted-foreground text-center py-8">
+            <Calendar className="w-10 h-10 mb-2 text-gray-400" />
+            <p className="text-lg font-medium">לא נמצאו בקשות פגישה</p>
+            <p className="text-sm mt-1">נסה לשנות את הסינון או ליצור בקשה חדשה</p>
+            {/* <Button className="mt-4" onClick={() => setOpen(true)}>
+              צור בקשה חדשה
+            </Button> */}
+          </div>
+        </div>
+
+      ) : viewMode === "table" ? (
+        <div className="rounded-md border" dir="rtl">
+          <ScrollArea className="h-[500px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>כותרת</TableHead>
+                  <TableHead>סטטוס</TableHead>
+                  <TableHead>תאריך יצירה</TableHead>
+                  <TableHead>תאריך יעד</TableHead>
+                  <TableHead>מסמכים</TableHead>
+                  <TableHead>פעולות</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRequests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell className="font-medium">{request.title}</TableCell>
+                    <TableCell><RequestStatusBadge status={request.status} /></TableCell>
+                    <TableCell><DateDisplay date={request.createdAt} /></TableCell>
+                    <TableCell><DateDisplay date={request.deadline} /></TableCell>
+                    <TableCell>
+                      {request.documents.length > 0 ? (
+                        <Badge variant="secondary">{request.documents.length}</Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">אין</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedRequest(request)}
+                      >
+                        הצג פרטים
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredRequests.map((request) => (
-            <Card key={request.id} className="overflow-hidden">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg truncate">{request.title}</CardTitle>
-                  <RequestStatusBadge status={request.status} />
-                </div>
-                <CardDescription className="flex items-center mt-1">
-                  <Calendar className="h-3.5 w-3.5 ml-1" />
-                  <DateDisplay date={request.createdAt} className="text-xs" />
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="space-y-2">
-                  {request.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {request.description}
-                    </p>
-                  )}
-                  
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5 ml-1" />
-                    <span>תאריך יעד: </span>
-                    <DateDisplay date={request.deadline} className="mr-1" />
-                  </div>
-                  
-                  {request.documents.length > 0 && (
-                    <div className="flex items-center mt-1">
-                      <FileText className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
-                      <Badge variant="secondary" className="text-xs">
-                        {request.documents.length} {request.documents.length === 1 ? "מסמך" : "מסמכים"}
-                      </Badge>
+        <div className="rounded-md border" >
+          <ScrollArea className="h-[500px]" dir="rtl">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
+              {filteredRequests.map((request) => (
+                <Card key={request.id} className="overflow-hidden" >
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg truncate">{request.title}</CardTitle>
+                      <RequestStatusBadge status={request.status} />
                     </div>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setSelectedRequest(request)}
-                >
-                  הצג פרטים
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                    <CardDescription className="flex items-center mt-1">
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5 mr-1" />
+                        <span className="mr-1" >תאריך הגשה: </span>
+                        <DateDisplay date={request.createdAt}  />
+                      </div>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <div className="space-y-2">
+                      {request.description && (
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Info className="h-3.5 w-3.5 mr-1" />
+                          <span className="mr-1">תיאור: </span>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {request.description}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {request.documents.length > 0 && (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            <FileText className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
+                            <span className="mr-1">מסמכים: </span>
+                          </div>
+                          <div className="flex flex-col gap-1 pl-5">
+                            {request.documents.map((doc, index) => (
+                              <span key={index} className="text-xs text-muted-foreground truncate mr-1">
+                                {doc.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5 mr-1" />
+                        <span className="mr-1">תאריך יעד: </span>
+                        <DateDisplay date={request.deadline} className="mr-1" />
+                      </div>
+                      
+                      {request.documents.length > 0 && (
+                        <div className="flex items-center mt-1">
+                          <FileText className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
+                          <Badge variant="secondary" className="text-xs">
+                            {request.documents.length} {request.documents.length === 1 ? "מסמך" : "מסמכים"}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => setSelectedRequest(request)}
+                    >
+                      הצג פרטים
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
         </div>
       )}
 
@@ -198,14 +289,9 @@ export function RequestList({ requests, showFilters = true }: RequestListProps) 
               {selectedRequest.meetingSummaryFile && (
                 <div>
                   <h4 className="text-sm font-medium mb-1">קובץ סיכום פגישה</h4>
-                  <a
-                    href={selectedRequest.meetingSummaryFile.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline"
-                  >
-                    {selectedRequest.meetingSummaryFile.name || 'הורד קובץ'}
-                  </a>
+                  <div className="text-sm text-muted-foreground">
+                    {selectedRequest.meetingSummaryFile.name}
+                  </div>
                 </div>
               )}
               

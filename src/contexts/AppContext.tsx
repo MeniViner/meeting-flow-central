@@ -182,6 +182,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         requesterName: user.name,
         status: "pending",
         createdAt: new Date(),
+        documents: requestData.documents.map(doc => ({
+          ...doc,
+          url: doc.name // Store only the file name
+        }))
       };
 
       setRequests(prev => [newRequest, ...prev]);
@@ -279,12 +283,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     try {
-      const mockFileUrl = "https://example.com/meeting-summary.pdf";
+      // Store only the file name
+      const fileName = file.name;
       
       setRequests(prev => 
         prev.map(req => 
           req.id === requestId 
-            ? { ...req, summary: { fileUrl: mockFileUrl, ...(description ? { description } : {}) }, status: "completed" } 
+            ? { 
+                ...req, 
+                meetingSummaryFile: { 
+                  name: fileName,
+                  url: fileName,
+                  type: file.type,
+                  uploadedAt: new Date()
+                }, 
+                status: "completed" 
+              } 
             : req
         )
       );

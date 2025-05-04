@@ -4,16 +4,22 @@ import { useApp } from "@/contexts/AppContext";
 import { CreateRequestForm } from "@/components/user/CreateRequestForm";
 import { RequestList } from "@/components/user/RequestList";
 import { useState } from "react";
-import { Calendar, Clock, CheckCircle, AlertTriangle, Bell } from "lucide-react";
+import { Calendar, Clock, CheckCircle, AlertTriangle, Bell, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { BellOff } from "lucide-react"
+import { motion } from "framer-motion"
+import { ScrollArea } from "@/components/ui/scroll-area"
+
 
 export default function Dashboard() {
   const { requests, currentUser, notifications, user } = useApp();
   const [activeTab, setActiveTab] = useState("overview");
   const [requestTypeTab, setRequestTypeTab] = useState("all");
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   
   // Group requests by status
   const pendingRequests = requests.filter(r => r.status === "pending");
@@ -71,12 +77,12 @@ export default function Dashboard() {
       </div>
 
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <TabsList dir="rtl">
+          <TabsTrigger value="view">הבקשות שלי</TabsTrigger>
           <TabsTrigger value="overview">סקירה כללית</TabsTrigger>
-          <TabsTrigger value="view">צפייה בבקשות</TabsTrigger>
           <TabsTrigger value="notifications">
-            <Bell className="inline h-4 w-4 ml-1" />
             התראות
+            <Bell className="inline h-4 w-4 mr-5" />
             {notifications.filter(n => !n.read && n.userId === user?.id).length > 0 && (
               <span className="ml-2 bg-red-500 text-white rounded-full px-2 text-xs">
                 {notifications.filter(n => !n.read && n.userId === user?.id).length}
@@ -136,7 +142,7 @@ export default function Dashboard() {
                             "h-4 w-4",
                             new Date(request.deadline).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000
                               ? "text-red-500"
-                              : "text-yellow-500"
+                              : "text-green-500"
                           )} 
                         />
                       </li>
@@ -186,7 +192,7 @@ export default function Dashboard() {
         </TabsContent>
         
         <TabsContent value="view">
-          <Card>
+          <Card className="min-h-96">
             <CardHeader className="flex flex-row items-center justify-between">
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
@@ -204,34 +210,44 @@ export default function Dashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                <div className="flex-1">
+              <div className="flex flex-row gap-4 mb-4 items-center w-full">
+                <div className="flex-1 min-w-0">
                   <Tabs defaultValue="all" value={requestTypeTab} onValueChange={setRequestTypeTab}>
-                    <TabsList>
+                    <TabsList dir="rtl">
                       <TabsTrigger value="all">כל הבקשות</TabsTrigger>
                       <TabsTrigger value="pending">ממתינות ({pendingRequests.length})</TabsTrigger>
                       <TabsTrigger value="scheduled">מתוזמנות ({scheduledRequests.length})</TabsTrigger>
-                      <TabsTrigger value="ended">הסתיימו (ממתין לסיכום) ({endedRequests.length})</TabsTrigger>
+                      <TabsTrigger value="ended">הסתיימו ({endedRequests.length})</TabsTrigger>
                       <TabsTrigger value="completed">הושלמו ({completedRequests.length})</TabsTrigger>
                       <TabsTrigger value="rejected">נדחו ({rejectedRequests.length})</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
-                <div className="flex-1 flex justify-end">
-                  <div className="w-full max-w-xs">
-                    {/* Search input is inside RequestList, so move it here if needed. Otherwise, style the container for alignment. */}
-                  </div>
+                <div className="w-full max-w-40 relative">
+                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    dir="rtl"
+                    placeholder="חפש בקשות..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
               </div>
-              <RequestList requests={
-                requestTypeTab === "all" ? requests :
-                requestTypeTab === "pending" ? pendingRequests :
-                requestTypeTab === "scheduled" ? scheduledRequests :
-                requestTypeTab === "ended" ? endedRequests :
-                requestTypeTab === "completed" ? completedRequests :
-                requestTypeTab === "rejected" ? rejectedRequests :
-                requests
-              } showFilters={false} />
+              <RequestList
+                requests={
+                  requestTypeTab === "all" ? requests :
+                  requestTypeTab === "pending" ? pendingRequests :
+                  requestTypeTab === "scheduled" ? scheduledRequests :
+                  requestTypeTab === "ended" ? endedRequests :
+                  requestTypeTab === "completed" ? completedRequests :
+                  requestTypeTab === "rejected" ? rejectedRequests :
+                  requests
+                }
+                showFilters={false}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -244,7 +260,19 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               {notifications.filter(n => n.userId === user?.id).length === 0 ? (
-                <p className="text-muted-foreground">אין התראות חדשות.</p>
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center" dir="rtl">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center"
+                  >
+                    <BellOff className="w-10 h-10 mb-2 text-gray-400" />
+                    <p className="text-lg font-medium">אין התראות חדשות</p>
+                    <p className="text-sm mt-1">הכול מעודכן. תחזור לבדוק מאוחר יותר ✨</p>
+                  </motion.div>
+                </div>
+
               ) : (
                 <ul className="space-y-4">
                   {notifications
