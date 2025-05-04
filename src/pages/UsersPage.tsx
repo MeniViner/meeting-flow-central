@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, Trash2, Plus, Filter } from "lucide-react";
+import { Search, Edit, Trash2, Plus, Filter, Users } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/components/ui/use-toast";
 import { txtStore } from "@/services/txtStore";
@@ -310,73 +310,81 @@ export default function UsersPage() {
           </div>
 
           <div className="min-h-[350px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>שם</TableHead>
-                  <TableHead>אימייל</TableHead>
-                  <TableHead>מחלקה</TableHead>
-                  <TableHead>מספר כרטיס</TableHead>
-                  <TableHead>תפקיד</TableHead>
-                  <TableHead>סטטוס</TableHead>
-                  <TableHead>כניסה אחרונה</TableHead>
-                  <TableHead>פעולות</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.department}</TableCell>
-                    <TableCell>{user.cardId}</TableCell>
-                    <TableCell>
-                      <Select
-                        value={user.role}
-                        onValueChange={(value) => handleEditUser(user.id, { role: value as UserRole })}
-                      >
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue>
-                            <Badge variant={getRoleBadgeVariant(user.role)}>
-                              {getRoleLabel(user.role)}
-                            </Badge>
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">מנהל</SelectItem>
-                          <SelectItem value="editor">עורך</SelectItem>
-                          <SelectItem value="viewer">צופה</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.status === "active" ? "default" : "destructive"}>
-                        {user.status === "active" ? "פעיל" : "לא פעיל"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{user.lastLogin}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditUser(user.id, { status: user.status === "active" ? "inactive" : "active" })}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            {filteredUsers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 col-span-full text-muted-foreground text-center">
+                <Users className="w-10 h-10 mb-2 text-gray-400" />
+                <p className="text-lg font-medium">לא נמצאו משתמשים</p>
+                <p className="text-sm mt-1">נסה לשנות את הסינון או להוסיף משתמש חדש</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>שם</TableHead>
+                    <TableHead>אימייל</TableHead>
+                    <TableHead>מחלקה</TableHead>
+                    <TableHead>מספר כרטיס</TableHead>
+                    <TableHead>תפקיד</TableHead>
+                    <TableHead>סטטוס</TableHead>
+                    <TableHead>כניסה אחרונה</TableHead>
+                    <TableHead>פעולות</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.department}</TableCell>
+                      <TableCell>{user.cardId}</TableCell>
+                      <TableCell>
+                        <Select
+                          value={user.role}
+                          onValueChange={(value) => handleEditUser(user.id, { role: value as UserRole })}
+                        >
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue>
+                              <Badge variant={getRoleBadgeVariant(user.role)}>
+                                {getRoleLabel(user.role)}
+                              </Badge>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">מנהל</SelectItem>
+                            <SelectItem value="editor">עורך</SelectItem>
+                            <SelectItem value="viewer">צופה</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.status === "active" ? "default" : "destructive"}>
+                          {user.status === "active" ? "פעיל" : "לא פעיל"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{user.lastLogin}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditUser(user.id, { status: user.status === "active" ? "inactive" : "active" })}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </CardContent>
       </Card>

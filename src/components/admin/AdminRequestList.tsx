@@ -138,7 +138,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
 
           {viewMode === "list" ? (
             <div className="rounded-md border">
-              <ScrollArea className="h-[500px]">
+              <ScrollArea className="min-h-[250px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -202,7 +202,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
             </div>
           ) : (
             <div className="rounded-md border">
-              <ScrollArea className="h-[500px]">
+              <ScrollArea className="min-h-[250px]">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
                   {sortedRequests.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 col-span-full text-muted-foreground text-center">

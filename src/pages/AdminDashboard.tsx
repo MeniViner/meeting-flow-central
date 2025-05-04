@@ -174,7 +174,7 @@ export default function AdminDashboard() {
             </Card>
           </div>
           
-          <Card>
+          <Card dir="rtl">
             <CardHeader>
               <CardTitle>בקשות אחרונות</CardTitle>
             </CardHeader>

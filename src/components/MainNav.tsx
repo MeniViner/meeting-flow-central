@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import WorkspaceSelector from "./WorkspaceSelector";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 const navItems = [
   {
@@ -66,6 +67,7 @@ const navItems = [
 export default function MainNav({ className }: { className?: string }) {
   const { pathname } = useLocation();
   const { user } = useApp();
+  const { currentWorkspace } = useWorkspace();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (!user) return null;
@@ -101,9 +103,14 @@ export default function MainNav({ className }: { className?: string }) {
       >
         <div className="flex flex-col h-full">
           <div className="p-4 border-b bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900">
-            <h2 className="font-semibold text-lg">ניהול משרד</h2>
+            <h2 className="font-semibold text-lg">
+              {currentWorkspace?.shortName || "ניהול משרד"}
+            </h2>
+            <div className="text-xs text-muted-foreground">
+              {currentWorkspace?.longName}
+            </div>
             {process.env.NODE_ENV === "development" && (
-              <p className="text-xs text-muted-foreground">מצב פיתוח - גישה מלאה</p>
+              <p className="text-xs text-muted-foreground text-yellow-900">מצב פיתוח - גישה מלאה</p>
             )}
           </div>
 
