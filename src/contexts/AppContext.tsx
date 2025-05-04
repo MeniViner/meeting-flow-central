@@ -3,6 +3,7 @@ import { User, MeetingRequest, RequestStatus, Document } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { txtStore } from "@/services/txtStore";
 import { useNavigate } from "react-router-dom";
+import { WorkspaceProvider } from "./WorkspaceContext";
 
 interface Notification {
   id: string;
@@ -336,7 +337,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     devLoginAsAdmin: process.env.NODE_ENV === "development" ? devLoginAsAdmin : undefined,
   };
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return (
+    <WorkspaceProvider>
+      <AppContext.Provider value={value}>{children}</AppContext.Provider>
+    </WorkspaceProvider>
+  );
 }
 
 export function useApp() {

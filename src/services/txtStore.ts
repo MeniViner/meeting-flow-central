@@ -1,13 +1,16 @@
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+
 interface StorageData {
   [key: string]: any;
 }
 
-class TxtStore {
+export class TxtStore {
   private storage: StorageData = {};
 
-  async getStrictSP(key: string): Promise<any> {
+  async getStrictSP<T>(key: string, workspaceId?: string): Promise<T | null> {
     try {
-      const data = localStorage.getItem(key);
+      const workspaceKey = workspaceId ? `${workspaceId}:${key}` : key;
+      const data = localStorage.getItem(workspaceKey);
       return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error(`Error getting data for key ${key}:`, error);
@@ -15,11 +18,23 @@ class TxtStore {
     }
   }
 
-  async updateStrictSP(key: string, value: any): Promise<void> {
+  async updateStrictSP(key: string, value: any, workspaceId?: string): Promise<void> {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      const workspaceKey = workspaceId ? `${workspaceId}:${key}` : key;
+      localStorage.setItem(workspaceKey, JSON.stringify(value));
     } catch (error) {
       console.error(`Error updating data for key ${key}:`, error);
+      throw error;
+    }
+  }
+
+  async appendStrictSP<T>(key: string, data: T): Promise<void> {
+    try {
+      const currentData = await this.getStrictSP<T[]>(key) || [];
+      const updatedData = [...currentData, data];
+      await this.updateStrictSP(key, updatedData);
+    } catch (error) {
+      console.error(`Error appending data for key ${key}:`, error);
       throw error;
     }
   }

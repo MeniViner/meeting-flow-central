@@ -309,7 +309,7 @@ export default function UsersPage() {
             </Select>
           </div>
 
-          <div className="h-[600px] overflow-y-auto">
+          <div className="min-h-[350px] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -47,3 +47,12 @@ export interface FilterOptions {
   deadline?: Date;
   searchTerm?: string;
 }
+
+export interface Workspace {
+  id: string;
+  shortName: string;
+  longName: string;
+  englishName: string;
+  adminEmail: string;
+  dataFileUrl: string;
+}

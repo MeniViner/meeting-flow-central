@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { MainNav } from "@/components/MainNav";
+import  MainNav  from "@/components/MainNav";
 import { useApp } from "@/contexts/AppContext";
 import { Navigate } from "react-router-dom";
 

@@ -17,6 +17,7 @@ import AccessRequestPage from "@/pages/AccessRequestPage";
 import AccessRequestsPage from "@/pages/AccessRequestsPage";
 import MeetingsPage from "@/pages/MeetingsPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import WorkspacesPage from "@/pages/WorkspacesPage";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/workspaces" element={<WorkspacesPage />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

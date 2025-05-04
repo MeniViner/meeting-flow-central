@@ -13,8 +13,10 @@ import {
   UserCog,
   Shield,
   LockOpen,
+  Building2,
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
+import WorkspaceSelector from "./WorkspaceSelector";
 
 const navItems = [
   {
@@ -23,12 +25,12 @@ const navItems = [
     icon: LayoutDashboard,
     showFor: ["user", "admin"],
   },
-  // {
-  //   title: "בקשות פגישה",
-  //   href: "/meeting-requests",
-  //   icon: Calendar,
-  //   showFor: ["user", "admin"],
-  // },
+  {
+    title: "ניהול סביבות עבודה",
+    href: "/workspaces",
+    icon: Building2,
+    showFor: ["admin"],
+  },
   {
     title: "ניהול מערכת",
     href: "/admin",
@@ -61,7 +63,7 @@ const navItems = [
   // },
 ];
 
-export function MainNav({ className }: { className?: string }) {
+export default function MainNav({ className }: { className?: string }) {
   const { pathname } = useLocation();
   const { user } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -103,6 +105,10 @@ export function MainNav({ className }: { className?: string }) {
             {process.env.NODE_ENV === "development" && (
               <p className="text-xs text-muted-foreground">מצב פיתוח - גישה מלאה</p>
             )}
+          </div>
+
+          <div className="p-4">
+            <WorkspaceSelector />
           </div>
 
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
