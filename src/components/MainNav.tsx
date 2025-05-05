@@ -2,19 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  LayoutDashboard,
-  Calendar,
-  FileText,
-  Users,
-  Settings,
-  Menu,
-  X,
-  UserCog,
-  Shield,
-  LockOpen,
-  Building2,
-} from "lucide-react";
+import { LayoutDashboard, FileText, Menu, X, UserCog, Shield, LockOpen, Building2 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import WorkspaceSelector from "./WorkspaceSelector";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -144,7 +132,7 @@ export default function MainNav({ className }: { className?: string }) {
             >
               <X className="h-4 w-4" />
               התנתק
-            </Button>
+            </Button>WorkspaceSelector
           </div>
         </div>
       </div>

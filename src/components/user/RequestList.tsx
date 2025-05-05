@@ -22,7 +22,7 @@ interface RequestListProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
 }
-
+// מציג רשימה של הבקשות שהוגשו על ידי המשתמש הנוכחי
 export function RequestList({ requests, showFilters = true, searchTerm, setSearchTerm }: RequestListProps) {
   const { addMeetingSummary } = useApp();
   const [selectedRequest, setSelectedRequest] = useState<MeetingRequest | null>(null);

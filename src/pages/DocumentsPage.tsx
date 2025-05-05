@@ -1,7 +1,7 @@
 import { useApp } from "@/contexts/AppContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, File, FileImage, FileSpreadsheet, PresentationIcon } from "lucide-react";
+import { FileText, File, FileImage, FileSpreadsheet, PresentationIcon, FileX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DateDisplay } from "@/components/DateDisplay";
 
@@ -81,9 +81,11 @@ export default function DocumentsPage() {
               </CardHeader>
               <CardContent>
                 {type.id === "all" && allDocuments.length === 0 && (
-                  <p className="text-center py-12 text-muted-foreground">
-                    לא הועלו מסמכים עדיין.
-                  </p>
+                  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground text-center">
+                    <FileX className="w-10 h-10 mb-3 text-gray-400" />
+                    <p className="text-lg font-medium">לא הועלו מסמכים עדיין</p>
+                    <p className="text-sm mt-1">תוכל להעלות מסמך דרך בקשות הפגישה</p>
+                  </div>
                 )}
                 
                 {type.id !== "all" && (!documentsByType[type.id] || documentsByType[type.id].length === 0) && (
