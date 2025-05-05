@@ -1,16 +1,24 @@
-export type UserRole = "admin" | "editor" | "viewer";
+export type UserRole = "owner" | "administrator" | "editor" | "regular";
 
 export type RequestStatus = "pending" | "scheduled" | "ended" | "completed" | "rejected";
 
+export interface WorkspaceAccess {
+  workspaceId: string;
+  role: UserRole;
+}
+
 export interface User {
   id: string;
+  employeeId: string; // Company employee ID
   name: string;
   email: string;
-  role: UserRole;
+  department: string;
   status: "active" | "inactive";
   lastLogin: string;
-  cardId: string;
-  department: string;
+  globalRole: UserRole;
+  workspaceAccess: WorkspaceAccess[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Document {
@@ -55,4 +63,17 @@ export interface Workspace {
   englishName: string;
   adminEmail: string;
   dataFileUrl: string;
+}
+
+export interface AccessRequest {
+  id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  department: string;
+  requestedWorkspaceId: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  updatedAt: string;
+  notes?: string;
 }

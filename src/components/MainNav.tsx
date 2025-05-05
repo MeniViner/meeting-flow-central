@@ -12,37 +12,37 @@ const navItems = [
     title: "לוח בקרה אישי",
     href: "/",
     icon: LayoutDashboard,
-    showFor: ["user", "admin"],
+    showFor: ["regular", "editor", "administrator", "owner"],
   },
   {
     title: "ניהול סביבות עבודה",
     href: "/workspaces",
     icon: Building2,
-    showFor: ["admin"],
+    showFor: ["administrator", "owner"],
   },
   {
     title: "ניהול מערכת",
     href: "/admin",
     icon: Shield,
-    showFor: ["admin"],
+    showFor: ["administrator", "owner", "editor"],
   },
   {
     title: "ניהול משתמשים",
     href: "/users",
     icon: UserCog,
-    showFor: ["admin"],
+    showFor: ["administrator", "owner"],
   },
   {
     title: "מסמכים",
     href: "/documents",
     icon: FileText,
-    showFor: ["user", "admin"],
+    showFor: ["regular", "editor", "administrator", "owner"],
   },
   {
     title: "ניהול בקשות גישה",
     href: "/access-requests",
     icon: LockOpen,
-    showFor: ["admin"],
+    showFor: ["administrator", "owner"],
   },
   // {
   //   title: "הרשאות",
@@ -60,10 +60,11 @@ export default function MainNav({ className }: { className?: string }) {
 
   if (!user) return null;
 
-  // In development, show all items for admin
-  const filteredNavItems = process.env.NODE_ENV === "development" && user.role === "admin"
+  // In development, show all items for all users
+  const filteredNavItems = process.env.NODE_ENV === "development"
     ? navItems
-    : navItems.filter((item) => item.showFor.includes(user.role));
+    : navItems.filter((item) => item.showFor.includes(user.globalRole));
+
 
   return (
     <>

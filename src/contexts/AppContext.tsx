@@ -3,7 +3,8 @@ import { User, MeetingRequest, RequestStatus, Document } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { txtStore } from "@/services/txtStore";
 import { useNavigate } from "react-router-dom";
-import { WorkspaceProvider } from "./WorkspaceContext";
+import { WorkspaceProvider, useWorkspace } from "./WorkspaceContext";
+import { userService } from "@/services/userService";
 
 interface Notification {
   id: string;
@@ -19,7 +20,6 @@ interface AppContextType {
   isAuthenticated: boolean;
   requests: MeetingRequest[];
   isLoading: boolean;
-  checkUserAccess: () => Promise<void>;
   logout: () => void;
   submitRequest: (request: Omit<MeetingRequest, "id" | "createdAt" | "requesterId" | "requesterName" | "status">) => Promise<void>;
   updateRequestStatus: (requestId: string, status: RequestStatus, notes?: string) => Promise<void>;
@@ -36,13 +36,16 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 // Development admin user with full access
 const DEV_ADMIN_USER: User = {
   id: "dev-admin",
+  employeeId: "DEV-12345",
   name: "מנהל מערכת",
-  role: "admin",
+  globalRole: "owner",
   email: "admin@example.com",
   department: "מחלקת מערכות מידע",
   status: "active",
-  lastLogin: new Date().toLocaleString(),
-  cardId: "DEV-12345",
+  lastLogin: new Date().toISOString(),
+  workspaceAccess: [],
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
 };
 
 // Helper to fix legacy/invalid statuses
@@ -55,6 +58,17 @@ const fixStatus = (status: string): RequestStatus => {
   return "pending";
 };
 
+// Helper function to get card ID (mock for development)
+const getCardId = async (): Promise<string | null> => {
+  // In development, return a mock card ID
+  if (process.env.NODE_ENV === "development") {
+    return "DEV-12345";
+  }
+  // In production, implement actual card reading logic
+  // TODO: Implement actual card reading logic
+  return null;
+};
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [requests, setRequests] = useState<MeetingRequest[]>([]);
@@ -62,32 +76,80 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { currentWorkspace } = useWorkspace();
 
-  // Load initial data and check user access
+  // Check user access and load initial data
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        await checkUserAccess();
-        // Load meeting requests from storage
-        let loadedRequests = await txtStore.getStrictSP("meetingRequests");
-        if (!loadedRequests) loadedRequests = [];
-        // Fix legacy/invalid statuses
-        const cleanedRequests = loadedRequests.map(r => ({ ...r, status: fixStatus(r.status) }));
-        // If any were fixed, save back to storage
-        const needsSave = cleanedRequests.some((r, i) => r.status !== loadedRequests[i].status);
-        if (needsSave) {
-          await txtStore.updateStrictSP("meetingRequests", cleanedRequests);
+        if (process.env.NODE_ENV === "development") {
+          // In development, always use admin user
+          setUser(DEV_ADMIN_USER);
+        } else {
+          // In production, check employee ID
+          const employeeId = await getEmployeeId();
+          if (!employeeId) {
+            // No employee ID found, show landing page
+            navigate("/landing");
+            return;
+          }
+
+          // Check if user exists
+          const user = await userService.getUserByEmployeeId(employeeId);
+          if (!user) {
+            // User doesn't exist, show landing page
+            navigate("/landing");
+            return;
+          }
+
+          // Update last login
+          await userService.upsertUser({
+            employeeId,
+            lastLogin: new Date().toISOString()
+          });
+
+          setUser(user);
         }
-        setRequests(cleanedRequests);
+
+        // Load meeting requests if user has access to current workspace
+        if (currentWorkspace) {
+          const userRole = process.env.NODE_ENV === "development" 
+            ? "owner" 
+            : await userService.getUserWorkspaceRole(user?.employeeId || "", currentWorkspace.id);
+
+          if (userRole) {
+            const loadedRequests = await txtStore.getStrictSP<MeetingRequest[]>("meetingRequests", currentWorkspace.id) || [];
+            const cleanedRequests = loadedRequests.map(r => ({ ...r, status: fixStatus(r.status) }));
+            const needsSave = cleanedRequests.some((r, i) => r.status !== loadedRequests[i].status);
+            if (needsSave) {
+              await txtStore.updateStrictSP("meetingRequests", cleanedRequests, currentWorkspace.id);
+            }
+            setRequests(cleanedRequests);
+          }
+        }
       } catch (error) {
         console.error("Error loading initial data:", error);
+        toast({
+          title: "שגיאה",
+          description: error instanceof Error ? error.message : "אירעה שגיאה לא ידועה",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     loadInitialData();
-  }, []);
+  }, [currentWorkspace?.id]);
+
+  // Helper function to get employee ID (mock for development)
+  const getEmployeeId = async (): Promise<string | null> => {
+    if (process.env.NODE_ENV === "development") {
+      return "DEV-12345";
+    }
+    // TODO: Implement actual employee ID reading logic
+    return null;
+  };
 
   // Automatically move scheduled requests to 'ended' after meeting date
   useEffect(() => {
@@ -117,31 +179,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
-  const checkUserAccess = async () => {
-    setIsLoading(true);
+  const checkUserAccess = async (): Promise<void> => {
     try {
-      const cardId = "DEV-12345"; // TODO: Replace with real card ID logic if needed
-      const users = await txtStore.getStrictSP("users");
-      
-      const user = users.find((u: User) => u.cardId === cardId);
-      
-      if (user) {
-        setUser(user);
-        toast({
-          title: "התחברת בהצלחה",
-          description: `ברוך הבא, ${user.name}!`,
-        });
-      } else {
-        setUser(null);
-        // Redirect to landing page for unregistered users
-        navigate("/landing");
+      const employeeId = await getEmployeeId();
+      if (!employeeId) {
+        throw new Error("לא נמצא מזהה עובד");
       }
+
+      // Load users from storage
+      const user = await userService.getUserByEmployeeId(employeeId);
+      if (!user) {
+        throw new Error("אין לך הרשאה לגשת למערכת");
+      }
+
+      setUser(user);
     } catch (error) {
       console.error("Error checking user access:", error);
-      setUser(null);
+      toast({
+        title: "שגיאת התחברות",
+        description: error instanceof Error ? error.message : "אירעה שגיאה לא ידועה",
+        variant: "destructive",
+      });
       navigate("/landing");
-    } finally {
-      setIsLoading(false);
+      throw error;
     }
   };
 
@@ -189,7 +249,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }))
       };
 
+      // Update state
       setRequests(prev => [newRequest, ...prev]);
+      
+      // Persist to storage
+      await txtStore.appendStrictSP("meetingRequests", newRequest, currentWorkspace?.id);
       
       toast({
         title: "הבקשה הוגשה",
@@ -211,13 +275,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     try {
-      setRequests(prev => 
-        prev.map(req => 
-          req.id === requestId 
-            ? { ...req, status, adminNotes: notes || req.adminNotes } 
-            : req
-        )
+      // Update state
+      const updatedRequests = requests.map(req => 
+        req.id === requestId 
+          ? { ...req, status, adminNotes: notes || req.adminNotes } 
+          : req
       );
+      setRequests(updatedRequests);
+
+      // Persist to storage
+      await txtStore.updateStrictSP("meetingRequests", updatedRequests, currentWorkspace?.id);
 
       toast({
         title: "הסטטוס עודכן",
@@ -250,13 +317,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const scheduleMeeting = async (requestId: string, scheduledTime: Date, adminNotes?: string) => {
     setIsLoading(true);
     try {
-      setRequests(prev =>
-        prev.map(req =>
-          req.id === requestId
-            ? { ...req, scheduledTime, status: "scheduled", adminNotes }
-            : req
-        )
+      // Update state
+      const updatedRequests = requests.map(req =>
+        req.id === requestId
+          ? { ...req, scheduledTime, status: "scheduled" as RequestStatus, adminNotes }
+          : req
       );
+      setRequests(updatedRequests);
+
+      // Persist to storage
+      await txtStore.updateStrictSP("meetingRequests", updatedRequests, currentWorkspace?.id);
+
       // Notify user
       if (user) {
         addNotification({
@@ -287,22 +358,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Store only the file name
       const fileName = file.name;
       
-      setRequests(prev => 
-        prev.map(req => 
-          req.id === requestId 
-            ? { 
-                ...req, 
-                meetingSummaryFile: { 
-                  name: fileName,
-                  url: fileName,
-                  type: file.type,
-                  uploadedAt: new Date()
-                }, 
-                status: "completed" 
-              } 
-            : req
-        )
+      // Update state
+      const updatedRequests = requests.map(req => 
+        req.id === requestId 
+          ? { 
+              ...req, 
+              meetingSummaryFile: { 
+                name: fileName,
+                url: fileName,
+                type: file.type,
+                uploadedAt: new Date()
+              }, 
+              status: "completed" as RequestStatus
+            } 
+          : req
       );
+      setRequests(updatedRequests);
+
+      // Persist to storage
+      await txtStore.updateStrictSP("meetingRequests", updatedRequests, currentWorkspace?.id);
 
       toast({
         title: "סיכום הפגישה נוסף",
@@ -326,7 +400,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!user,
     requests,
     isLoading,
-    checkUserAccess,
     logout,
     submitRequest,
     updateRequestStatus,
@@ -338,9 +411,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <WorkspaceProvider>
-      <AppContext.Provider value={value}>{children}</AppContext.Provider>
-    </WorkspaceProvider>
+    <AppContext.Provider value={value}>{children}</AppContext.Provider>
   );
 }
 

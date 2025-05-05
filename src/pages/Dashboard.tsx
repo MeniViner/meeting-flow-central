@@ -132,7 +132,7 @@ export default function Dashboard() {
                           <p className="text-sm font-medium">{request.title}</p>
                           <div className="flex items-center text-xs text-muted-foreground mt-1">
                             <Clock className="h-3 w-3 mr-1" />
-                            <time dateTime={request.deadline.toISOString()}>
+                            <time dateTime={new Date(request.deadline).toISOString()}>
                               {new Date(request.deadline).toLocaleDateString()}
                             </time>
                           </div>
@@ -173,7 +173,7 @@ export default function Dashboard() {
                             <p className="text-sm font-medium">{request.title}</p>
                             <div className="flex items-center text-xs text-muted-foreground mt-1">
                               <Calendar className="h-3 w-3 mr-1" />
-                              <time dateTime={request.createdAt.toISOString()}>
+                              <time dateTime={new Date(request.createdAt).toISOString()}>
                                 {new Date(request.createdAt).toLocaleDateString()}
                               </time>
                             </div>

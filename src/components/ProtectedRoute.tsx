@@ -13,7 +13,8 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     return <Navigate to="/landing" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  // In development, allow all roles
+  if (process.env.NODE_ENV !== "development" && allowedRoles && !allowedRoles.includes(user.globalRole)) {
     return <Navigate to="/landing" replace />;
   }
 
