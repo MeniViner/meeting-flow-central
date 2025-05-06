@@ -5,8 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RequestStatusBadge } from "@/components/RequestStatusBadge";
 import { DateDisplay } from "@/components/DateDisplay";
 import { RequestStatus } from "@/types";
-import { Clock, AlertTriangle, CalendarDays } from "lucide-react";
+import { Clock, AlertTriangle, CalendarDays, Hourglass, Clock1, ClockAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { WeeklyTimelineCalendar } from "@/components/admin/WeeklyTimelineCalendar";
 
 export default function AdminDashboard() {
   const { requests, user } = useApp();
@@ -52,6 +53,12 @@ export default function AdminDashboard() {
     rejected: requests.filter(r => r.status === "rejected").length,
   };
 
+  const meetingSlots = [
+    { date: "2025-05-12", time: "08:30", label: "AM 8:30" },
+    { date: "2025-05-12", time: "19:20", label: "PM 7:20" },
+    // Add more mock slots as needed
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -65,6 +72,7 @@ export default function AdminDashboard() {
         <TabsList>
           <TabsTrigger value="overview">סקירה כללית</TabsTrigger>
           <TabsTrigger value="requests">כל הבקשות</TabsTrigger>
+          <TabsTrigger value="weekly">לוח שבועי</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
@@ -94,8 +102,12 @@ export default function AdminDashboard() {
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <AlertTriangle className="h-5 w-5 mr-2 text-yellow-500" />
+                <CardTitle className="flex items-center" dir="rtl">
+                  {/* <AlertTriangle className="h-5 w-5 mr-2 text-yellow-500" /> */}
+                  {/* <Hourglass className="h-5 w-5 mr-2 text-yellow-500" /> */}
+                  <ClockAlert className="h-5 w-5 mr-2 text-yellow-500" />
+
+
                   <span>מועדים קרובים</span>
                 </CardTitle>
               </CardHeader>
@@ -103,7 +115,7 @@ export default function AdminDashboard() {
                 {upcomingDeadlines.length === 0 ? (
                   <p className="text-muted-foreground">אין מועדים קרובים</p>
                 ) : (
-                  <ul className="space-y-4">
+                  <ul className="space-y-4" dir="rtl">
                     {upcomingDeadlines.map((request) => (
                       <li key={request.id} className="flex items-start space-x-4">
                         <div className="min-w-[100px]">
@@ -135,7 +147,7 @@ export default function AdminDashboard() {
             
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className="flex items-center" dir="rtl">
                   <CalendarDays className="h-5 w-5 mr-2 text-blue-500" />
                   <span>פגישות קרובות</span>
                 </CardTitle>
@@ -144,9 +156,9 @@ export default function AdminDashboard() {
                 {upcomingMeetings.length === 0 ? (
                   <p className="text-muted-foreground">אין פגישות קרובות</p>
                 ) : (
-                  <ul className="space-y-4">
+                  <ul className="space-y-4" dir="rtl">
                     {upcomingMeetings.map((request) => (
-                      <li key={request.id} className="flex items-start space-x-4">
+                      <li key={request.id} className="flex items-start gap-4">
                         <div className="min-w-[130px]">
                           <DateDisplay 
                             date={request.scheduledTime!} 
@@ -160,7 +172,7 @@ export default function AdminDashboard() {
                             מבקש: {request.requesterName}
                           </p>
                           <div className="flex items-center mt-1">
-                            <Clock className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                            <Clock className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
                             <span className="text-xs text-muted-foreground">
                               מועד אחרון: <DateDisplay date={request.deadline} />
                             </span>
@@ -195,6 +207,10 @@ export default function AdminDashboard() {
         
         <TabsContent value="requests">
           <AdminRequestList requests={requests} />
+        </TabsContent>
+        
+        <TabsContent value="weekly">
+          <WeeklyTimelineCalendar meetingSlots={meetingSlots} />
         </TabsContent>
       </Tabs>
     </div>

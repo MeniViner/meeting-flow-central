@@ -127,6 +127,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                     <TableRow>
                       <TableHead className="text-left">פעולות</TableHead>
                       <TableHead>מסמכים</TableHead>
+                      <TableHead>מועד שנקבע</TableHead>
                       <TableHead>סטטוס</TableHead>
                       <TableHead>מועד אחרון</TableHead>
                       <TableHead>מבקש</TableHead>
@@ -136,7 +137,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                   <TableBody>
                     {sortedRequests.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6}>
+                        <TableCell colSpan={7}>
                           <div className="flex flex-col items-center justify-center h-48 text-muted-foreground text-center">
                             <Calendar className="w-10 h-10 mb-2 text-gray-400" />
                             <p className="text-lg font-medium">לא נמצאו בקשות פגישה</p>
@@ -167,6 +168,9 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                             )}
                           </TableCell>
                           <TableCell>
+                            {request.scheduledTime ? <DateDisplay date={request.scheduledTime} /> : "—"}
+                          </TableCell>
+                          <TableCell>
                             <RequestStatusBadge status={request.status} />
                           </TableCell>
                           <TableCell>
@@ -185,7 +189,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
             </div>
           ) : (
             <div className="rounded-md border">
-              <ScrollArea className="min-h-[250px]">
+              <ScrollArea className="min-h-[250px]" dir="rtl">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
                   {sortedRequests.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 col-span-full text-muted-foreground text-center">

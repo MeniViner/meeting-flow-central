@@ -125,7 +125,7 @@ export default function Dashboard() {
                 {upcomingDeadlines.length === 0 ? (
                   <p className="text-sm text-muted-foreground">אין מועדים קרובים</p>
                 ) : (
-                  <ul className="space-y-4">
+                  <ul className="space-y-4" dir="rtl">
                     {upcomingDeadlines.map((request) => (
                       <li key={request.id} className="flex justify-between items-center">
                         <div>
@@ -163,7 +163,7 @@ export default function Dashboard() {
                 {requests.length === 0 ? (
                   <p className="text-sm text-muted-foreground">אין פעילות אחרונה</p>
                 ) : (
-                  <ul className="space-y-4">
+                  <ul className="space-y-4" dir="rtl">
                     {[...requests]
                       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .slice(0, 5)
