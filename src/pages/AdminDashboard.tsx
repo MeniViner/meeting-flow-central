@@ -7,7 +7,11 @@ import { DateDisplay } from "@/components/DateDisplay";
 import { RequestStatus } from "@/types";
 import { Clock, AlertTriangle, CalendarDays, Hourglass, Clock1, ClockAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WeeklyTimelineCalendar } from "@/components/admin/WeeklyTimelineCalendar";
+import { WeeklyTimelineCalendar, MeetingSlot } from "@/components/admin/WeeklyTimelineCalendar";
+import { isValid, format } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RequestDetails } from "@/components/admin/RequestDetails";
+import { useState } from "react";
 
 export default function AdminDashboard() {
   const { requests, user } = useApp();
@@ -53,11 +57,31 @@ export default function AdminDashboard() {
     rejected: requests.filter(r => r.status === "rejected").length,
   };
 
-  const meetingSlots = [
-    { date: "2025-05-12", time: "08:30", label: "AM 8:30" },
-    { date: "2025-05-12", time: "19:20", label: "PM 7:20" },
-    // Add more mock slots as needed
-  ];
+  // Real scheduled meetings for the weekly calendar
+  const meetingSlots: MeetingSlot[] = requests
+    .filter(r => r.status === "scheduled" && r.scheduledTime)
+    .map(r => {
+      const dateObj = new Date(r.scheduledTime as string);
+      if (!isValid(dateObj)) return null;
+      return {
+        date: format(dateObj, "yyyy-MM-dd"),
+        time: format(dateObj, "HH:mm"),
+        label: `${format(dateObj, "HH:mm")} ${r.title ? `- ${r.title}` : ""}`,
+      };
+    })
+    .filter(Boolean) as MeetingSlot[];
+
+  const [selectedMeeting, setSelectedMeeting] = useState<MeetingRequest | null>(null);
+
+  const handleSlotClick = (slot: MeetingSlot) => {
+    const found = requests.find(r =>
+      r.status === "scheduled" &&
+      r.scheduledTime &&
+      format(new Date(r.scheduledTime as string), "yyyy-MM-dd") === slot.date &&
+      format(new Date(r.scheduledTime as string), "HH:mm") === slot.time
+    );
+    if (found) setSelectedMeeting(found);
+  };
 
   return (
     <div className="space-y-6">
@@ -210,9 +234,19 @@ export default function AdminDashboard() {
         </TabsContent>
         
         <TabsContent value="weekly">
-          <WeeklyTimelineCalendar meetingSlots={meetingSlots} />
+          <WeeklyTimelineCalendar meetingSlots={meetingSlots} onSlotClick={handleSlotClick} />
         </TabsContent>
       </Tabs>
+      <Dialog open={!!selectedMeeting} onOpenChange={open => !open && setSelectedMeeting(null)}>
+        {selectedMeeting && (
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>פרטי פגישה</DialogTitle>
+            </DialogHeader>
+            <RequestDetails request={selectedMeeting} />
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

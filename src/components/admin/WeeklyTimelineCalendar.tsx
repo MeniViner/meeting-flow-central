@@ -13,19 +13,29 @@ export type MeetingSlot = {
 
 interface WeeklyTimelineCalendarProps {
   meetingSlots: MeetingSlot[];
+  onSlotClick?: (slot: MeetingSlot) => void;
 }
 
-export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ meetingSlots }) => {
+export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ meetingSlots, onSlotClick }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const weekStart = useMemo(() => startOfWeek(selectedDate, { weekStartsOn: 0 }), [selectedDate]); // Sunday
   const weekDates = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
 
   // Filter slots for the week
   const slotsByDate: Record<string, MeetingSlot[]> = useMemo(() => {
+    // console.log(meetingSlots);
+    // console.log(weekDates);
+    // console.log(weekStart);
+    console.log({weekStart});
+
+    console.log(selectedDate);
+    // console.log(format(selectedDate, "yyyy-MM-dd"));
     const map: Record<string, MeetingSlot[]> = {};
     weekDates.forEach(date => {
       const key = format(date, "yyyy-MM-dd");
       map[key] = meetingSlots.filter(slot => slot.date === key);
+    //   console.log(map[key]);
+
     });
     return map;
   }, [meetingSlots, weekDates]);
@@ -34,7 +44,7 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
   const [selectedSlot, setSelectedSlot] = useState<MeetingSlot | null>(null);
 
   return (
-    <div className="flex flex-row-reverse gap-8 w-full" dir="rtl">
+    <div className="flex flex-row gap-8 w-full" dir="rtl">
       {/* Calendar on the right */}
       <div className="min-w-[320px]">
         <DayPicker
@@ -44,20 +54,14 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
           locale={he}
           weekStartsOn={0}
           showOutsideDays
-          className="rtl"
           modifiersClassNames={{
             selected: "bg-blue-500 text-white",
             today: "border border-blue-500"
           }}
-          styles={{
-            caption: { direction: "rtl" },
-            head_row: { direction: "rtl" },
-            row: { direction: "rtl" },
-          }}
         />
       </div>
       {/* Weekly timeline on the left */}
-      <div className="flex-1 overflow-x-auto">
+      <div className="flex-1 overflow-x-auto max-w-[800px]">
         <div className="rounded-lg border p-4 flex flex-col gap-4 bg-white">
           <div className="flex justify-between items-center mb-2">
             <span className="text-lg font-semibold">בחרת שעה לפגישה</span>
@@ -83,7 +87,10 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
                         <button
                           key={slot.time}
                           className={`rounded-full border px-4 py-1 text-sm font-medium transition-colors ${selectedSlot?.date === slot.date && selectedSlot?.time === slot.time ? "bg-blue-500 text-white" : "hover:bg-blue-100"}`}
-                          onClick={() => setSelectedSlot(slot)}
+                          onClick={() => {
+                            setSelectedSlot(slot);
+                            if (onSlotClick) onSlotClick(slot);
+                          }}
                         >
                           {slot.label}
                         </button>
