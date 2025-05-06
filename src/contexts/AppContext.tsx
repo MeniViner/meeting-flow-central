@@ -5,6 +5,7 @@ import { txtStore } from "@/services/txtStore";
 import { useNavigate } from "react-router-dom";
 import { WorkspaceProvider, useWorkspace } from "./WorkspaceContext";
 import { userService } from "@/services/userService";
+import { devMeetingService } from "@/services/devMeetingService";
 
 interface Notification {
   id: string;
@@ -29,6 +30,7 @@ interface AppContextType {
   addNotification: (notification: Omit<Notification, "id" | "createdAt" | "read">) => void;
   // Development only
   devLoginAsAdmin?: () => void;
+  updateRequest: (requestId: string, updatedRequest: MeetingRequest) => Promise<MeetingRequest>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -394,6 +396,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateRequest = async (requestId: string, updatedRequest: MeetingRequest) => {
+    try {
+      // In both development and production, update the request in TXT
+      const requests = await txtStore.getStrictSP<MeetingRequest[]>("meetingRequests", currentWorkspace?.id) || [];
+      const updatedRequests = requests.map(r => 
+        r.id === requestId ? updatedRequest : r
+      );
+      await txtStore.updateStrictSP("meetingRequests", updatedRequests, currentWorkspace?.id);
+
+      // Update local state
+      setRequests(prev => prev.map(r => 
+        r.id === requestId ? updatedRequest : r
+      ));
+
+      return updatedRequest;
+    } catch (error) {
+      console.error("Error updating request:", error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     setUser,
@@ -408,6 +431,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     notifications,
     addNotification,
     devLoginAsAdmin: process.env.NODE_ENV === "development" ? devLoginAsAdmin : undefined,
+    updateRequest,
   };
 
   return (

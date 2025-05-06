@@ -4,6 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, File, FileImage, FileSpreadsheet, PresentationIcon, FileX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DateDisplay } from "@/components/DateDisplay";
+import { motion } from "framer-motion"
+
 
 export default function DocumentsPage() {
   const { requests } = useApp();
@@ -81,11 +83,21 @@ export default function DocumentsPage() {
               </CardHeader>
               <CardContent>
                 {type.id === "all" && allDocuments.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground text-center">
-                    <FileX className="w-10 h-10 mb-3 text-gray-400" />
-                    <p className="text-lg font-medium">לא הועלו מסמכים עדיין</p>
-                    <p className="text-sm mt-1">תוכל להעלות מסמך דרך בקשות הפגישה</p>
-                  </div>
+                <div className="rounded-md border flex items-center justify-center min-h-[200px] px-4" >
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center"
+                  >
+                    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground text-center">
+                      <FileX className="w-10 h-10 mb-3 text-gray-400" />
+                      <p className="text-lg font-medium">לא הועלו מסמכים עדיין</p>
+                      <p className="text-sm mt-1">תוכל להעלות מסמך דרך בקשות הפגישה</p>
+                    </div>
+                  </motion.div>
+                </div>
+                
                 )}
                 
                 {type.id !== "all" && (!documentsByType[type.id] || documentsByType[type.id].length === 0) && (

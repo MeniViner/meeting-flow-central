@@ -65,7 +65,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 ">
           <CardTitle>ניהול בקשות</CardTitle>
         </CardHeader>
         <CardContent>
@@ -121,7 +121,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
 
           {viewMode === "list" ? (
             <div className="rounded-md border">
-              <ScrollArea className="min-h-[250px]">
+              <ScrollArea className="min-h-[350px]">
                 <Table>
                   <TableHeader>
                     <TableRow>

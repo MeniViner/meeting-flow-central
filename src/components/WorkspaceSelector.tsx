@@ -12,9 +12,10 @@ export default function WorkspaceSelector() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <Building2 className="h-4 w-4 text-muted-foreground" />
       <Select
+        dir="rtl"
         value={currentWorkspace?.id}
         onValueChange={(value) => {
           const workspace = workspaces.find((w) => w.id === value);
@@ -22,7 +23,7 @@ export default function WorkspaceSelector() {
             setCurrentWorkspace(workspace);
           }
         }}
-      >
+        >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="בחר סביבת עבודה" />
         </SelectTrigger>

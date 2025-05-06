@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { AppLayout } from "@/components/AppLayout";
+import { ThemeProvider } from "next-themes";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import DocumentsPage from "./pages/DocumentsPage";
@@ -24,61 +25,63 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <div dir="rtl" lang="he" className="rtl">
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <WorkspaceProvider>
-            <AppProvider>
-              <Routes>
-                <Route path="/landing" element={<LandingPage />} />
-                <Route path="/request-access" element={<AccessRequestPage />} />
-                <Route element={<AppLayout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute allowedRoles={["admin"]}>
-                        <AdminDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/documents" element={<DocumentsPage />} />
-                  <Route
-                    path="/access-requests"
-                    element={
-                      <ProtectedRoute allowedRoles={["admin"]}>
-                        <AccessRequestsPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/users"
-                    element={
-                      <ProtectedRoute allowedRoles={["admin"]}>
-                        <UsersPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/meetings"
-                    element={
-                      <ProtectedRoute>
-                        <MeetingsPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/workspaces" element={<WorkspacesPage />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-              <DevHelper />
-            </AppProvider>
-          </WorkspaceProvider>
-        </BrowserRouter>
-      </div>
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <TooltipProvider>
+        <div dir="rtl" lang="he" className="rtl">
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <WorkspaceProvider>
+              <AppProvider>
+                <Routes>
+                  <Route path="/landing" element={<LandingPage />} />
+                  <Route path="/request-access" element={<AccessRequestPage />} />
+                  <Route element={<AppLayout />}>
+                    <Route index element={<Dashboard />} />
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute allowedRoles={["admin"]}>
+                          <AdminDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/documents" element={<DocumentsPage />} />
+                    <Route
+                      path="/access-requests"
+                      element={
+                        <ProtectedRoute allowedRoles={["admin"]}>
+                          <AccessRequestsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/users"
+                      element={
+                        <ProtectedRoute allowedRoles={["admin"]}>
+                          <UsersPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/meetings"
+                      element={
+                        <ProtectedRoute>
+                          <MeetingsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/workspaces" element={<WorkspacesPage />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                </Routes>
+                <DevHelper />
+              </AppProvider>
+            </WorkspaceProvider>
+          </BrowserRouter>
+        </div>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

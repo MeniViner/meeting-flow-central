@@ -272,7 +272,6 @@ export default function Dashboard() {
                     <p className="text-sm mt-1">הכול מעודכן. תחזור לבדוק מאוחר יותר ✨</p>
                   </motion.div>
                 </div>
-
               ) : (
                 <ul className="space-y-4">
                   {notifications

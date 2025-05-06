@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FileText, Menu, X, UserCog, Shield, LockOpen, Building2 } from "lucide-react";
+import { LayoutDashboard, FileText, Menu, X, UserCog, Shield, LockOpen, Building2, Sun, Moon } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import WorkspaceSelector from "./WorkspaceSelector";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useTheme } from "next-themes";
+import { Switch } from "@/components/ui/switch";
 
 const navItems = [
   {
@@ -57,6 +59,7 @@ export default function MainNav({ className }: { className?: string }) {
   const { user } = useApp();
   const { currentWorkspace } = useWorkspace();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   if (!user) return null;
 
@@ -80,6 +83,15 @@ export default function MainNav({ className }: { className?: string }) {
             {mobileMenuOpen ? <X /> : <Menu />}
           </Button>
           <div className="font-semibold text-lg">ניהול משרד</div>
+          <div className="flex items-center gap-2">
+            <Sun className="h-4 w-4 text-muted-foreground" />
+            <Switch
+              checked={theme === "dark"}
+              onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+              className="scale-75"
+            />
+            <Moon className="h-4 w-4 text-muted-foreground" />
+          </div>
         </div>
       </div>
 
@@ -92,9 +104,20 @@ export default function MainNav({ className }: { className?: string }) {
       >
         <div className="flex flex-col h-full">
           <div className="p-4 border-b bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900">
-            <h2 className="font-semibold text-lg">
-              {currentWorkspace?.shortName || "ניהול משרד"}
-            </h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-semibold text-lg">
+                {currentWorkspace?.shortName || "ניהול משרד"}
+              </h2>
+              <div className="flex items-center gap-2">
+                <Sun className="h-4 w-4 text-muted-foreground" />
+                <Switch
+                  checked={theme === "dark"}
+                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                  className="scale-75"
+                />
+                <Moon className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
             <div className="text-xs text-muted-foreground">
               {currentWorkspace?.longName}
             </div>

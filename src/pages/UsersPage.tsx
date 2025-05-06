@@ -27,6 +27,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { userService } from "@/services/userService";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type UserRole = "admin" | "editor" | "viewer";
 
@@ -385,7 +386,7 @@ export default function UsersPage() {
             </Select>
           </div>
 
-          <div className="min-h-[350px] overflow-y-auto">
+          <ScrollArea className="h-[450px]" dir="rtl">
             {filteredUsers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 col-span-full text-muted-foreground text-center">
                 <Users className="w-10 h-10 mb-2 text-gray-400" />
@@ -470,7 +471,7 @@ export default function UsersPage() {
                 </TableBody>
               </Table>
             )}
-          </div>
+          </ScrollArea>
         </CardContent>
       </Card>
 

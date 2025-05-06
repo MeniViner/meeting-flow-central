@@ -5,7 +5,7 @@ import { DateDisplay } from "@/components/DateDisplay";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, FileText, Calendar, Clock, LayoutGrid, LayoutList, Info } from "lucide-react";
+import { Search, FileText, Calendar, Clock, LayoutGrid, LayoutList, Info, Edit } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,8 @@ import { RequestStepper } from "@/components/RequestStepper";
 import { useApp } from "@/contexts/AppContext";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area"
-
+import { motion } from "framer-motion"
+import { EditRequestForm } from "./EditRequestForm";
 
 interface RequestListProps {
   requests: MeetingRequest[];
@@ -26,6 +27,7 @@ interface RequestListProps {
 export function RequestList({ requests, showFilters = true, searchTerm, setSearchTerm }: RequestListProps) {
   const { addMeetingSummary } = useApp();
   const [selectedRequest, setSelectedRequest] = useState<MeetingRequest | null>(null);
+  const [editingRequest, setEditingRequest] = useState<MeetingRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">("all");
   const [meetingSummaryFile, setMeetingSummaryFile] = useState<File | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -39,6 +41,10 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
     
     return matchesSearch && matchesStatus;
   });
+
+  const canEditRequest = (request: MeetingRequest) => {
+    return request.status === "pending" && !request.scheduledTime;
+  };
 
   return (
     <div className="space-y-6">
@@ -83,22 +89,26 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
       )}
 
       {filteredRequests.length === 0 ? (
-
-
         <div className="rounded-md border flex items-center justify-center min-h-[200px] px-4" >
-          <div className="flex flex-col items-center justify-center text-muted-foreground text-center py-8">
-            <Calendar className="w-10 h-10 mb-2 text-gray-400" />
-            <p className="text-lg font-medium">לא נמצאו בקשות פגישה</p>
-            <p className="text-sm mt-1">נסה לשנות את הסינון או ליצור בקשה חדשה</p>
-            {/* <Button className="mt-4" onClick={() => setOpen(true)}>
-              צור בקשה חדשה
-            </Button> */}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center"
+          >
+            <div className="flex flex-col items-center justify-center text-muted-foreground text-center py-8">
+              <Calendar className="w-10 h-10 mb-2 text-gray-400" />
+              <p className="text-lg font-medium">לא נמצאו בקשות פגישה</p>
+              <p className="text-sm mt-1">נסה לשנות את הסינון או ליצור בקשה חדשה</p>
+              {/* <Button className="mt-4" onClick={() => setOpen(true)}>
+                צור בקשה חדשה
+              </Button> */}
+            </div>
+          </motion.div>
         </div>
-
       ) : viewMode === "table" ? (
-        <div className="rounded-md border" dir="rtl">
-          <ScrollArea className="h-[500px]">
+        <div className="rounded-md border">
+          <ScrollArea className="h-[500px]" dir="rtl">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -125,13 +135,24 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedRequest(request)}
-                      >
-                        הצג פרטים
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedRequest(request)}
+                        >
+                          הצג פרטים
+                        </Button>
+                        {canEditRequest(request) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingRequest(request)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -140,11 +161,11 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
           </ScrollArea>
         </div>
       ) : (
-        <div className="rounded-md border" >
+        <div className="rounded-md border">
           <ScrollArea className="h-[500px]" dir="rtl">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 p-4">
               {filteredRequests.map((request) => (
-                <Card key={request.id} className="overflow-hidden" >
+                <Card key={request.id} className="overflow-hidden">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg truncate">{request.title}</CardTitle>
@@ -153,8 +174,8 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                     <CardDescription className="flex items-center mt-1">
                       <div className="flex items-center text-xs text-muted-foreground">
                         <Calendar className="h-3.5 w-3.5 mr-1" />
-                        <span className="mr-1" >תאריך הגשה: </span>
-                        <DateDisplay date={request.createdAt}  />
+                        <span className="mr-1">תאריך הגשה: </span>
+                        <DateDisplay date={request.createdAt} />
                       </div>
                     </CardDescription>
                   </CardHeader>
@@ -203,14 +224,25 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                     </div>
                   </CardContent>
                   <CardFooter className="pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => setSelectedRequest(request)}
-                    >
-                      הצג פרטים
-                    </Button>
+                    <div className="flex items-center gap-2 w-full">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => setSelectedRequest(request)}
+                      >
+                        הצג פרטים
+                      </Button>
+                      {canEditRequest(request) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingRequest(request)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </CardFooter>
                 </Card>
               ))}
@@ -312,6 +344,23 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                 </div>
               )}
             </div>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      <Dialog open={!!editingRequest} onOpenChange={(open) => !open && setEditingRequest(null)}>
+        {editingRequest && (
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>עריכת בקשה</DialogTitle>
+              <DialogDescription>
+                ערוך את פרטי הבקשה שלך
+              </DialogDescription>
+            </DialogHeader>
+            <EditRequestForm
+              request={editingRequest}
+              onRequestUpdated={() => setEditingRequest(null)}
+            />
           </DialogContent>
         )}
       </Dialog>

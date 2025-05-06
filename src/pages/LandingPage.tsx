@@ -257,6 +257,7 @@
 
 
 
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -285,7 +286,8 @@ export function LandingPage() {
     name: "",
     email: "",
     department: "",
-    requestedWorkspaceId: ""
+    requestedWorkspaceId: "",
+    reason: ""
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -315,6 +317,7 @@ export function LandingPage() {
         name: "",
         email: "",
         department: "",
+        reason: "",
         requestedWorkspaceId: ""
       });
       setShowForm(false);
@@ -405,7 +408,7 @@ export function LandingPage() {
                     { id: "employeeId", label: "מספר עובד", type: "text" },
                     { id: "name", label: "שם מלא", type: "text" },
                     { id: "email", label: "דוא\"ל", type: "email" },
-                    { id: "department", label: "מחלקה", type: "text" }
+                    { id: "department", label: "מחלקה", type: "text" },
                   ].map(({ id, label, type }) => (
                     <div className="space-y-2" key={id}>
                       <Label htmlFor={id}>{label}</Label>
@@ -419,24 +422,38 @@ export function LandingPage() {
                     </div>
                   ))}
 
-                  <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="workspace">מרחב עבודה</Label>
-                    <Select
-                      value={formData.requestedWorkspaceId}
-                      onValueChange={(val) => setFormData(prev => ({ ...prev, requestedWorkspaceId: val }))}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="בחר מרחב עבודה" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {workspaces.map(ws => (
-                          <SelectItem key={ws.id} value={ws.id}>
-                            {ws.longName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {/* Reason and Workspace on the same line */}
+                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="reason">סיבת הבקשה</Label>
+                      <Input
+                        id="reason"
+                        type="text"
+                        value={formData.reason}
+                        onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="workspace">מרחב עבודה</Label>
+                      <Select
+                        value={formData.requestedWorkspaceId}
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, requestedWorkspaceId: val }))}
+                        required
+                        dir="rtl"
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="בחר מרחב עבודה" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {workspaces.map(ws => (
+                            <SelectItem key={ws.id} value={ws.id}>
+                              {ws.longName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="md:col-span-2 flex gap-3">
