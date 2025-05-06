@@ -1,14 +1,15 @@
 import React, { useState, useMemo } from "react";
 import { he } from "date-fns/locale";
-import { format, startOfWeek, addDays, isSameDay, isToday, parseISO } from "date-fns";
-// @ts-ignore
+import { format, startOfWeek, addDays, isSameDay, isToday } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { Clock } from "lucide-react";
 
 export type MeetingSlot = {
   date: string; // 'YYYY-MM-DD'
   time: string; // 'HH:mm'
   label: string; // e.g. "AM 8:30"
+  id?: string; // optional unique ID
 };
 
 interface WeeklyTimelineCalendarProps {
@@ -18,34 +19,25 @@ interface WeeklyTimelineCalendarProps {
 
 export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ meetingSlots, onSlotClick }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const weekStart = useMemo(() => startOfWeek(selectedDate, { weekStartsOn: 0 }), [selectedDate]); // Sunday
+  const [selectedSlot, setSelectedSlot] = useState<MeetingSlot | null>(null);
+
+  const weekStart = useMemo(() => startOfWeek(selectedDate, { weekStartsOn: 0 }), [selectedDate]);
   const weekDates = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
 
-  // Filter slots for the week
   const slotsByDate: Record<string, MeetingSlot[]> = useMemo(() => {
-    // console.log(meetingSlots);
-    // console.log(weekDates);
-    // console.log(weekStart);
-    console.log({weekStart});
-
-    console.log(selectedDate);
-    // console.log(format(selectedDate, "yyyy-MM-dd"));
     const map: Record<string, MeetingSlot[]> = {};
     weekDates.forEach(date => {
       const key = format(date, "yyyy-MM-dd");
-      map[key] = meetingSlots.filter(slot => slot.date === key);
-    //   console.log(map[key]);
-
+      map[key] = meetingSlots
+        .filter(slot => slot.date === key)
+        .sort((a, b) => a.time.localeCompare(b.time));
     });
     return map;
   }, [meetingSlots, weekDates]);
 
-  // Handle slot selection (optional)
-  const [selectedSlot, setSelectedSlot] = useState<MeetingSlot | null>(null);
-
   return (
     <div className="flex flex-row gap-8 w-full" dir="rtl">
-      {/* Calendar on the right */}
+      {/* Calendar */}
       <div className="min-w-[320px]">
         <DayPicker
           mode="single"
@@ -60,15 +52,17 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
           }}
         />
       </div>
-      {/* Weekly timeline on the left */}
+
+      {/* Timeline */}
       <div className="flex-1 overflow-x-auto max-w-[800px]">
         <div className="rounded-lg border p-4 flex flex-col gap-4 bg-white">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-lg font-semibold">בחרת שעה לפגישה</span>
+            <span className="text-lg font-semibold">פגישות מתוזמנות להשבוע</span>
             <span className="text-sm text-muted-foreground">שעון ישראל (GMT+03:00)</span>
           </div>
-          <div className="flex flex-row-reverse gap-8 w-full justify-between">
-            {weekDates.map((date, idx) => {
+
+          <div className="flex flex-row gap-4 w-full justify-between">
+            {weekDates.map((date) => {
               const key = format(date, "yyyy-MM-dd");
               const isSelected = isSameDay(date, selectedDate);
               return (
@@ -81,22 +75,25 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
                   <div className="text-xs mb-2 font-medium">
                     {format(date, "EEE", { locale: he })}
                   </div>
+
                   <div className="flex flex-col gap-2 w-full">
-                    {slotsByDate[key] && slotsByDate[key].length > 0 ? (
+                    {slotsByDate[key]?.length ? (
                       slotsByDate[key].map(slot => (
                         <button
-                          key={slot.time}
-                          className={`rounded-full border px-4 py-1 text-sm font-medium transition-colors ${selectedSlot?.date === slot.date && selectedSlot?.time === slot.time ? "bg-blue-500 text-white" : "hover:bg-blue-100"}`}
+                          key={`${slot.date}-${slot.time}`}
+                          role="button"
+                          aria-label={`Meeting at ${slot.time}`}
+                          className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors shadow-sm flex items-center gap-2 ${selectedSlot?.date === slot.date && selectedSlot?.time === slot.time ? "bg-blue-500 text-white" : "hover:bg-blue-100"}`}
                           onClick={() => {
                             setSelectedSlot(slot);
                             if (onSlotClick) onSlotClick(slot);
                           }}
                         >
-                          {slot.label}
+                          <Clock className="w-4 h-4" /> {slot.label}
                         </button>
                       ))
                     ) : (
-                      <div className="text-center text-muted-foreground">—</div>
+                      <p className="text-sm text-gray-400 italic text-center mt-3">אין פגישות ליום זה</p>
                     )}
                   </div>
                 </div>
@@ -107,4 +104,4 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
       </div>
     </div>
   );
-}; 
+};

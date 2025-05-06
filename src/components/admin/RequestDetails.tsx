@@ -13,17 +13,37 @@ import { cn } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { RequestStepper } from "@/components/RequestStepper";
 import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { isBefore, isSameDay } from "date-fns";
 
 interface RequestDetailsProps {
   request: MeetingRequest;
   onStatusChange?: () => void;
 }
 
+// Add helper for local date input value
+function toLocalDateInputValue(date: Date | string | undefined) {
+  if (!date) return "";
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return "";
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function RequestDetails({ request, onStatusChange }: RequestDetailsProps) {
-  const { updateRequestStatus, scheduleMeeting, addMeetingSummary, isLoading, addNotification, user } = useApp();
+  const { updateRequestStatus, scheduleMeeting, addMeetingSummary, isLoading, addNotification, user, requests } = useApp();
+  const { toast } = useToast();
   const [adminNotes, setAdminNotes] = useState(request.adminNotes || "");
-  const [meetingDate, setMeetingDate] = useState<Date | undefined>(request.scheduledTime);
+  const [meetingDate, setMeetingDate] = useState<Date | undefined>(
+    request.scheduledTime ? new Date(request.scheduledTime) : undefined
+  );
   const [meetingSummaryFile, setMeetingSummaryFile] = useState<File | null>(null);
+  const [dateInput, setDateInput] = useState(meetingDate ? toLocalDateInputValue(meetingDate) : "");
+  const [timeInput, setTimeInput] = useState(
+    meetingDate ? meetingDate.toTimeString().slice(0,5) : ""
+  );
   
   const handleApprove = async () => {
     if (!meetingDate) return;
@@ -40,6 +60,73 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
     if (!meetingSummaryFile) return;
     await addMeetingSummary(request.id, meetingSummaryFile);
     if (onStatusChange) onStatusChange();
+  };
+
+  // Helper to check for double-booking
+  const checkDoubleBooking = (date: Date) => {
+    return requests.some(r =>
+      r.id !== request.id &&
+      r.status === "scheduled" &&
+      r.scheduledTime &&
+      isSameDay(new Date(r.scheduledTime), date) &&
+      new Date(r.scheduledTime).getHours() === date.getHours()
+    );
+  };
+
+  // Handler for date input (local time, no timezone bug)
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dateStr = e.target.value;
+    setDateInput(dateStr);
+    if (dateStr && timeInput) {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const [hours, minutes] = timeInput.split(':').map(Number);
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      setMeetingDate(localDate);
+      if (checkDoubleBooking(localDate)) {
+        toast({
+          title: "אזהרה",
+          description: "כבר קיימת פגישה בשעה זו ביום זה.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      setMeetingDate(undefined);
+    }
+  };
+
+  // Handler for time input (local time, no timezone bug)
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const timeStr = e.target.value;
+    setTimeInput(timeStr);
+    if (dateInput && timeStr) {
+      const [year, month, day] = dateInput.split('-').map(Number);
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      setMeetingDate(localDate);
+      if (checkDoubleBooking(localDate)) {
+        toast({
+          title: "אזהרה",
+          description: "כבר קיימת פגישה בשעה זו ביום זה.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  // Handler for rescheduling
+  const handleReschedule = async () => {
+    if (meetingDate) {
+      await scheduleMeeting(request.id, meetingDate, adminNotes);
+      addNotification({
+        userId: request.requesterId,
+        message: `הפגישה שלך תוזמנה מחדש ל-${meetingDate.toLocaleString('he-IL')}`,
+      });
+      toast({
+        title: "הפגישה תוזמנה מחדש",
+        description: "המשתמש קיבל התראה על שינוי המועד.",
+      });
+      if (onStatusChange) onStatusChange();
+    }
   };
 
   return (
@@ -111,16 +198,8 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
               <input
                 type="date"
                 className="border rounded px-2 py-1 w-full"
-                value={meetingDate ? meetingDate.toISOString().slice(0, 10) : ""}
-                onChange={e => {
-                  const dateStr = e.target.value;
-                  if (dateStr) {
-                    const timeStr = meetingDate ? meetingDate.toTimeString().slice(0,5) : "00:00";
-                    setMeetingDate(new Date(`${dateStr}T${timeStr}`));
-                  } else {
-                    setMeetingDate(undefined);
-                  }
-                }}
+                value={dateInput}
+                onChange={handleDateChange}
               />
             </div>
             <div className="flex-1">
@@ -128,14 +207,8 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
               <input
                 type="time"
                 className="border rounded px-2 py-1 w-full"
-                value={meetingDate ? meetingDate.toTimeString().slice(0,5) : ""}
-                onChange={e => {
-                  const timeStr = e.target.value;
-                  if (timeStr && meetingDate) {
-                    const dateStr = meetingDate.toISOString().slice(0,10);
-                    setMeetingDate(new Date(`${dateStr}T${timeStr}`));
-                  }
-                }}
+                value={timeInput}
+                onChange={handleTimeChange}
               />
             </div>
           </div>
@@ -178,7 +251,7 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
         </>
       )}
       
-      {request.status === "scheduled" && user?.role === "admin" && (
+      {request.status === "scheduled" && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-row gap-2 items-end mb-4">
             <div className="flex-1">
@@ -186,16 +259,8 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
               <input
                 type="date"
                 className="border rounded px-2 py-1 w-full"
-                value={meetingDate ? meetingDate.toISOString().slice(0, 10) : ""}
-                onChange={e => {
-                  const dateStr = e.target.value;
-                  if (dateStr) {
-                    const timeStr = meetingDate ? meetingDate.toTimeString().slice(0,5) : "00:00";
-                    setMeetingDate(new Date(`${dateStr}T${timeStr}`));
-                  } else {
-                    setMeetingDate(undefined);
-                  }
-                }}
+                value={dateInput}
+                onChange={handleDateChange}
               />
             </div>
             <div className="flex-1">
@@ -203,24 +268,13 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
               <input
                 type="time"
                 className="border rounded px-2 py-1 w-full"
-                value={meetingDate ? meetingDate.toTimeString().slice(0,5) : ""}
-                onChange={e => {
-                  const timeStr = e.target.value;
-                  if (timeStr && meetingDate) {
-                    const dateStr = meetingDate.toISOString().slice(0,10);
-                    setMeetingDate(new Date(`${dateStr}T${timeStr}`));
-                  }
-                }}
+                value={timeInput}
+                onChange={handleTimeChange}
               />
             </div>
           </div>
           <Button
-            onClick={async () => {
-              if (meetingDate) {
-                await scheduleMeeting(request.id, meetingDate, adminNotes);
-                if (onStatusChange) onStatusChange();
-              }
-            }}
+            onClick={handleReschedule}
             disabled={isLoading || !meetingDate}
           >
             עדכן זמן פגישה

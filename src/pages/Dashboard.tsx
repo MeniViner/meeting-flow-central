@@ -258,7 +258,7 @@ export default function Dashboard() {
               <CardTitle>התראות</CardTitle>
               <CardDescription>כל ההתראות האחרונות שלך</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent dir="rtl">
               {notifications.filter(n => n.userId === user?.id).length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center" dir="rtl">
                   <motion.div
