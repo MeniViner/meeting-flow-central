@@ -119,7 +119,7 @@ export default function AccessRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">בקשות גישה</h1>
         <p className="text-muted-foreground">
           ניהול בקשות גישה למערכת

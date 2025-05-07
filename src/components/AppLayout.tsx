@@ -1,7 +1,8 @@
 import { Outlet } from "react-router-dom";
-import  MainNav  from "@/components/MainNav";
+import MainNav from "@/components/MainNav";
 import { useApp } from "@/contexts/AppContext";
 import { Navigate } from "react-router-dom";
+import { TopBar } from "@/components/TopBar";
 
 export function AppLayout() {
   const { user } = useApp();
@@ -12,7 +13,8 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-slate-900">
-      <div className="flex min-h-screen">
+      <TopBar />
+      <div className="flex min-h-screen pt-16">
         <div className="flex-1 md:ml-64 animate-fadeIn">
           <main className="container py-6 md:py-10">
             <div className="animate-scaleIn">

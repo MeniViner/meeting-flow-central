@@ -268,11 +268,86 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">ניהול משתמשים</h1>
-        <p className="text-muted-foreground">
-          ניהול משתמשים והרשאות במערכת
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">ניהול משתמשים</h1>
+          <p className="text-muted-foreground">
+            ניהול משתמשים והרשאות במערכת
+          </p>
+        </div>
+        <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              הוספת משתמש
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>הוספת משתמש חדש</DialogTitle>
+              <DialogDescription>
+                הזן את פרטי המשתמש החדש
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">שם</Label>
+                <Input
+                  id="name"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="email">אימייל</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="department">מחלקה</Label>
+                <Input
+                  id="department"
+                  value={newUser.department}
+                  onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="cardId">מספר כרטיס</Label>
+                <Input
+                  id="cardId"
+                  value={newUser.cardId}
+                  onChange={(e) => setNewUser({ ...newUser, cardId: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="role">תפקיד</Label>
+                <Select
+                  value={newUser.role}
+                  onValueChange={(value) => setNewUser({ ...newUser, role: value as UserRole })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר תפקיד" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">מנהל</SelectItem>
+                    <SelectItem value="editor">עורך</SelectItem>
+                    <SelectItem value="viewer">צופה</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddUserDialogOpen(false)}>
+                ביטול
+              </Button>
+              <Button onClick={handleAddUser}>הוספה</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
@@ -284,79 +359,6 @@ export default function UsersPage() {
                 רשימת כל המשתמשים במערכת
               </CardDescription>
             </div>
-            <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  הוספת משתמש
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>הוספת משתמש חדש</DialogTitle>
-                  <DialogDescription>
-                    הזן את פרטי המשתמש החדש
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">שם</Label>
-                    <Input
-                      id="name"
-                      value={newUser.name}
-                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">אימייל</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="department">מחלקה</Label>
-                    <Input
-                      id="department"
-                      value={newUser.department}
-                      onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="cardId">מספר כרטיס</Label>
-                    <Input
-                      id="cardId"
-                      value={newUser.cardId}
-                      onChange={(e) => setNewUser({ ...newUser, cardId: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="role">תפקיד</Label>
-                    <Select
-                      value={newUser.role}
-                      onValueChange={(value) => setNewUser({ ...newUser, role: value as UserRole })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="בחר תפקיד" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">מנהל</SelectItem>
-                        <SelectItem value="editor">עורך</SelectItem>
-                        <SelectItem value="viewer">צופה</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddUserDialogOpen(false)}>
-                    ביטול
-                  </Button>
-                  <Button onClick={handleAddUser}>הוספה</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
           </div>
         </CardHeader>
         <CardContent>
@@ -371,6 +373,7 @@ export default function UsersPage() {
               />
             </div>
             <Select
+              dir="rtl"
               value={roleFilter}
               onValueChange={(value) => setRoleFilter(value as UserRole | "all")}
             >
@@ -378,7 +381,7 @@ export default function UsersPage() {
                 <SelectValue placeholder="סינון לפי תפקיד" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">כל התפקידים</SelectItem>
+                <SelectItem value="all" >כל התפקידים</SelectItem>
                 <SelectItem value="admin">מנהלים</SelectItem>
                 <SelectItem value="editor">עורכים</SelectItem>
                 <SelectItem value="viewer">צופים</SelectItem>

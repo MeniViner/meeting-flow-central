@@ -93,7 +93,9 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
                         </button>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-400 italic text-center mt-3">אין פגישות ליום זה</p>
+                      // <p className="text-sm text-gray-400 italic text-center mt-3">אין פגישות ליום זה</p>
+                      <div className="text-center font-bold text-muted-foreground mr-10 mt-4 ">—</div>
+
                     )}
                   </div>
                 </div>

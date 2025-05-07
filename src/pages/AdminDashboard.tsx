@@ -85,12 +85,12 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
+      {/* <div>
         <h1 className="text-3xl font-bold tracking-tight">לוח בקרה</h1>
         <p className="text-muted-foreground">
           ניהול בקשות פגישה
         </p>
-      </div>
+      </div> */}
       
       <Tabs defaultValue="overview">
         <TabsList>
