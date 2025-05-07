@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, FileText, Calendar, Clock, LayoutGrid, LayoutList, Info } from "lucide-react";
+import { Search, FileText, Calendar, Clock, LayoutGrid, LayoutList, Info, PersonStanding, UserRound, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -168,7 +168,22 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                             )}
                           </TableCell>
                           <TableCell>
-                            {request.scheduledTime ? <DateDisplay date={request.scheduledTime} /> : "—"}
+                            {request.scheduledTime && (() => {
+                              const d = new Date(request.scheduledTime);
+                              const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
+                              const [day, month] = d.toLocaleDateString('he-IL').split('.');
+                              return (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-4 h-4 text-blue-500" />
+                                  <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-bold">
+                                    {time}
+                                  </span>
+                                  <span className="rounded-full bg-gray-100 text-gray-800 px-2 py-0.5 text-xs font-bold">
+                                    {day}/{month}
+                                  </span>
+                                </span>
+                              );
+                            })()}
                           </TableCell>
                           <TableCell>
                             <RequestStatusBadge status={request.status} />
@@ -203,21 +218,37 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
                             <CardTitle className="text-lg truncate">{request.title}</CardTitle>
-                            <RequestStatusBadge status={request.status} />
-                          </div>
-                          <CardDescription className="flex items-center mt-1">
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              <span className="mr-1">תאריך הגשה: </span>
-                              <Calendar className="h-3.5 w-3.5 ml-1" />
-                              <DateDisplay date={request.createdAt} />
+                            <div className="flex items-center gap-2">
+                              {request.scheduledTime && (() => {
+                                const d = new Date(request.scheduledTime);
+                                const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
+                                const [day, month] = d.toLocaleDateString('he-IL').split('.');
+                                return (
+                                  <span className="flex items-center gap-1">
+                                    <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-bold">
+                                      {time}
+                                    </span>
+                                    <span className="rounded-full bg-gray-100 text-gray-800 px-2 py-0.5 text-xs font-bold">
+                                      {day}/{month}
+                                    </span>
+                                  </span>
+                                );
+                              })()}
+                              <RequestStatusBadge status={request.status} />
                             </div>
-                          </CardDescription>
+                          </div>
                         </CardHeader>
                         <CardContent className="pb-2">
                           <div className="space-y-2">
+                            <div className="flex items-center text-xs text-muted-foreground">
+                              <Calendar className="h-3.5 w-3.5 mr-1" />
+                              <span className="mr-1">תאריך הגשה: </span>
+                              <DateDisplay date={request.createdAt} />
+                            </div>
                             <div className="flex items-center text-sm">
-                              <span className="text-muted-foreground ml-2">מבקש:</span>
-                              <span>{request.requesterName}</span>
+                              <UserRound className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                              <span className="text-muted-foreground ml-2">מבקש: </span>
+                              <span>{" "}{request.requesterName}</span>
                             </div>
                             {request.description && (
                               <div className="flex items-center text-xs text-muted-foreground">
@@ -229,7 +260,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                               </div>
                             )}
                             <div className="flex items-center text-xs text-muted-foreground">
-                              <Clock className="h-3.5 w-3.5 mr-1" />
+                              <CalendarClock className="h-3.5 w-3.5 mr-1" />
                               <span className="mr-1">תאריך יעד: </span>
                               <DateDisplay date={request.deadline} className="mr-1" />
                             </div>

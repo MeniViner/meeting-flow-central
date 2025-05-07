@@ -272,15 +272,23 @@ export default function Dashboard() {
                       .filter(n => n.userId === user?.id)
                       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((notif) => (
-                        <li key={notif.id} className={notif.read ? "opacity-70" : "font-bold bg-blue-50 rounded p-2"}>
-                          <div className="flex items-center gap-2">
-                            <Bell className="h-4 w-4 text-blue-400" />
-                            <span>{notif.message}</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {new Date(notif.createdAt).toLocaleString()}
-                          </div>
-                        </li>
+                        (() => {
+                          const d = new Date(notif.createdAt);
+                          const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
+                          const date = d.toLocaleDateString('he-IL');
+                          const formatted = `${time}, ${date}`;
+                          return (
+                            <li key={notif.id} className={notif.read ? "opacity-70" : "font-bold bg-blue-50 rounded p-2"}>
+                              <div className="flex items-center gap-2">
+                                <Bell className="h-4 w-4 text-blue-400" />
+                                <span>{notif.message}</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {formatted}
+                              </div>
+                            </li>
+                          );
+                        })()
                       ))}
                   </ul>
                 )}

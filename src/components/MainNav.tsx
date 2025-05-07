@@ -156,7 +156,7 @@ export default function MainNav({ className }: { className?: string }) {
             >
               <X className="h-4 w-4" />
               התנתק
-            </Button>WorkspaceSelector
+            </Button>
           </div>
         </div>
       </div>

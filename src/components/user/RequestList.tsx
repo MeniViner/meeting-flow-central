@@ -194,7 +194,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                       {request.documents.length > 0 && (
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center text-xs text-muted-foreground">
-                            <FileText className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
+                            <FileText className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                             <span className="mr-1">מסמכים: </span>
                           </div>
                           <div className="flex flex-col gap-1 pl-5">
@@ -214,7 +214,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                       </div>
                       
                       {request.documents.length > 0 && (
-                        <div className="flex items-center mt-1">
+                        <div className="flex items-center mt-1" dir="ltr">
                           <FileText className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
                           <Badge variant="secondary" className="text-xs">
                             {request.documents.length} {request.documents.length === 1 ? "מסמך" : "מסמכים"}

@@ -130,9 +130,12 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
   const handleReschedule = async () => {
     if (meetingDate) {
       await scheduleMeeting(request.id, meetingDate, adminNotes);
+      const date = new Date(meetingDate);
+      const timeStr = date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const dateStr = date.toLocaleDateString('he-IL');
       addNotification({
         userId: request.requesterId,
-        message: `הפגישה שלך תוזמנה מחדש ל-${meetingDate.toLocaleString('he-IL')}`,
+        message: `הפגישה שלך תוזמנה מחדש ל-${timeStr}, ${dateStr}`,
       });
       toast({
         title: "הפגישה תוזמנה מחדש",
@@ -223,18 +226,18 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
             <div className="flex-1">
               <h4 className="text-sm font-medium mb-2">בחר שעה לפגישה</h4>
               <div className="inline-flex items-center gap-2 border rounded px-2 py-1">
+                <select value={minuteInput} onChange={handleMinuteChange} className="appearance-none bg-transparent border-none focus:outline-none">
+                  {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+                  <span>:</span>
                 <select value={hourInput} onChange={handleHourChange} className="appearance-none bg-transparent border-none focus:outline-none">
                   {[...Array(24).keys()].map(h => (
                     <option key={h} value={h.toString().padStart(2, '0')}>
                       {h.toString().padStart(2, '0')}
-                    </option>
-                  ))}
-                </select>
-                <span>:</span>
-                <select value={minuteInput} onChange={handleMinuteChange} className="appearance-none bg-transparent border-none focus:outline-none">
-                  {["00", "10", "20", "30", "40", "50"].map(m => (
-                    <option key={m} value={m}>
-                      {m}
                     </option>
                   ))}
                 </select>

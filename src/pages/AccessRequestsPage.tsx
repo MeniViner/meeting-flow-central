@@ -119,14 +119,14 @@ export default function AccessRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">בקשות גישה</h1>
         <p className="text-muted-foreground">
           ניהול בקשות גישה למערכת
         </p>
-      </div>
+      </div> */}
 
-      <Card>
+      <Card className="min-h-[570px]">
         <CardHeader>
           <div>
             <CardTitle>בקשות גישה</CardTitle>
