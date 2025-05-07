@@ -268,31 +268,37 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
             </DialogHeader>
             <RequestStepper status={selectedRequest.status} />
             <div className="space-y-4">
-              {selectedRequest.description && (
+
+              <div className="grid gap-4 md:grid-cols-2">
+
+                {selectedRequest.description && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">תיאור</h4>
+                    <p className="text-sm text-muted-foreground">{selectedRequest.description}</p>
+                  </div>
+                )}
+
+                {selectedRequest.adminNotes && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">הערות מנהל</h4>
+                    <p className="text-sm text-muted-foreground">{selectedRequest.adminNotes}</p>
+                  </div>
+                )}
+                
                 <div>
-                  <h4 className="text-sm font-medium mb-1">תיאור</h4>
-                  <p className="text-sm text-muted-foreground">{selectedRequest.description}</p>
+                  <h4 className="text-sm font-medium mb-1">תאריך יעד</h4>
+                  <DateDisplay date={selectedRequest.deadline} showIcon />
                 </div>
-              )}
-              
-              <div>
-                <h4 className="text-sm font-medium mb-1">תאריך יעד</h4>
-                <DateDisplay date={selectedRequest.deadline} showIcon />
+                
+                {selectedRequest.scheduledTime && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">זמן מתוזמן</h4>
+                    <DateDisplay date={selectedRequest.scheduledTime} showIcon showTime />
+                  </div>
+                )}
+                
               </div>
-              
-              {selectedRequest.scheduledTime && (
-                <div>
-                  <h4 className="text-sm font-medium mb-1">זמן מתוזמן</h4>
-                  <DateDisplay date={selectedRequest.scheduledTime} showIcon showTime />
-                </div>
-              )}
-              
-              {selectedRequest.adminNotes && (
-                <div>
-                  <h4 className="text-sm font-medium mb-1">הערות מנהל</h4>
-                  <p className="text-sm text-muted-foreground">{selectedRequest.adminNotes}</p>
-                </div>
-              )}
+
               
               {selectedRequest.status === "ended" && !selectedRequest.meetingSummaryFile && (
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded mb-4 flex flex-col gap-2">

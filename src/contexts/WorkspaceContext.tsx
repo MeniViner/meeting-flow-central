@@ -29,7 +29,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       let loadedWorkspaces: Workspace[] = [];
 
+
       if (process.env.NODE_ENV === "development") {
+        // if (import.meta.env.VITE_NODE_ENV === "development") {
         loadedWorkspaces = await devWorkspaceService.getWorkspaces();
       } else {
         loadedWorkspaces = await txtStore.getStrictSP<Workspace[]>("workspaces");
@@ -65,7 +67,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const handleAddWorkspace = async (workspace: Omit<Workspace, "id">) => {
     let newWorkspace: Workspace;
     
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.VITE_NODE_ENV === "development") {
       newWorkspace = await devWorkspaceService.addWorkspace(workspace);
     } else {
       newWorkspace = {
@@ -80,7 +82,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   };
 
   const handleUpdateWorkspace = async (workspace: Workspace) => {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.VITE_NODE_ENV === "development") {
       await devWorkspaceService.updateWorkspace(workspace);
     } else {
       const updatedWorkspaces = workspaces.map(w => 
@@ -93,7 +95,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   };
 
   const handleDeleteWorkspace = async (workspaceId: string) => {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.VITE_NODE_ENV === "development") {
       await devWorkspaceService.deleteWorkspace(workspaceId);
     } else {
       const updatedWorkspaces = workspaces.filter(w => w.id !== workspaceId);

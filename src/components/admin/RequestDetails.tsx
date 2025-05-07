@@ -15,6 +15,9 @@ import { RequestStepper } from "@/components/RequestStepper";
 import { toast } from "@/components/ui/use-toast";
 import { useToast } from "@/components/ui/use-toast";
 import { isBefore, isSameDay } from "date-fns";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { he } from "date-fns/locale";
 
 interface RequestDetailsProps {
   request: MeetingRequest;
@@ -40,10 +43,9 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
     request.scheduledTime ? new Date(request.scheduledTime) : undefined
   );
   const [meetingSummaryFile, setMeetingSummaryFile] = useState<File | null>(null);
-  const [dateInput, setDateInput] = useState(meetingDate ? toLocalDateInputValue(meetingDate) : "");
-  const [timeInput, setTimeInput] = useState(
-    meetingDate ? meetingDate.toTimeString().slice(0,5) : ""
-  );
+  const [dateInput, setDateInput] = useState(meetingDate ? meetingDate : null);
+  const [hourInput, setHourInput] = useState(meetingDate ? meetingDate.getHours().toString().padStart(2, '0') : "00");
+  const [minuteInput, setMinuteInput] = useState(meetingDate ? meetingDate.getMinutes().toString().padStart(2, '0') : "00");
   
   const handleApprove = async () => {
     if (!meetingDate) return;
@@ -73,14 +75,14 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
     );
   };
 
-  // Handler for date input (local time, no timezone bug)
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const dateStr = e.target.value;
-    setDateInput(dateStr);
-    if (dateStr && timeInput) {
-      const [year, month, day] = dateStr.split('-').map(Number);
-      const [hours, minutes] = timeInput.split(':').map(Number);
-      const localDate = new Date(year, month - 1, day, hours, minutes);
+  // Handler for date input (using DatePicker)
+  const handleDateChange = (date: Date | null) => {
+    setDateInput(date);
+    if (date && hourInput && minuteInput) {
+      const [hours, minutes] = [parseInt(hourInput), parseInt(minuteInput)];
+      const localDate = new Date(date);
+      localDate.setHours(hours);
+      localDate.setMinutes(minutes);
       setMeetingDate(localDate);
       if (checkDoubleBooking(localDate)) {
         toast({
@@ -94,14 +96,23 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
     }
   };
 
-  // Handler for time input (local time, no timezone bug)
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const timeStr = e.target.value;
-    setTimeInput(timeStr);
-    if (dateInput && timeStr) {
-      const [year, month, day] = dateInput.split('-').map(Number);
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      const localDate = new Date(year, month - 1, day, hours, minutes);
+  // Handler for custom time select
+  const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newHour = e.target.value;
+    setHourInput(newHour);
+    updateMeetingDateWithTime(newHour, minuteInput);
+  };
+  const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMinute = e.target.value;
+    setMinuteInput(newMinute);
+    updateMeetingDateWithTime(hourInput, newMinute);
+  };
+  const updateMeetingDateWithTime = (hour: string, minute: string) => {
+    if (dateInput) {
+      const year = dateInput.getFullYear();
+      const month = dateInput.getMonth();
+      const day = dateInput.getDate();
+      const localDate = new Date(year, month, day, parseInt(hour), parseInt(minute));
       setMeetingDate(localDate);
       if (checkDoubleBooking(localDate)) {
         toast({
@@ -110,6 +121,8 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
           variant: "destructive",
         });
       }
+    } else {
+      setMeetingDate(undefined);
     }
   };
 
@@ -138,15 +151,22 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
       </div>
       
       <div className="grid gap-4 md:grid-cols-2">
+        
         <div>
           <h4 className="text-sm font-medium mb-1">מבקש</h4>
           <p className="text-sm text-muted-foreground">{request.requesterName}</p>
         </div>
-        
+        {request.description && (
+          <div>
+            <h4 className="text-sm font-medium mb-1">תיאור</h4>
+            <p className="text-sm text-muted-foreground">{request.description}</p>
+          </div>
+        )}
         <div>
           <h4 className="text-sm font-medium mb-1">תאריך הגשה</h4>
           <DateDisplay date={request.createdAt} showIcon />
         </div>
+
         
         {!request.scheduledTime && (
           <div>
@@ -157,6 +177,7 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
             </div>
           </div>
         )}
+
         
         {request.scheduledTime && (
           <div>
@@ -164,14 +185,9 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
             <DateDisplay date={request.scheduledTime} showIcon showTime />
           </div>
         )}
+
       </div>
       
-      {request.description && (
-        <div>
-          <h4 className="text-sm font-medium mb-1">תיאור</h4>
-          <p className="text-sm text-muted-foreground">{request.description}</p>
-        </div>
-      )}
       
       {request.documents.length > 0 && (
         <div>
@@ -195,21 +211,34 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
           <div className="flex flex-row gap-2 items-end mb-4">
             <div className="flex-1">
               <h4 className="text-sm font-medium mb-2">בחר תאריך לפגישה</h4>
-              <input
-                type="date"
-                className="border rounded px-2 py-1 w-full"
-                value={dateInput}
+              <DatePicker
+                selected={dateInput}
                 onChange={handleDateChange}
+                dateFormat="dd/MM/yyyy"
+                className="border rounded px-2 py-1 w-full"
+                placeholderText="בחר תאריך"
+                locale={he}
               />
             </div>
             <div className="flex-1">
               <h4 className="text-sm font-medium mb-2">בחר שעה לפגישה</h4>
-              <input
-                type="time"
-                className="border rounded px-2 py-1 w-full"
-                value={timeInput}
-                onChange={handleTimeChange}
-              />
+              <div className="inline-flex items-center gap-2 border rounded px-2 py-1">
+                <select value={hourInput} onChange={handleHourChange} className="appearance-none bg-transparent border-none focus:outline-none">
+                  {[...Array(24).keys()].map(h => (
+                    <option key={h} value={h.toString().padStart(2, '0')}>
+                      {h.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+                <span>:</span>
+                <select value={minuteInput} onChange={handleMinuteChange} className="appearance-none bg-transparent border-none focus:outline-none">
+                  {["00", "10", "20", "30", "40", "50"].map(m => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
           <div>
@@ -256,21 +285,34 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
           <div className="flex flex-row gap-2 items-end mb-4">
             <div className="flex-1">
               <h4 className="text-sm font-medium mb-2">ערוך תאריך פגישה</h4>
-              <input
-                type="date"
-                className="border rounded px-2 py-1 w-full"
-                value={dateInput}
+              <DatePicker
+                selected={dateInput}
                 onChange={handleDateChange}
+                dateFormat="dd/MM/yyyy"
+                className="border rounded px-2 py-1 w-full"
+                placeholderText="בחר תאריך"
+                locale={he}
               />
             </div>
             <div className="flex-1">
               <h4 className="text-sm font-medium mb-2">ערוך שעה לפגישה</h4>
-              <input
-                type="time"
-                className="border rounded px-2 py-1 w-full"
-                value={timeInput}
-                onChange={handleTimeChange}
-              />
+              <div className="inline-flex-reverse items-center gap-2 border rounded px-2 py-1">
+                <select value={minuteInput} onChange={handleMinuteChange} className="appearance-none bg-transparent border-none focus:outline-none">
+                  {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+                <span>:</span>
+                <select value={hourInput} onChange={handleHourChange} className="appearance-none bg-transparent border-none focus:outline-none">
+                  {[...Array(24).keys()].map(h => (
+                    <option key={h} value={h.toString().padStart(2, '0')}>
+                      {h.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
           <Button
