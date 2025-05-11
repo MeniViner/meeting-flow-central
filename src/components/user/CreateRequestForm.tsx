@@ -130,7 +130,7 @@ export function CreateRequestForm({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="ספק פרטים על הפגישה"
-              rows={4}
+              rows={9}
             />
           </div>
         </div>

@@ -85,17 +85,12 @@ export function FileUploader({
       </div>
 
       {files.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-2" >
           <h4 className="text-sm font-medium">קבצים שהועלו</h4>
-          <ScrollArea className="h-[200px] rounded-md border">
-            <ul className="space-y-2 p-2">
+          <ScrollArea className="h-[200px] p-2 rounded-md border" >
+            <ul className="space-y-1 w-[200px]" dir="rtl" >
               {files.map((file) => (
-                <li key={file.id} className="flex items-center justify-between p-2 bg-background rounded-md border">
-                  <div className="flex items-center space-x-2">
-                    <span className={cn("text-sm truncate max-w-[200px] px-2 py-1 rounded", getFileColor(file.type))}>
-                      {file.name}
-                    </span>
-                  </div>
+                <li key={file.id} className="flex items-center   bg-background rounded-md border">
                   <Button
                     type="button"
                     variant="ghost"
@@ -103,9 +98,14 @@ export function FileUploader({
                     className="h-8 w-8 p-0"
                     onClick={() => removeFile(file.id)}
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4 text-red-500 " />
                     <span className="sr-only">הסר קובץ</span>
                   </Button>
+                  <div className="flex items-center space-x-2">
+                    <span  className={cn("text-sm truncate max-w-[200px] px-1 py-1 rounded", getFileColor(file.type))}>
+                      {file.name}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>
