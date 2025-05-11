@@ -18,6 +18,7 @@ import { CalendarIcon, Upload, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { FileUploader } from "@/components/FileUploader";
 
 const formSchema = z.object({
   title: z.string().min(1, "כותרת הבקשה היא שדה חובה"),
@@ -35,9 +36,11 @@ interface EditRequestFormProps {
 export function EditRequestForm({ request, onRequestUpdated }: EditRequestFormProps) {
   const { toast } = useToast();
   const { updateRequest } = useApp();
+  const [title, setTitle] = useState(request.title);
+  const [description, setDescription] = useState(request.description);
+  const [documents, setDocuments] = useState<Document[]>(request.documents);
+  const [deadline, setDeadline] = useState<Date | undefined>(request.deadline ? new Date(request.deadline) : undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [documents, setDocuments] = useState<Document[]>(request.documents || []);
-  const [files, setFiles] = useState<FileList | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,205 +51,91 @@ export function EditRequestForm({ request, onRequestUpdated }: EditRequestFormPr
     },
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles(e.target.files);
-    }
-  };
-
-  const removeDocument = (index: number) => {
-    setDocuments(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const removeNewFile = (index: number) => {
-    if (files) {
-      const dt = new DataTransfer();
-      Array.from(files).forEach((file, i) => {
-        if (i !== index) dt.items.add(file);
-      });
-      setFiles(dt.files);
-    }
-  };
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-
-      // Convert new files to documents
-      const newDocuments: Document[] = files ? Array.from(files).map(file => ({
-        id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: file.name,
-        url: file.name, // Store only the file name
-        type: file.type,
-        uploadedAt: new Date()
-      })) : [];
-
-      // Combine existing and new documents
-      const updatedDocuments = [...documents, ...newDocuments];
-
       await updateRequest(request.id, {
         ...request,
-        ...values,
-        documents: updatedDocuments,
-        deadline: values.deadline.toISOString(),
+        title,
+        description,
+        deadline: deadline?.toISOString(),
+        documents,
       });
-      
-      toast({
-        title: "הבקשה עודכנה בהצלחה",
-        description: "השינויים נשמרו במערכת",
-      });
-      
       onRequestUpdated();
     } catch (error) {
-      console.error("Error updating request:", error);
+      console.error("Failed to update request:", error);
       toast({
         title: "שגיאה",
-        description: "אירעה שגיאה בעדכון הבקשה",
+        description: "לא ניתן לעדכן את הבקשה",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" dir="rtl">
+      <form onSubmit={handleSubmit} className="space-y-6" dir="rtl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Right Column - Basic Details */}
           <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>כותרת פגישה *</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="הזן כותרת פגישה" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="title">כותרת פגישה *</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="הזן כותרת פגישה"
+              />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="deadline"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>מועד מבוקש *</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-right font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="ml-2 h-4 w-4" />
-                          {field.value ? (
-                            format(field.value, "PPP", { locale: he })
-                          ) : (
-                            <span>בחר תאריך</span>
-                          )}
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) => date < new Date()}
-                        initialFocus
-                        locale={he}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="date">מועד מבוקש *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-right font-normal",
+                      !deadline && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="ml-2 h-4 w-4" />
+                    {deadline ? format(deadline, "PPP", { locale: he }) : "בחר תאריך"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={deadline}
+                    onSelect={setDeadline}
+                    initialFocus
+                    locale={he}
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>תיאור</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} placeholder="ספק פרטים על הפגישה" rows={4} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="description">תיאור</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="ספק פרטים על הפגישה"
+                rows={4}
+              />
+            </div>
           </div>
 
           {/* Left Column - Documents */}
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>מסמכים</Label>
-              <Card className="border-2 border-dashed p-6">
-                <div className="flex flex-col items-center justify-center space-y-2 text-center">
-                  <Upload className="h-8 w-8 text-muted-foreground" />
-                  <div className="text-sm text-muted-foreground">
-                    <label htmlFor="file-upload" className="cursor-pointer text-primary hover:underline">
-                      לחץ להעלאה
-                    </label>
-                    {" או גרור לכאן קבצים"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    PDF, Word, Excel, PowerPoint, Images
-                  </div>
-                  <input
-                    id="file-upload"
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png"
-                  />
-                </div>
-                {files && files.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <div className="text-sm font-medium">קבצים חדשים:</div>
-                    {Array.from(files).map((file, index) => (
-                      <div key={index} className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span className="truncate">{file.name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeNewFile(index)}
-                          className="h-6 w-6 p-0"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {documents.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <div className="text-sm font-medium">מסמכים קיימים:</div>
-                    {documents.map((doc, index) => (
-                      <div key={index} className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span className="truncate">{doc.name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeDocument(index)}
-                          className="h-6 w-6 p-0"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
+              <FileUploader onFilesChange={setDocuments} existingFiles={documents} />
             </div>
           </div>
         </div>

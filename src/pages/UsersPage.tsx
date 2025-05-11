@@ -280,11 +280,39 @@ export default function UsersPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>משתמשים</CardTitle>
+            <div className="flex items-center gap-4">
+              {/* <CardTitle>משתמשים</CardTitle>
               <CardDescription>
                 רשימת כל המשתמשים במערכת
-              </CardDescription>
+              </CardDescription> */}
+
+              <div className="relative flex-1">
+                <Search className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="חיפוש בכל שדות המשתמשים.."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 max-w-[300px]"
+                />
+              </div>
+
+              <Select
+                dir="rtl"
+                value={roleFilter}
+                onValueChange={(value) => setRoleFilter(value as UserRole | "all")}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="סינון לפי תפקיד" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" >כל התפקידים</SelectItem>
+                  <SelectItem value="admin">מנהלים</SelectItem>
+                  <SelectItem value="editor">עורכים</SelectItem>
+                  <SelectItem value="viewer">צופים</SelectItem>
+                </SelectContent>
+              </Select>
+
+
             </div>
             <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
               <DialogTrigger asChild>
@@ -363,7 +391,7 @@ export default function UsersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4 mb-4">
+          {/* <div className="flex items-center gap-4 mb-4">
             <div className="relative flex-1">
               <Search className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -388,7 +416,7 @@ export default function UsersPage() {
                 <SelectItem value="viewer">צופים</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
           <ScrollArea className="h-[450px]" dir="rtl">
             {filteredUsers.length === 0 ? (

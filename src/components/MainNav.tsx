@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FileText, Menu, X, UserCog, Shield, LockOpen, Building2, Sun, Moon } from "lucide-react";
+import { 
+  LayoutDashboard, FileText, Menu, X, UserCog, Shield, LockOpen, Building2, Sun, Moon 
+} from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import WorkspaceSelector from "./WorkspaceSelector";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -11,16 +13,10 @@ import { Switch } from "@/components/ui/switch";
 
 const navItems = [
   {
-    title: "לוח בקרה אישי",
+    title: (role: string) => role === "regular" ? "לוח בקרה" : "לוח בקרה אישי",
     href: "/",
     icon: LayoutDashboard,
     showFor: ["regular", "editor", "administrator", "owner"],
-  },
-  {
-    title: "ניהול סביבות עבודה",
-    href: "/workspaces",
-    icon: Building2,
-    showFor: ["administrator", "owner"],
   },
   {
     title: "ניהול מערכת",
@@ -35,21 +31,27 @@ const navItems = [
     showFor: ["administrator", "owner"],
   },
   {
+    title: "ניהול בקשות גישה",
+    href: "/access-requests",
+    icon: LockOpen,
+    showFor: ["administrator", "owner"],
+  },
+  {
     title: "מסמכים",
     href: "/documents",
     icon: FileText,
     showFor: ["regular", "editor", "administrator", "owner"],
   },
   {
-    title: "ניהול בקשות גישה",
-    href: "/access-requests",
-    icon: LockOpen,
-    showFor: ["administrator", "owner"],
+    title: "ניהול סביבות עבודה",
+    href: "/workspaces",
+    icon: Building2,
+    showFor: ["owner"],
   },
   // {
-  //   title: "הרשאות",
-  //   href: "/settings",
-  //   icon: Settings,
+    //   title: "הרשאות",
+    //   href: "/settings",
+    //   icon: Settings,
   //   showFor: ["admin"],
   // },
 ];
@@ -134,7 +136,7 @@ export default function MainNav({ className }: { className?: string }) {
                 )}
               >
                 <item.icon className="h-4 w-4" />
-                {item.title}
+                {typeof item.title === 'function' ? item.title(user.globalRole) : item.title}
               </Link>
             ))}
           </nav>

@@ -30,7 +30,12 @@ export default function WorkspaceSelector() {
         <SelectContent>
           {workspaces.map((workspace) => (
             <SelectItem key={workspace.id} value={workspace.id}>
-              {workspace.longName}
+              <div className="flex flex-col gap-1">
+                {workspace.shortName}
+                <span className="text-xs text-muted-foreground">
+                  {workspace.longName}
+                </span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>

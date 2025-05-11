@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Document } from "@/types";
 import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface FileUploaderProps {
   onFilesChange: (files: Document[]) => void;
@@ -48,6 +49,15 @@ export function FileUploader({
     return '📁';
   };
 
+  const getFileColor = (type: string) => {
+    if (type.includes('pdf')) return 'bg-red-100 text-red-800';
+    if (type.includes('word') || type.includes('document')) return 'bg-blue-100 text-blue-800';
+    if (type.includes('sheet') || type.includes('excel')) return 'bg-green-100 text-green-800';
+    if (type.includes('presentation') || type.includes('powerpoint')) return 'bg-purple-100 text-purple-800';
+    if (type.includes('image')) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-gray-100 text-gray-800';
+  };
+
   return (
     <div className={cn("space-y-4", className)}>
       <div className="flex items-center justify-center w-full">
@@ -77,25 +87,29 @@ export function FileUploader({
       {files.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium">קבצים שהועלו</h4>
-          <ul className="space-y-2">
-            {files.map((file) => (
-              <li key={file.id} className="flex items-center justify-between p-2 bg-background rounded-md border">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm truncate max-w-[200px]">{file.name}</span>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => removeFile(file.id)}
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">הסר קובץ</span>
-                </Button>
-              </li>
-            ))}
-          </ul>
+          <ScrollArea className="h-[200px] rounded-md border">
+            <ul className="space-y-2 p-2">
+              {files.map((file) => (
+                <li key={file.id} className="flex items-center justify-between p-2 bg-background rounded-md border">
+                  <div className="flex items-center space-x-2">
+                    <span className={cn("text-sm truncate max-w-[200px] px-2 py-1 rounded", getFileColor(file.type))}>
+                      {file.name}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => removeFile(file.id)}
+                  >
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">הסר קובץ</span>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
         </div>
       )}
     </div>

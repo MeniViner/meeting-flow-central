@@ -15,7 +15,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { 
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+} from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function WorkspacesPage() {
@@ -28,6 +30,7 @@ export default function WorkspacesPage() {
     englishName: "",
     adminEmail: "",
     dataFileUrl: "",
+
   });
 
   const handleAddWorkspace = async () => {
@@ -39,6 +42,7 @@ export default function WorkspacesPage() {
         englishName: "",
         adminEmail: "",
         dataFileUrl: "",
+
       });
       setIsAddDialogOpen(false);
 
@@ -102,7 +106,7 @@ export default function WorkspacesPage() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="shortName">שם קצר</Label>
+                    <Label htmlFor="shortName">שם הסביבה</Label>
                     <Input
                       id="shortName"
                       value={newWorkspace.shortName}
@@ -110,7 +114,7 @@ export default function WorkspacesPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="longName">שם מלא</Label>
+                    <Label htmlFor="longName">תיאור הסביבה</Label>
                     <Input
                       id="longName"
                       value={newWorkspace.longName}
@@ -142,6 +146,7 @@ export default function WorkspacesPage() {
                       onChange={(e) => setNewWorkspace({ ...newWorkspace, dataFileUrl: e.target.value })}
                     />
                   </div>
+
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
@@ -158,8 +163,8 @@ export default function WorkspacesPage() {
             <Table dir="rtl">
               <TableHeader>
                 <TableRow>
-                  <TableHead>שם קצר</TableHead>
-                  <TableHead>שם מלא</TableHead>
+                  <TableHead>שם הסביבה</TableHead>
+                  <TableHead>תיאור הסביבה</TableHead>
                   <TableHead>שם באנגלית</TableHead>
                   <TableHead>אימייל מנהל</TableHead>
                   <TableHead>פעולות</TableHead>

@@ -29,9 +29,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       let loadedWorkspaces: Workspace[] = [];
 
-
-      if (process.env.NODE_ENV === "development") {
-        // if (import.meta.env.VITE_NODE_ENV === "development") {
+      if (import.meta.env.VITE_NODE_ENV === "development") {
         loadedWorkspaces = await devWorkspaceService.getWorkspaces();
       } else {
         loadedWorkspaces = await txtStore.getStrictSP<Workspace[]>("workspaces");

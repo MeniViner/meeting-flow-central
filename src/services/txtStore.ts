@@ -1,8 +1,8 @@
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 // Base URLs for SharePoint text files in production
-const BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://MY.ORGANIZATION.COM/sites/more_nevochim/Shared%20Documents/data'
+const BASE_URL = import.meta.env.VITE_NODE_ENV === 'production' 
+  ? import.meta.env.VITE_SHAREPOINT_URL || 'https://MY.ORGANIZATION.COM/sites/more_nevochim/Shared%20Documents/data'
   : '';
 
 interface StorageData {

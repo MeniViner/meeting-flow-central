@@ -106,7 +106,7 @@ export default function AccessRequestPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="name">שם מלא</Label>
+                <Label htmlFor="name">תיאור הסביבה</Label>
                 <Input
                   id="name"
                   value={formData.name}

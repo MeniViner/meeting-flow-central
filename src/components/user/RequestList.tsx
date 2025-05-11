@@ -16,6 +16,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion } from "framer-motion"
 import { EditRequestForm } from "./EditRequestForm";
+import { FileUploader } from "@/components/FileUploader";
 
 interface RequestListProps {
   requests: MeetingRequest[];
@@ -30,7 +31,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
   const [selectedRequest, setSelectedRequest] = useState<MeetingRequest | null>(null);
   const [editingRequest, setEditingRequest] = useState<MeetingRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">("all");
-  const [meetingSummaryFile, setMeetingSummaryFile] = useState<File | null>(null);
+  const [meetingSummaryFile, setMeetingSummaryFile] = useState<Document | null>(null);
   
   // Filter requests
   const filteredRequests = requests.filter(request => {
@@ -44,6 +45,14 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
 
   const canEditRequest = (request: MeetingRequest) => {
     return request.status === "pending" && !request.scheduledTime;
+  };
+
+  const handleMeetingSummaryChange = (files: Document[]) => {
+    if (files.length > 0) {
+      setMeetingSummaryFile(files[0]);
+    } else {
+      setMeetingSummaryFile(null);
+    }
   };
 
   return (
@@ -283,13 +292,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
               {selectedRequest.status === "ended" && !selectedRequest.meetingSummaryFile && (
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded mb-4 flex flex-col gap-2">
                   <strong>לתשומת לבך:</strong> טרם הועלה קובץ סיכום פגישה. נא להעלות קובץ סיכום.
-                  <input
-                    type="file"
-                    id="meetingSummary"
-                    className="mt-2"
-                    onChange={e => setMeetingSummaryFile(e.target.files?.[0] || null)}
-                    accept=".pdf,.doc,.docx,.txt"
-                  />
+                  <FileUploader onFilesChange={handleMeetingSummaryChange} existingFiles={meetingSummaryFile ? [meetingSummaryFile] : []} />
                   <Button
                     className="w-fit mt-2"
                     onClick={async () => {

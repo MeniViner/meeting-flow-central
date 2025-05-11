@@ -71,7 +71,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
-        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+        <Tabs defaultValue="view" value={activeTab} onValueChange={setActiveTab}>
           <TabsList dir="rtl">
             <TabsTrigger value="view">הבקשות שלי</TabsTrigger>
             <TabsTrigger value="overview">סקירה כללית</TabsTrigger>

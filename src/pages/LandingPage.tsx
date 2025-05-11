@@ -173,7 +173,7 @@
 //                   </div>
 
 //                   <div className="space-y-2">
-//                     <Label htmlFor="name">שם מלא</Label>
+//                     <Label htmlFor="name">תיאור הסביבה</Label>
 //                     <Input
 //                       id="name"
 //                       value={formData.name}
@@ -406,7 +406,7 @@ export function LandingPage() {
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[
                     { id: "employeeId", label: "מספר עובד", type: "text" },
-                    { id: "name", label: "שם מלא", type: "text" },
+                    { id: "name", label: "תיאור הסביבה", type: "text" },
                     { id: "email", label: "דוא\"ל", type: "email" },
                     { id: "department", label: "מחלקה", type: "text" },
                   ].map(({ id, label, type }) => (
@@ -448,7 +448,14 @@ export function LandingPage() {
                         <SelectContent>
                           {workspaces.map(ws => (
                             <SelectItem key={ws.id} value={ws.id}>
-                              {ws.longName}
+                              <div className="flex flex-col gap-1">
+                                {ws.shortName}
+                                <span className="text-xs text-muted-foreground">
+                                {ws.longName}
+                                </span>
+                              </div>
+
+                              
                             </SelectItem>
                           ))}
                         </SelectContent>

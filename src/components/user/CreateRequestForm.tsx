@@ -27,7 +27,6 @@ export function CreateRequestForm({
   const [documents, setDocuments] = useState<Document[]>([]);
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [files, setFiles] = useState<FileList | null>(null);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -70,12 +69,6 @@ export function CreateRequestForm({
       }
     } catch (error) {
       console.error("Failed to submit request:", error);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles(e.target.files);
     }
   };
 
@@ -146,37 +139,7 @@ export function CreateRequestForm({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>מסמכים</Label>
-            <Card className="border-2 border-dashed p-6">
-              <div className="flex flex-col items-center justify-center space-y-2 text-center">
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <div className="text-sm text-muted-foreground">
-                  <label htmlFor="file-upload" className="cursor-pointer text-primary hover:underline">
-                    לחץ להעלאה
-                  </label>
-                  {" או גרור לכאן קבצים"}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  PDF, Word, Excel, PowerPoint, Images
-                </div>
-                <input
-                  id="file-upload"
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileChange}
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png"
-                />
-              </div>
-              {files && files.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {Array.from(files).map((file, index) => (
-                    <div key={index} className="text-sm text-muted-foreground">
-                      {file.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
+            <FileUploader onFilesChange={setDocuments} existingFiles={documents} />
           </div>
         </div>
       </div>
