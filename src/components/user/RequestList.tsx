@@ -22,15 +22,15 @@ interface RequestListProps {
   showFilters?: boolean;
   searchTerm: string;
   setSearchTerm: (value: string) => void;
+  viewMode: "grid" | "table";
 }
 // מציג רשימה של הבקשות שהוגשו על ידי המשתמש הנוכחי
-export function RequestList({ requests, showFilters = true, searchTerm, setSearchTerm }: RequestListProps) {
+export function RequestList({ requests, showFilters = true, searchTerm, setSearchTerm, viewMode }: RequestListProps) {
   const { addMeetingSummary } = useApp();
   const [selectedRequest, setSelectedRequest] = useState<MeetingRequest | null>(null);
   const [editingRequest, setEditingRequest] = useState<MeetingRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">("all");
   const [meetingSummaryFile, setMeetingSummaryFile] = useState<File | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   
   // Filter requests
   const filteredRequests = requests.filter(request => {
@@ -48,26 +48,6 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
 
   return (
     <div className="space-y-6">
-      {/* Toggle view mode */}
-      <div className="flex absolute  top-[230px] gap-1 border rounded-md w-fit mb-2">
-        <Button
-          variant={viewMode === "grid" ? "secondary" : "ghost"}
-          size="icon"
-          onClick={() => setViewMode("grid")}
-          className="rounded-r-none"
-        >
-          <LayoutGrid className="h-4 w-4" />
-        </Button>
-        <Button
-          variant={viewMode === "table" ? "secondary" : "ghost"}
-          size="icon"
-          onClick={() => setViewMode("table")}
-          className="rounded-l-none"
-        >
-          <LayoutList className="h-4 w-4" />
-        </Button>
-      </div>
-
       {showFilters && (
         <div className="flex flex-col sm:flex-row gap-4">
           <Select
@@ -115,7 +95,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                   <TableHead>כותרת</TableHead>
                   <TableHead>סטטוס</TableHead>
                   <TableHead>תאריך יצירה</TableHead>
-                  <TableHead>תאריך יעד</TableHead>
+                  <TableHead>מועד מבוקש</TableHead>
                   <TableHead>מסמכים</TableHead>
                   <TableHead>פעולות</TableHead>
                 </TableRow>
@@ -209,7 +189,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                       
                       <div className="flex items-center text-xs text-muted-foreground">
                         <Clock className="h-3.5 w-3.5 mr-1" />
-                        <span className="mr-1">תאריך יעד: </span>
+                        <span className="mr-1">מועד מבוקש: </span>
                         <DateDisplay date={request.deadline} className="mr-1" />
                       </div>
                       
@@ -286,7 +266,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                 )}
                 
                 <div>
-                  <h4 className="text-sm font-medium mb-1">תאריך יעד</h4>
+                  <h4 className="text-sm font-medium mb-1">מועד מבוקש</h4>
                   <DateDisplay date={selectedRequest.deadline} showIcon />
                 </div>
                 

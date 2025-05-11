@@ -37,7 +37,7 @@ export function CreateRequestForm({
     }
     
     if (!deadline) {
-      newErrors.deadline = "נדרש תאריך יעד";
+      newErrors.deadline = "נדרש מועד מבוקש";
     }
     
     setErrors(newErrors);
@@ -99,7 +99,7 @@ export function CreateRequestForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date">תאריך יעד *</Label>
+            <Label htmlFor="date">מועד מבוקש *</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button

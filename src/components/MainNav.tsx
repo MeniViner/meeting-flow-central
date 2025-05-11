@@ -108,15 +108,6 @@ export default function MainNav({ className }: { className?: string }) {
               <h2 className="font-semibold text-lg">
                 {currentWorkspace?.shortName || "ניהול משרד"}
               </h2>
-              <div className="flex items-center gap-2">
-                <Sun className="h-4 w-4 text-muted-foreground" />
-                <Switch
-                  checked={theme === "dark"}
-                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-                  className="scale-75"
-                />
-                <Moon className="h-4 w-4 text-muted-foreground" />
-              </div>
             </div>
             <div className="text-xs text-muted-foreground">
               {currentWorkspace?.longName}

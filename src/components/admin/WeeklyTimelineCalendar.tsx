@@ -36,7 +36,7 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
   }, [meetingSlots, weekDates]);
 
   return (
-    <div className="flex flex-row gap-8 w-full" dir="rtl">
+    <div className="flex flex-row gap-8 w-full " dir="rtl">
       {/* Calendar */}
       <div className="min-w-[320px]">
         <DayPicker

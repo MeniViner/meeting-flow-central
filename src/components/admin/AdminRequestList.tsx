@@ -64,7 +64,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="min-h-[540px]">
         <CardHeader className="pb-3 ">
           <CardTitle>ניהול בקשות</CardTitle>
         </CardHeader>
@@ -89,7 +89,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                 <SelectTrigger className="w-full sm:w-[180px] flex flex-row-reverse justify-end">
                   <SelectValue placeholder="סנן לפי סטטוס"/>
                 </SelectTrigger>
-                <SelectContent align="end" className="w-full sm:w-[180px]">
+                <SelectContent  className="w-full sm:w-[180px]">
                   <SelectItem value="all">כל הסטטוסים</SelectItem>
                   <SelectItem value="pending">ממתין</SelectItem>
                   <SelectItem value="scheduled">מתוזמן</SelectItem>
@@ -129,7 +129,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                       <TableHead>מסמכים</TableHead>
                       <TableHead>מועד שנקבע</TableHead>
                       <TableHead>סטטוס</TableHead>
-                      <TableHead>מועד אחרון</TableHead>
+                      <TableHead>מועד מבוקש</TableHead>
                       <TableHead>מבקש</TableHead>
                       <TableHead className="w-[280px]">כותרת</TableHead>
                     </TableRow>
@@ -167,7 +167,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                               <span className="text-xs text-muted-foreground">אין</span>
                             )}
                           </TableCell>
-                          <TableCell>
+                          <TableCell dir="rtl">
                             {request.scheduledTime && (() => {
                               const d = new Date(request.scheduledTime);
                               const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -261,7 +261,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                             )}
                             <div className="flex items-center text-xs text-muted-foreground">
                               <CalendarClock className="h-3.5 w-3.5 mr-1" />
-                              <span className="mr-1">תאריך יעד: </span>
+                              <span className="mr-1">מועד מבוקש: </span>
                               <DateDisplay date={request.deadline} className="mr-1" />
                             </div>
                             {request.documents.length > 0 && (

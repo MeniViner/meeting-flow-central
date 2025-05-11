@@ -337,6 +337,7 @@ export default function UsersPage() {
                   <div className="grid gap-2">
                     <Label htmlFor="role">תפקיד</Label>
                     <Select
+                      dir="rtl"
                       value={newUser.role}
                       onValueChange={(value) => setNewUser({ ...newUser, role: value as UserRole })}
                     >
@@ -364,12 +365,12 @@ export default function UsersPage() {
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
             <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="חיפוש משתמשים..."
+                placeholder="חיפוש בכל שדות המשתמשים.."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
+                className="pl-8 max-w-[300px]"
               />
             </div>
             <Select
@@ -419,6 +420,7 @@ export default function UsersPage() {
                       <TableCell>{user.cardId}</TableCell>
                       <TableCell>
                         <Select
+                          dir="rtl"
                           value={user.role}
                           onValueChange={(value) => handleEditUser(user.id, { role: value as UserRole })}
                         >
@@ -522,6 +524,7 @@ export default function UsersPage() {
             <div className="grid gap-2" dir="rtl">
               <Label htmlFor="edit-role">תפקיד גלובלי</Label>
               <Select
+                dir="rtl"
                 value={editUserDraft.role || "viewer"}
                 onValueChange={value => setEditUserDraft(draft => ({ ...draft, role: value as UserRole }))}
               >
@@ -565,6 +568,7 @@ export default function UsersPage() {
                   </label>
                   {workspaceAccessDraft[ws.id] && (
                     <Select
+                      dir="rtl"
                       value={workspaceAccessDraft[ws.id]}
                       onValueChange={role => changeWorkspaceRole(ws.id, role as UserRole)}
                     >

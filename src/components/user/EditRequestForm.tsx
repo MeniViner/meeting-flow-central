@@ -23,7 +23,7 @@ const formSchema = z.object({
   title: z.string().min(1, "כותרת הבקשה היא שדה חובה"),
   description: z.string().optional(),
   deadline: z.date({
-    required_error: "תאריך יעד הוא שדה חובה",
+    required_error: "מועד מבוקש הוא שדה חובה",
   }),
 });
 
@@ -134,7 +134,7 @@ export function EditRequestForm({ request, onRequestUpdated }: EditRequestFormPr
               name="deadline"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>תאריך יעד *</FormLabel>
+                  <FormLabel>מועד מבוקש *</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>

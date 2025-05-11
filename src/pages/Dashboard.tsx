@@ -4,7 +4,7 @@ import { useApp } from "@/contexts/AppContext";
 import { CreateRequestForm } from "@/components/user/CreateRequestForm";
 import { RequestList } from "@/components/user/RequestList";
 import { useState } from "react";
-import { Calendar, Clock, CheckCircle, AlertTriangle, Bell, Search } from "lucide-react";
+import { Calendar, Clock, CheckCircle, AlertTriangle, Bell, Search, LayoutGrid, LayoutList } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [requestTypeTab, setRequestTypeTab] = useState("all");
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   
   // Group requests by status
   const pendingRequests = requests.filter(r => r.status === "pending");
@@ -188,16 +189,36 @@ export default function Dashboard() {
           <TabsContent value="view">
             <Card className="min-h-96">
               <CardHeader className="flex flex-row items-center justify-between">
-                <Dialog open={open} onOpenChange={setOpen}>
-                  <DialogTrigger asChild>
-                    <Button onClick={() => setOpen(true)}>
-                      צור בקשה חדשה
+                <div className="flex items-center gap-4">
+                  <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => setOpen(true)}>
+                        צור בקשה חדשה
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <CreateRequestForm onRequestCreated={() => setOpen(false)} />
+                    </DialogContent>
+                  </Dialog>
+                  <div className="flex gap-1 border rounded-md">
+                    <Button
+                      variant={viewMode === "grid" ? "secondary" : "ghost"}
+                      size="icon"
+                      onClick={() => setViewMode("grid")}
+                      className="rounded-r-none"
+                    >
+                      <LayoutGrid className="h-4 w-4" />
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <CreateRequestForm onRequestCreated={() => setOpen(false)} />
-                  </DialogContent>
-                </Dialog>
+                    <Button
+                      variant={viewMode === "table" ? "secondary" : "ghost"}
+                      size="icon"
+                      onClick={() => setViewMode("table")}
+                      className="rounded-l-none"
+                    >
+                      <LayoutList className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
                 <div>
                   <CardTitle>בקשות הפגישה שלך</CardTitle>
                   <CardDescription>צפה ועקוב אחר כל הבקשות שהגשת</CardDescription>
@@ -241,6 +262,7 @@ export default function Dashboard() {
                   showFilters={false}
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
+                  viewMode={viewMode}
                 />
               </CardContent>
             </Card>

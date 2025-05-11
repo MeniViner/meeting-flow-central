@@ -77,7 +77,7 @@ export default function WorkspacesPage() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card >
         <CardHeader>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -155,7 +155,7 @@ export default function WorkspacesPage() {
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[450px]">
-            <Table>
+            <Table dir="rtl">
               <TableHeader>
                 <TableRow>
                   <TableHead>שם קצר</TableHead>
