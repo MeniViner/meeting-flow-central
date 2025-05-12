@@ -20,6 +20,7 @@ import AccessRequestsPage from "@/pages/AccessRequestsPage";
 import MeetingsPage from "@/pages/MeetingsPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import WorkspacesPage from "@/pages/WorkspacesPage";
+import Formats from "@/pages/Formats";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,14 @@ const App = () => (
                       }
                     />
                     <Route path="/workspaces" element={<WorkspacesPage />} />
+                    <Route
+                      path="/formats"
+                      element={
+                        <ProtectedRoute>
+                          <Formats />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>

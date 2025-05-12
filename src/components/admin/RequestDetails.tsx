@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { CalendarIcon, FileText, Clock, Check, X, Upload, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -145,6 +146,8 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
     }
   };
 
+  const requestStatus: import("@/types").RequestStatus = request.status;
+
   return (
     <div className="space-y-6">
       <RequestStepper status={request.status} />
@@ -154,60 +157,61 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
       </div>
       
       <div className="grid gap-4 md:grid-cols-2">
-        
         <div>
           <h4 className="text-sm font-medium mb-1">מבקש</h4>
-          <p className="text-sm text-muted-foreground">{request.requesterName}</p>
+          <p className="text-sm text-muted-foreground">{request.requesterName || "אין מבקש"}</p>
         </div>
-        {request.description && (
-          <div>
-            <h4 className="text-sm font-medium mb-1">תיאור</h4>
-            <p className="text-sm text-muted-foreground">{request.description}</p>
-          </div>
-        )}
+        <div>
+          <h4 className="text-sm font-medium mb-1">תיאור</h4>
+          <p className="text-sm text-muted-foreground">{request.description || "אין תיאור"}</p>
+        </div>
         <div>
           <h4 className="text-sm font-medium mb-1">תאריך הגשה</h4>
           <DateDisplay date={request.createdAt} showIcon />
         </div>
 
-        
-        {!request.scheduledTime && (
-          <div>
-            <h4 className="text-sm font-medium mb-1">מועד אחרון</h4>
-            <div className="flex items-center text-sm">
-              <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+        <div>
+          <h4 className="text-sm font-medium mb-1">מועד אחרון</h4>
+          <div className="flex items-center text-sm">
+            <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+            {request.deadline ? (
               <DateDisplay date={request.deadline} />
-            </div>
+            ) : (
+              <span className="text-muted-foreground">אין מועד אחרון</span>
+            )}
           </div>
-        )}
+        </div>
 
-        
-        {request.scheduledTime && (
-          <div>
-            <h4 className="text-sm font-medium mb-1">זמן מתוכנן</h4>
+        {/* <div>
+          <h4 className="text-sm font-medium mb-1">זמן מתוכנן</h4>
+          {request.scheduledTime ? (
             <DateDisplay date={request.scheduledTime} showIcon showTime />
-          </div>
-        )}
-
+          ) : (
+            <span className="text-muted-foreground">אין זמן מתוכנן</span>
+          )}
+        </div> */}
       </div>
       
-      
-      {request.documents.length > 0 && (
-        <div>
-          <h4 className="text-sm font-medium mb-2">מסמכים</h4>
-          <ul className="space-y-2">
-            {request.documents.map((doc) => (
-              <li 
-                key={doc.id}
-                className="flex items-center p-2 border rounded-md text-sm"
-              >
-                <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span className="truncate">{doc.name}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div>
+        <h4 className="text-sm font-medium mb-2">מסמכים</h4>
+        {request.documents.length > 0 ? (
+          <ScrollArea className="h-[110px] rounded-md border p-2">
+            <ul className="space-y-1">
+              {request.documents.map((doc) => (
+                <li 
+                  key={doc.id}
+                  className="flex items-center p-1 border rounded-md text-sm"
+                >
+                  <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="truncate mr-1">{doc.name}</span>
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
+        ) : (
+          <p className="text-sm text-muted-foreground">אין מסמכים</p>
+        )}
+      </div>
       
       {request.status === "pending" && (
         <>
@@ -224,23 +228,59 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
               />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-medium mb-2">בחר שעה לפגישה</h4>
-              <div className="inline-flex items-center gap-2 border rounded px-2 py-1">
-                <select value={minuteInput} onChange={handleMinuteChange} className="appearance-none bg-transparent border-none focus:outline-none">
-                  {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-                  <span>:</span>
-                <select value={hourInput} onChange={handleHourChange} className="appearance-none bg-transparent border-none focus:outline-none">
-                  {[...Array(24).keys()].map(h => (
-                    <option key={h} value={h.toString().padStart(2, '0')}>
-                      {h.toString().padStart(2, '0')}
-                    </option>
-                  ))}
-                </select>
+              <h4 className="text-sm font-medium mb-2">בחר שעה לפגישה</h4> 
+              <div className="flex flex-row items-center justify-center gap-2 border rounded-lg px-3 py-2 shadow-sm">
+                <div className="relative w-14">
+                  <select 
+                    value={minuteInput} 
+                    onChange={handleMinuteChange} 
+                    className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono"
+                    size={3}
+                  >
+                    {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
+                      <option 
+                        key={m} 
+                        value={m}
+                        className={m === minuteInput ? "bg-blue-100 text-blue-600 font-medium" : ""}
+                      >
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                <span className="text-lg font-medium mx-1 text-blue-700 ">:</span>
+                <div className="relative w-14">
+                  <select 
+                    value={hourInput} 
+                    onChange={handleHourChange} 
+                    className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono "
+                    size={3}
+                  >
+                    {[...Array(24).keys()].map(h => {
+                      const hour = h.toString().padStart(2, '0');
+                      return (
+                        <option 
+                          key={hour} 
+                          value={hour}
+                          className={hour === hourInput ? "bg-blue-100 text-blue-600 font-medium" : ""}
+                        >
+                          {hour}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -299,22 +339,58 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
             </div>
             <div className="flex-1">
               <h4 className="text-sm font-medium mb-2">ערוך שעה לפגישה</h4>
-              <div className="inline-flex-reverse items-center gap-2 border rounded px-2 py-1">
-                <select value={minuteInput} onChange={handleMinuteChange} className="appearance-none bg-transparent border-none focus:outline-none">
-                  {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-                <span>:</span>
-                <select value={hourInput} onChange={handleHourChange} className="appearance-none bg-transparent border-none focus:outline-none">
-                  {[...Array(24).keys()].map(h => (
-                    <option key={h} value={h.toString().padStart(2, '0')}>
-                      {h.toString().padStart(2, '0')}
-                    </option>
-                  ))}
-                </select>
+              <div className="flex flex-row items-center justify-center gap-2 border rounded-lg px-3 py-2 shadow-sm">
+                <div className="relative w-14">
+                  <select 
+                    value={minuteInput} 
+                    onChange={handleMinuteChange} 
+                    className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono"
+                    size={3}
+                  >
+                    {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
+                      <option 
+                        key={m} 
+                        value={m}
+                        className={m === minuteInput ? "bg-blue-100 text-blue-600 font-medium" : ""}
+                      >
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                <span className="text-lg font-medium mx-1 text-blue-700 ">:</span>
+                <div className="relative w-14">
+                  <select 
+                    value={hourInput} 
+                    onChange={handleHourChange} 
+                    className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono"
+                    size={3}
+                  >
+                    {[...Array(24).keys()].map(h => {
+                      const hour = h.toString().padStart(2, '0');
+                      return (
+                        <option 
+                          key={hour} 
+                          value={hour}
+                          className={hour === hourInput ? "bg-blue-100 text-blue-600 font-medium" : ""}
+                        >
+                          {hour}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -327,7 +403,7 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
         </div>
       )}
       
-      {(request.status === "completed" || request.status === "rejected") && (
+      {(requestStatus === "completed" || requestStatus === "rejected") && (
         <>
           {request.adminNotes && (
             <div>
@@ -347,7 +423,7 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
         </>
       )}
       
-      {request.status === "ended" && !request.meetingSummaryFile && (
+      {requestStatus === "ended" && !request.meetingSummaryFile && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded mb-4 flex flex-col gap-2">
           <strong>לתשומת לבך:</strong> טרם הועלה קובץ סיכום פגישה.
           <Button

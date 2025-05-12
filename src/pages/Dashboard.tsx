@@ -200,24 +200,6 @@ export default function Dashboard() {
                       <CreateRequestForm onRequestCreated={() => setOpen(false)} />
                     </DialogContent>
                   </Dialog>
-                  <div className="flex gap-1 border rounded-md">
-                    <Button
-                      variant={viewMode === "grid" ? "secondary" : "ghost"}
-                      size="icon"
-                      onClick={() => setViewMode("grid")}
-                      className="rounded-r-none"
-                    >
-                      <LayoutGrid className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === "table" ? "secondary" : "ghost"}
-                      size="icon"
-                      onClick={() => setViewMode("table")}
-                      className="rounded-l-none"
-                    >
-                      <LayoutList className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
                 <div>
                   <CardTitle>בקשות הפגישה שלך</CardTitle>
@@ -238,15 +220,35 @@ export default function Dashboard() {
                       </TabsList>
                     </Tabs>
                   </div>
-                  <div className="w-full max-w-40 relative">
-                    <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      dir="rtl"
-                      placeholder="חפש בקשות..."
-                      className="pl-8"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-full max-w-40">
+                      <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        dir="rtl"
+                        placeholder="חפש בקשות..."
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-1 border rounded-md">
+                      <Button
+                        variant={viewMode === "grid" ? "secondary" : "ghost"}
+                        size="icon"
+                        onClick={() => setViewMode("grid")}
+                        className="rounded-r-none"
+                      >
+                        <LayoutGrid className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === "table" ? "secondary" : "ghost"}
+                        size="icon"
+                        onClick={() => setViewMode("table")}
+                        className="rounded-l-none"
+                      >
+                        <LayoutList className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <RequestList

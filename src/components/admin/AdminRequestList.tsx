@@ -30,6 +30,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">("all");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   
   // Filter requests
   const filteredRequests = requests.filter(request => {
@@ -58,8 +59,10 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
       return statusOrder[a.status] - statusOrder[b.status];
     }
     
-    // For the same status, sort by deadline (earliest first)
-    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    // For the same status, sort by submission date
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
   });
 
   return (
@@ -81,6 +84,19 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
               />
             </div>
             <div className="flex gap-2">
+              <Select
+                value={sortOrder}
+                onValueChange={(value) => setSortOrder(value as "asc" | "desc")}
+                dir="rtl"
+              >
+                <SelectTrigger className="w-full sm:w-[180px] flex flex-row-reverse justify-end">
+                  <SelectValue placeholder="מיון לפי תאריך"/>
+                </SelectTrigger>
+                <SelectContent className="w-full sm:w-[180px]">
+                  <SelectItem value="desc">חדש לישן</SelectItem>
+                  <SelectItem value="asc">ישן לחדש</SelectItem>
+                </SelectContent>
+              </Select>
               <Select
                 value={statusFilter}
                 onValueChange={(value) => setStatusFilter(value as RequestStatus | "all")}
@@ -125,7 +141,6 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-left">פעולות</TableHead>
                       <TableHead>מסמכים</TableHead>
                       <TableHead>מועד שנקבע</TableHead>
                       <TableHead>סטטוס</TableHead>
@@ -137,7 +152,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                   <TableBody>
                     {sortedRequests.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7}>
+                        <TableCell colSpan={6}>
                           <div className="flex flex-col items-center justify-center h-48 text-muted-foreground text-center">
                             <Calendar className="w-10 h-10 mb-2 text-gray-400" />
                             <p className="text-lg font-medium">לא נמצאו בקשות פגישה</p>
@@ -147,24 +162,19 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                       </TableRow>
                     ) :
                       sortedRequests.map((request) => (
-                        <TableRow key={request.id}>
-                          <TableCell className="text-left">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedRequest(request)}
-                            >
-                              צפה
-                            </Button>
-                          </TableCell>
-                          <TableCell>
+                        <TableRow 
+                          key={request.id}
+                          className="cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => setSelectedRequest(request)}
+                        >
+                          <TableCell dir="rtl">
                             {request.documents.length > 0 ? (
                               <Badge variant="secondary" className="flex items-center w-fit">
-                                <FileText className="h-3 w-3 ml-1" />
+                                <FileText className="h-3 w-3 mr-1" />
                                 {request.documents.length}
                               </Badge>
                             ) : (
-                              <span className="text-xs text-muted-foreground">אין</span>
+                              <span className="text-xs text-muted-foreground mr-5">אין</span>
                             )}
                           </TableCell>
                           <TableCell dir="rtl">
@@ -174,7 +184,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                               const [day, month] = d.toLocaleDateString('he-IL').split('.');
                               return (
                                 <span className="flex items-center gap-1">
-                                  <Clock className="w-4 h-4 text-blue-500" />
+                                  <CalendarClock className="h-4 w-4 mr-1 text-blue-500  " />
                                   <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-bold">
                                     {time}
                                   </span>
@@ -188,7 +198,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                           <TableCell>
                             <RequestStatusBadge status={request.status} />
                           </TableCell>
-                          <TableCell>
+                          <TableCell dir="rtl">
                             <DateDisplay date={request.deadline} />
                           </TableCell>
                           <TableCell>{request.requesterName}</TableCell>
@@ -264,21 +274,27 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                               <span className="mr-1">מועד מבוקש: </span>
                               <DateDisplay date={request.deadline} className="mr-1" />
                             </div>
-                            {request.documents.length > 0 && (
-                              <div className="flex flex-col gap-1">
-                                <div className="flex items-center text-xs text-muted-foreground">
-                                  <FileText className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
-                                  <span className="mr-1">מסמכים: </span>
-                                </div>
-                                <div className="flex flex-col gap-1 pl-5">
-                                  {request.documents.map((doc, index) => (
-                                    <span key={index} className="text-xs text-muted-foreground truncate mr-1">
-                                      {doc.name}
-                                    </span>
-                                  ))}
-                                </div>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center text-xs text-muted-foreground">
+                                <FileText className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
+                                <span className="mr-1">מסמכים: </span>
                               </div>
-                            )}
+                              <div className="flex flex-col gap-1 pl-5">
+                                {request.documents.length > 0 ? (
+                                  <ScrollArea className="h-[60px] rounded-md">
+                                    {request.documents.map((doc, index) => (
+                                      <span key={index} dir="rtl" className="flex flex-col text-xs text-muted-foreground truncate mr-5">
+                                        {doc.name}
+                                      </span>
+                                    ))}
+                                  </ScrollArea>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground mr-5">
+                                    אין מסמכים
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </CardContent>
                         <CardFooter className="pt-2">

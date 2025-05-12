@@ -3,13 +3,14 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
-  LayoutDashboard, FileText, Menu, X, UserCog, Shield, LockOpen, Building2, Sun, Moon 
+  LayoutDashboard, FileText, Menu, X, UserCog, Shield, LockOpen, Building2, Sun, Moon, FileDown 
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import WorkspaceSelector from "./WorkspaceSelector";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useTheme } from "next-themes";
 import { Switch } from "@/components/ui/switch";
+import { title } from "process";
 
 const navItems = [
   {
@@ -43,10 +44,17 @@ const navItems = [
     showFor: ["regular", "editor", "administrator", "owner"],
   },
   {
+    title: "פורמטים",
+    href: "/formats",
+    icon: FileDown,
+    showFor: ["regular", "editor", "administrator", "owner"],
+  },
+  {
     title: "ניהול סביבות עבודה",
     href: "/workspaces",
     icon: Building2,
     showFor: ["owner"],
+
   },
   // {
     //   title: "הרשאות",
@@ -80,13 +88,14 @@ export default function MainNav({ className }: { className?: string }) {
             size="sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "סגור תפריט" : "פתח תפריט"}
-            className="hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors duration-200"
+            className="hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors duration-200 "
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </Button>
           <div className="font-semibold text-lg">ניהול משרד</div>
           <div className="flex items-center gap-2">
             <Sun className="h-4 w-4 text-muted-foreground" />
+            
             <Switch
               checked={theme === "dark"}
               onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}

@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { MeetingRequest, RequestStatus, FilterOptions } from "@/types";
+import { MeetingRequest, RequestStatus, FilterOptions, Document } from "@/types";
 import { RequestStatusBadge } from "@/components/RequestStatusBadge";
 import { DateDisplay } from "@/components/DateDisplay";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, FileText, Calendar, Clock, LayoutGrid, LayoutList, Info, Edit } from "lucide-react";
+import { Search, FileText, Calendar, Clock, LayoutGrid, LayoutList, Info, Edit, CalendarClock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -13,10 +13,12 @@ import { cn } from "@/lib/utils";
 import { RequestStepper } from "@/components/RequestStepper";
 import { useApp } from "@/contexts/AppContext";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion"
 import { EditRequestForm } from "./EditRequestForm";
 import { FileUploader } from "@/components/FileUploader";
+
+
 
 interface RequestListProps {
   requests: MeetingRequest[];
@@ -103,45 +105,48 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                 <TableRow>
                   <TableHead>כותרת</TableHead>
                   <TableHead>סטטוס</TableHead>
-                  <TableHead>תאריך יצירה</TableHead>
+                  <TableHead>מועד הגשה</TableHead>
                   <TableHead>מועד מבוקש</TableHead>
+                  <TableHead>מועד שנקבע</TableHead>
                   <TableHead>מסמכים</TableHead>
-                  <TableHead>פעולות</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredRequests.map((request) => (
-                  <TableRow key={request.id}>
+                  <TableRow 
+                    key={request.id}
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => setSelectedRequest(request)}
+                  >
                     <TableCell className="font-medium">{request.title}</TableCell>
                     <TableCell><RequestStatusBadge status={request.status} /></TableCell>
                     <TableCell><DateDisplay date={request.createdAt} /></TableCell>
                     <TableCell><DateDisplay date={request.deadline} /></TableCell>
+
+                    <TableCell dir="rtl">
+                      {request.scheduledTime && (() => {
+                        const d = new Date(request.scheduledTime);
+                        const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
+                        const [day, month] = d.toLocaleDateString('he-IL').split('.');
+                        return (
+                          <span className="flex items-center gap-1">
+                            <CalendarClock className="w-4 h-4 text-blue-500" />
+                            <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-bold">
+                              {time}
+                            </span>
+                            <span className="rounded-full bg-gray-100 text-gray-800 px-2 py-0.5 text-xs font-bold">
+                              {day}/{month}
+                            </span>
+                          </span>
+                        );
+                      })()}
+                    </TableCell>
                     <TableCell>
                       {request.documents.length > 0 ? (
                         <Badge variant="secondary">{request.documents.length}</Badge>
                       ) : (
                         <span className="text-xs text-muted-foreground">אין</span>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedRequest(request)}
-                        >
-                          הצג פרטים
-                        </Button>
-                        {canEditRequest(request) && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditingRequest(request)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -158,7 +163,24 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg truncate">{request.title}</CardTitle>
-                      <RequestStatusBadge status={request.status} />
+                      <div className="flex items-center gap-2">
+                        {request.status === "scheduled" && request.scheduledTime && (() => {
+                          const d = new Date(request.scheduledTime);
+                          const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
+                          const [day, month] = d.toLocaleDateString('he-IL').split('.');
+                          return (
+                            <span className="flex items-center gap-1">
+                              <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-bold">
+                                {time}
+                              </span>
+                              <span className="rounded-full bg-gray-100 text-gray-800 px-2 py-0.5 text-xs font-bold">
+                                {day}/{month}
+                              </span>
+                            </span>
+                          );
+                        })()}
+                        <RequestStatusBadge status={request.status} />
+                      </div>
                     </div>
                     <CardDescription className="flex items-center mt-1">
                       <div className="flex items-center text-xs text-muted-foreground">
@@ -170,34 +192,47 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                   </CardHeader>
                   <CardContent className="pb-2">
                     <div className="space-y-2">
-                      {request.description && (
+                      {request.description !== undefined && request.description !== null ? (
                         <div className="flex items-center text-xs text-muted-foreground">
                           <Info className="h-3.5 w-3.5 mr-1" />
                           <span className="mr-1">תיאור: </span>
                           <p className="text-sm text-muted-foreground line-clamp-2">
-                            {request.description}
+                            {request.description ? request.description : "אין תיאור"}
                           </p>
                         </div>
-                      )}
-                      
-                      {request.documents.length > 0 && (
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center text-xs text-muted-foreground">
-                            <FileText className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
-                            <span className="mr-1">מסמכים: </span>
-                          </div>
-                          <div className="flex flex-col gap-1 pl-5">
-                            {request.documents.map((doc, index) => (
-                              <span key={index} className="text-xs text-muted-foreground truncate mr-1">
-                                {doc.name}
-                              </span>
-                            ))}
-                          </div>
+                      ) : (
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Info className="h-3.5 w-3.5 mr-1" />
+                          <span className="mr-1">תיאור: </span>
+                          <p className="text-sm text-muted-foreground line-clamp-2">אין תיאור</p>
                         </div>
                       )}
                       
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <FileText className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                          <span className="mr-1">מסמכים: </span>
+                        </div>
+                        <div className="flex flex-col gap-1 pl-5">
+                          {request.documents.length > 0 ? (
+                            <ScrollArea className="h-[60px] rounded-md">
+                              {request.documents.map((doc, index) => (
+                                <span key={index} dir="rtl" className="flex flex-col text-xs text-muted-foreground truncate mr-5">
+                                  {doc.name}
+                                </span>
+                              ))}
+                            </ScrollArea>
+                          ) : (
+                            <span dir="rtl" className="text-xs text-muted-foreground mr-5">
+                              אין מסמכים
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
                       <div className="flex items-center text-xs text-muted-foreground">
-                        <Clock className="h-3.5 w-3.5 mr-1" />
+                        <CalendarClock className="h-3.5 w-3.5 mr-1 text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-gray-400" />
+
                         <span className="mr-1">מועד מבוקש: </span>
                         <DateDisplay date={request.deadline} className="mr-1" />
                       </div>
@@ -226,7 +261,10 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setEditingRequest(request)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingRequest(request);
+                          }}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -260,19 +298,15 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
 
               <div className="grid gap-4 md:grid-cols-2">
 
-                {selectedRequest.description && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">תיאור</h4>
-                    <p className="text-sm text-muted-foreground">{selectedRequest.description}</p>
-                  </div>
-                )}
+                <div>
+                  <h4 className="text-sm font-medium mb-1">תיאור</h4>
+                  <p className="text-sm text-muted-foreground">{selectedRequest.description ? selectedRequest.description : "אין תיאור"}</p>
+                </div>
 
-                {selectedRequest.adminNotes && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">הערות מנהל</h4>
-                    <p className="text-sm text-muted-foreground">{selectedRequest.adminNotes}</p>
-                  </div>
-                )}
+                <div>
+                  <h4 className="text-sm font-medium mb-1">הערות מנהל</h4>
+                  <p className="text-sm text-muted-foreground">{selectedRequest.adminNotes ? selectedRequest.adminNotes : "אין הערות מנהל"}</p>
+                </div>
                 
                 <div>
                   <h4 className="text-sm font-medium mb-1">מועד מבוקש</h4>
@@ -297,7 +331,9 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                     className="w-fit mt-2"
                     onClick={async () => {
                       if (meetingSummaryFile) {
-                        await addMeetingSummary(selectedRequest.id, meetingSummaryFile);
+                        // Convert Document to File for addMeetingSummary
+                        const file = new File([new Blob()], meetingSummaryFile.name, { type: meetingSummaryFile.type });
+                        await addMeetingSummary(selectedRequest.id, file);
                         setMeetingSummaryFile(null);
                       }
                     }}
@@ -316,22 +352,26 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                 </div>
               )}
               
-              {selectedRequest.documents.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2">מסמכים</h4>
-                  <ul className="space-y-2">
-                    {selectedRequest.documents.map((doc) => (
-                      <li 
-                        key={doc.id}
-                        className="flex items-center p-2 border rounded-md text-sm"
-                      >
-                        <FileText className="h-4 w-4 ml-2 text-muted-foreground" />
-                        <span className="truncate">{doc.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <div>
+                <h4 className="text-sm font-medium mb-2">מסמכים</h4>
+                {selectedRequest.documents.length > 0 ? (
+                  <ScrollArea className="h-[110px] rounded-md border p-2">
+                    <ul className="space-y-1">
+                      {selectedRequest.documents.map((doc) => (
+                        <li 
+                          key={doc.id}
+                          className="flex items-center p-1 border rounded-md text-sm"
+                        >
+                          <FileText className="h-4 w-4 ml-2 text-muted-foreground" />
+                          <span className="truncate mr-1">{doc.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </ScrollArea>
+                ) : (
+                  <p className="text-sm text-muted-foreground">אין מסמכים</p>
+                )}
+              </div>
             </div>
           </DialogContent>
         )}
