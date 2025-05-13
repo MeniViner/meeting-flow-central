@@ -38,6 +38,10 @@ export function CreateRequestForm({
     if (!deadline) {
       newErrors.deadline = "נדרש מועד מבוקש";
     }
+
+    if (documents.length === 0) {
+      newErrors.documents = "נדרש להעלות לפחות מסמך אחד";
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -138,8 +142,11 @@ export function CreateRequestForm({
         {/* Left Column - Documents */}
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>מסמכים</Label>
+            <Label>מסמכים *</Label>
             <FileUploader onFilesChange={setDocuments} existingFiles={documents} />
+            {errors.documents && (
+              <p className="text-xs text-red-500">{errors.documents}</p>
+            )}
           </div>
         </div>
       </div>

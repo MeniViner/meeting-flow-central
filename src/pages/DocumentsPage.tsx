@@ -67,26 +67,7 @@ export default function DocumentsPage() {
       
       <Tabs defaultValue="all" className="space-y-4" dir="rtl">
         <div className="flex items-center justify-between">
-          <TabsList>
-            {documentTypes.map(type => (
-              <TabsTrigger key={type.id} value={type.id}>
-                <span className="flex items-center gap-1">
-                  <span>{type.label}</span>
-                  {type.id !== "all" && (
-                    <motion.span 
-                      className="text-muted-foreground"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      ({type.count || 0})
-                    </motion.span>
-                  )}
-                </span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          <div className="flex gap-2">
+        <div className="flex gap-2">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="icon"
@@ -112,6 +93,26 @@ export default function DocumentsPage() {
               </motion.div>
             </Button>
           </div>
+
+          <TabsList>
+            {documentTypes.map(type => (
+              <TabsTrigger key={type.id} value={type.id}>
+                <span className="flex items-center gap-1">
+                  <span>{type.label}</span>
+                  {type.id !== "all" && (
+                    <motion.span 
+                      className="text-muted-foreground"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      ({type.count || 0})
+                    </motion.span>
+                  )}
+                </span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
         </div>
         
         {documentTypes.map(type => (

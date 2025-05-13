@@ -34,6 +34,10 @@ const pageTitles: Record<string, { title: string; description: string }> = {
     title: "עמוד ניהול סביבות עבודה",
     description: "ניהול סביבות העבודה במערכת",
   },
+  "/formats": {
+    title: "עמוד ניהול פורמטים",
+    description: "ניהול פורמטים במערכת",
+  },
 };
 
 export function TopBar({ className, ...props }: TopBarProps) {
@@ -50,23 +54,23 @@ export function TopBar({ className, ...props }: TopBarProps) {
 
     return () => clearInterval(timer);
   }, []);
-  
+
   const currentPage = pageTitles[pathname] || {
     title: "לוח בקרה",
     description: `ברוך הבא, ${user?.name}!`,
   };
 
-  const formattedTime = currentTime.toLocaleTimeString('he-IL', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
+  const formattedTime = currentTime.toLocaleTimeString("he-IL", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
   });
 
   return (
     <div
       className={cn(
-        "fixed top-0 left-0 right-60 z-40 h-16 bg-transparent backdrop-blur-sm border-b border-border/40",
+        "fixed top-0 left-0 right-60 z-40 h-16 bg-white/70 dark:bg-black/70 backdrop-blur-md border-b border-border/40 shadow-md",
         className
       )}
       {...props}
@@ -74,27 +78,29 @@ export function TopBar({ className, ...props }: TopBarProps) {
       <div className="container h-full flex items-center justify-between">
         <div className="flex items-center gap-6">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">{currentPage.title}</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-primary">
+              {currentPage.title}
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {currentPage.description}
             </p>
           </div>
           {currentWorkspace && (
-            <div className="flex flex-col">
-              <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+            <div className="hidden sm:flex flex-col">
+              <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
                 {currentWorkspace.shortName}
               </div>
-              <div className="text-xs text-muted-foreground text-center mt-1">
+              <div className="text-[10px] text-muted-foreground text-center mt-0.5">
                 {currentWorkspace.longName}
               </div>
             </div>
           )}
         </div>
-        <div className="flex items-center gap-4">
-          <div className="px-3 py-1 rounded-full text-sm font-medium">
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:block px-2 py-1 rounded-full bg-muted text-foreground text-xs font-medium">
             ברוך הבא: {user?.name}
           </div>
-          <div className="text-sm font-medium text-muted-foreground">
+          <div className="text-xs font-medium text-muted-foreground">
             {formattedTime}
           </div>
           <Button
@@ -104,9 +110,9 @@ export function TopBar({ className, ...props }: TopBarProps) {
             className="h-8 w-8"
           >
             {theme === "dark" ? (
-              <Sun className="h-4 w-4 text-muted-foreground" />
+              <Sun className="h-4 w-4 text-yellow-400" />
             ) : (
-              <Moon className="h-4 w-4 text-muted-foreground" />
+              <Moon className="h-4 w-4 text-blue-500" />
             )}
             <span className="sr-only">Toggle theme</span>
           </Button>
@@ -114,4 +120,4 @@ export function TopBar({ className, ...props }: TopBarProps) {
       </div>
     </div>
   );
-} 
+}

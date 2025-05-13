@@ -405,8 +405,8 @@ export function LandingPage() {
               <CardContent>
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[
+                    { id: "name", label: "שם עובד", type: "text" },
                     { id: "employeeId", label: "מספר עובד", type: "text" },
-                    { id: "name", label: "תיאור הסביבה", type: "text" },
                     { id: "email", label: "דוא\"ל", type: "email" },
                     { id: "department", label: "מחלקה", type: "text" },
                   ].map(({ id, label, type }) => (

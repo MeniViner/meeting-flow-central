@@ -16,7 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function Dashboard() {
   const { requests, currentUser, notifications, user } = useApp();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("view");
   const [requestTypeTab, setRequestTypeTab] = useState("all");
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

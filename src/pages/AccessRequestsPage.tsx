@@ -126,7 +126,7 @@ export default function AccessRequestsPage() {
         </p>
       </div> */}
 
-      <Card className="min-h-[570px]">
+      <Card className="min-h-[57access0px]">
         <CardHeader>
           <div>
             <CardTitle>בקשות גישה</CardTitle>

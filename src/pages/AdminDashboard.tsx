@@ -92,11 +92,11 @@ export default function AdminDashboard() {
         </p>
       </div> */}
       
-      <Tabs defaultValue="overview">
+      <Tabs defaultValue="requests">
         <TabsList>
           <TabsTrigger value="overview">סקירה כללית</TabsTrigger>
-          <TabsTrigger value="requests">כל הבקשות</TabsTrigger>
           <TabsTrigger value="weekly">לוח שבועי</TabsTrigger>
+          <TabsTrigger value="requests">כל הבקשות</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
