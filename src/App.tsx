@@ -21,6 +21,7 @@ import MeetingsPage from "@/pages/MeetingsPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import WorkspacesPage from "@/pages/WorkspacesPage";
 import Formats from "@/pages/Formats";
+import EnvironmentUsersPage from "@/pages/EnvironmentUsersPage";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,14 @@ const App = () => (
                       element={
                         <ProtectedRoute allowedRoles={["admin"]}>
                           <UsersPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/environment-users"
+                      element={
+                        <ProtectedRoute allowedRoles={["admin"]}>
+                          <EnvironmentUsersPage />
                         </ProtectedRoute>
                       }
                     />

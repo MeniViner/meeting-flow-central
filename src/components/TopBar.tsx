@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
+import  WorkspaceSelector  from "@/components/WorkspaceSelector";
 
 interface TopBarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -85,16 +86,11 @@ export function TopBar({ className, ...props }: TopBarProps) {
               {currentPage.description}
             </p>
           </div>
-          {currentWorkspace && (
-            <div className="hidden sm:flex flex-col">
-              <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-                {currentWorkspace.shortName}
-              </div>
-              <div className="text-[10px] text-muted-foreground text-center mt-0.5">
-                {currentWorkspace.longName}
-              </div>
+          <div className="hidden sm:flex flex-col">
+            <div className="p-4">
+              <WorkspaceSelector />
             </div>
-          )}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden sm:block px-2 py-1 rounded-full bg-muted text-foreground text-xs font-medium">

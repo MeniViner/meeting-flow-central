@@ -5,9 +5,9 @@ import {
 import { Building2 } from "lucide-react";
 
 export default function WorkspaceSelector() {
-  const { workspaces, currentWorkspace, setCurrentWorkspace, isLoading } = useWorkspace();
+  const { workspaces = [], currentWorkspace, setCurrentWorkspace, isLoading } = useWorkspace();
 
-  if (isLoading || workspaces.length <= 1) {
+  if (isLoading || !workspaces || workspaces.length <= 1) {
     return null;
   }
 

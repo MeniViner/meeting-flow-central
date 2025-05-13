@@ -32,7 +32,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (import.meta.env.VITE_NODE_ENV === "development") {
         loadedWorkspaces = await devWorkspaceService.getWorkspaces();
       } else {
-        loadedWorkspaces = await txtStore.getStrictSP<Workspace[]>("workspaces");
+        const workspaces = await txtStore.getStrictSP<Workspace[]>("workspaces");
+        loadedWorkspaces = workspaces || [];
       }
 
       setWorkspaces(loadedWorkspaces);
@@ -52,6 +53,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Error loading workspaces:", error);
+      setWorkspaces([]); // Ensure we set an empty array on error
     } finally {
       setIsLoading(false);
     }

@@ -23,9 +23,9 @@ export function AccessRequestList() {
 
   const loadRequests = async () => {
     if (!currentWorkspace) return;
-
     try {
-      const workspaceRequests = await userService.getWorkspaceAccessRequests(currentWorkspace.id);
+      const allRequests = await userService.getAccessRequests();
+      const workspaceRequests = allRequests.filter(r => r.requestedWorkspaceId === currentWorkspace.id);
       setRequests(workspaceRequests);
     } catch (error) {
       toast({
@@ -120,7 +120,7 @@ export function AccessRequestList() {
                   <TableCell>{request.department}</TableCell>
                   <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <Badge variant={request.status === "pending" ? "default" : request.status === "approved" ? "success" : "destructive"}>
+                    <Badge variant={request.status === "pending" ? "default" : request.status === "approved" ? "secondary" : "destructive"}>
                       {request.status === "pending" ? "ממתין" : request.status === "approved" ? "אושר" : "נדחה"}
                     </Badge>
                   </TableCell>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { txtStore } from "@/services/txtStore";
+import { userService } from "@/services/userService";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -20,6 +20,7 @@ interface AccessRequest {
   requestedWorkspaceId: string;
   reason: string;
   createdAt: string;
+  status: "pending" | "approved" | "rejected";
 }
 
 export default function AccessRequestsPage() {
@@ -35,10 +36,10 @@ export default function AccessRequestsPage() {
 
   const loadRequests = async () => {
     try {
-      const requestsList = await txtStore.getStrictSP("accessRequests") as AccessRequest[];
+      const allRequests = await userService.getAccessRequests();
       // Filter by current workspace
       const filtered = currentWorkspace
-        ? (requestsList || []).filter((r: AccessRequest) => r.requestedWorkspaceId === currentWorkspace.id)
+        ? (allRequests || []).filter((r: AccessRequest) => r.requestedWorkspaceId === currentWorkspace.id)
         : [];
       setRequests(filtered);
     } catch (error) {
@@ -55,30 +56,9 @@ export default function AccessRequestsPage() {
 
   const handleApproveRequest = async (requestId: string) => {
     try {
-      const request = requests.find(r => r.id === requestId);
-      if (!request) return;
-
-      // Create new user from request
-      const newUser = {
-        id: `user-${Date.now()}`,
-        name: request.name,
-        email: request.email,
-        role: "viewer" as const,
-        lastLogin: new Date().toLocaleString(),
-        employeeId: request.employeeId,
-        department: request.department,
-      };
-
-      // Mark request as processed
+      await userService.updateAccessRequestStatus(requestId, "approved");
       setProcessedRequests(prev => new Set([...prev, requestId]));
-
-      // Save changes
-      const updatedRequests = requests.filter(r => r.id !== requestId);
-      await txtStore.updateStrictSP("accessRequests", updatedRequests);
-      await txtStore.appendStrictSP("users", newUser);
-
-      setRequests(updatedRequests);
-
+      await loadRequests();
       toast({
         title: "בקשה אושרה",
         description: "המשתמש נוסף למערכת בהצלחה",
@@ -94,12 +74,9 @@ export default function AccessRequestsPage() {
 
   const handleRejectRequest = async (requestId: string) => {
     try {
-      // Remove the rejected request
-      const updatedRequests = requests.filter(r => r.id !== requestId);
-      await txtStore.updateStrictSP("accessRequests", updatedRequests);
-      setRequests(updatedRequests);
+      await userService.updateAccessRequestStatus(requestId, "rejected");
       setProcessedRequests(prev => new Set([...prev, requestId]));
-
+      await loadRequests();
       toast({
         title: "בקשה נדחתה",
         description: "בקשת הגישה נדחתה בהצלחה",
@@ -161,7 +138,7 @@ export default function AccessRequestsPage() {
                         <TableHead>שם</TableHead>
                         <TableHead>אימייל</TableHead>
                         <TableHead>מחלקה</TableHead>
-                        <TableHead>מספר כרטיס</TableHead>
+                        <TableHead>מספר עובד</TableHead>
                         <TableHead>סיבת הבקשה</TableHead>
                         <TableHead>תאריך בקשה</TableHead>
                         <TableHead>פעולות</TableHead>

@@ -1,4 +1,4 @@
-export type UserRole = "owner" | "administrator" | "editor" | "regular";
+export type UserRole = "owner" | "administrator" | "regular";
 
 export type RequestStatus = "pending" | "scheduled" | "ended" | "completed" | "rejected";
 
@@ -72,8 +72,9 @@ export interface AccessRequest {
   email: string;
   department: string;
   requestedWorkspaceId: string;
+  reason: string;
   status: "pending" | "approved" | "rejected";
+  notes?: string;
   createdAt: string;
   updatedAt: string;
-  notes?: string;
 }

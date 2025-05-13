@@ -5,9 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, Edit, Trash2, Plus, Filter, Users, ChevronDown, Building2 } from "lucide-react";
-import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/components/ui/use-toast";
-import { txtStore } from "@/services/txtStore";
+import { userService } from "@/services/userService";
 import {
   Select,
   SelectContent,
@@ -26,37 +25,24 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { userService } from "@/services/userService";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-type UserRole = "admin" | "editor" | "viewer";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  status: "active" | "inactive";
-  lastLogin: string;
-  cardId: string;
-  department: string;
-  workspaceAccess?: { workspaceId: string; role: UserRole }[];
-}
+import { User, UserRole } from "@/types";
 
 export default function UsersPage() {
-  const { currentUser } = useApp();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newUser, setNewUser] = useState({
+  const [newUser, setNewUser] = useState<Partial<User>>({
     name: "",
     email: "",
-    role: "viewer" as UserRole,
+    globalRole: "regular",
     department: "",
-    cardId: "",
+    employeeId: "",
+    workspaceAccess: [],
+    status: "active",
   });
   const { workspaces } = useWorkspace();
   const [workspaceDialogUser, setWorkspaceDialogUser] = useState<User | null>(null);
@@ -70,7 +56,7 @@ export default function UsersPage() {
 
   const loadUsers = async () => {
     try {
-      const usersList = await txtStore.getStrictSP("users");
+      const usersList = await userService.getAllUsers();
       setUsers(usersList || []);
     } catch (error) {
       console.error("Error loading users:", error);
@@ -86,24 +72,30 @@ export default function UsersPage() {
 
   const handleAddUser = async () => {
     try {
-      const newUserWithId = {
+      const newUserWithId: User = {
         ...newUser,
         id: `user-${Date.now()}`,
-        status: "active" as const,
+        status: "active",
         lastLogin: new Date().toLocaleString(),
-      };
-
-      await txtStore.appendStrictSP("users", newUserWithId);
+        employeeId: newUser.employeeId || `emp-${Date.now()}`,
+        globalRole: newUser.globalRole as UserRole,
+        workspaceAccess: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as User;
+      const allUsers = await userService.getAllUsers();
+      await userService.updateAllUsers([...allUsers, newUserWithId]);
       setUsers([...users, newUserWithId]);
       setNewUser({
         name: "",
         email: "",
-        role: "viewer",
+        globalRole: "regular",
         department: "",
-        cardId: "",
+        employeeId: "",
+        workspaceAccess: [],
+        status: "active",
       });
       setIsAddUserDialogOpen(false);
-
       toast({
         title: "משתמש נוסף",
         description: "המשתמש החדש נוסף בהצלחה",
@@ -120,11 +112,10 @@ export default function UsersPage() {
   const handleEditUser = async (userId: string, updatedUser: Partial<User>) => {
     try {
       const updatedUsers = users.map(user =>
-        user.id === userId ? { ...user, ...updatedUser } : user
+        user.id === userId ? { ...user, ...updatedUser, updatedAt: new Date().toISOString() } : user
       );
-      await txtStore.updateStrictSP("users", updatedUsers);
+      await userService.updateAllUsers(updatedUsers);
       setUsers(updatedUsers);
-
       toast({
         title: "משתמש עודכן",
         description: "פרטי המשתמש עודכנו בהצלחה",
@@ -141,9 +132,8 @@ export default function UsersPage() {
   const handleDeleteUser = async (userId: string) => {
     try {
       const updatedUsers = users.filter(user => user.id !== userId);
-      await txtStore.updateStrictSP("users", updatedUsers);
+      await userService.updateAllUsers(updatedUsers);
       setUsers(updatedUsers);
-
       toast({
         title: "משתמש נמחק",
         description: "המשתמש נמחק בהצלחה",
@@ -162,19 +152,17 @@ export default function UsersPage() {
       user.name.includes(searchQuery) || 
       user.email.includes(searchQuery) ||
       user.department.includes(searchQuery);
-    
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    
+    const matchesRole = roleFilter === "all" || user.globalRole === roleFilter;
     return matchesSearch && matchesRole;
   });
 
   const getRoleBadgeVariant = (role: UserRole) => {
     switch (role) {
-      case "admin":
+      case "owner":
         return "default";
-      case "editor":
+      case "administrator":
         return "secondary";
-      case "viewer":
+      case "regular":
         return "outline";
       default:
         return "secondary";
@@ -183,12 +171,12 @@ export default function UsersPage() {
 
   const getRoleLabel = (role: UserRole) => {
     switch (role) {
-      case "admin":
+      case "owner":
+        return "בעלים";
+      case "administrator":
         return "מנהל";
-      case "editor":
-        return "עורך";
-      case "viewer":
-        return "צופה";
+      case "regular":
+        return "משתמש רגיל";
       default:
         return role;
     }
@@ -212,7 +200,7 @@ export default function UsersPage() {
       if (newDraft[workspaceId]) {
         delete newDraft[workspaceId];
       } else {
-        newDraft[workspaceId] = "regular"; // default role
+        newDraft[workspaceId] = "regular"; // default role, now matches global UserRole
       }
       return newDraft;
     });
@@ -228,11 +216,10 @@ export default function UsersPage() {
     if (!workspaceDialogUser) return;
     const newAccess = Object.entries(workspaceAccessDraft).map(([workspaceId, role]) => ({ workspaceId, role }));
     try {
-      const updatedUser = await userService.upsertUser({
-        ...workspaceDialogUser,
-        workspaceAccess: newAccess,
-      });
-      setUsers(users => users.map(u => u.id === updatedUser.id ? updatedUser : u));
+      const updatedUser = { ...workspaceDialogUser, workspaceAccess: newAccess, updatedAt: new Date().toISOString() };
+      const updatedUsers = users.map(u => u.id === updatedUser.id ? updatedUser : u);
+      await userService.updateAllUsers(updatedUsers);
+      setUsers(updatedUsers);
       setWorkspaceDialogUser(null);
       toast({ title: "הרשאות עודכנו", description: "הרשאות המשתמש עודכנו בהצלחה" });
     } catch (error) {
@@ -250,11 +237,10 @@ export default function UsersPage() {
   const saveEditUser = async () => {
     if (!editUserDialog.user) return;
     try {
-      const updatedUser = await userService.upsertUser({
-        ...editUserDialog.user,
-        ...editUserDraft,
-      });
-      setUsers(users => users.map(u => u.id === updatedUser.id ? updatedUser : u));
+      const updatedUser = { ...editUserDialog.user, ...editUserDraft, updatedAt: new Date().toISOString() };
+      const updatedUsers = users.map(u => u.id === updatedUser.id ? updatedUser : u);
+      await userService.updateAllUsers(updatedUsers);
+      setUsers(updatedUsers);
       setEditUserDialog({ open: false, user: null });
       toast({ title: "המשתמש עודכן", description: "פרטי המשתמש עודכנו בהצלחה" });
     } catch (error) {
@@ -355,19 +341,11 @@ export default function UsersPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="cardId">מספר כרטיס</Label>
-                    <Input
-                      id="cardId"
-                      value={newUser.cardId}
-                      onChange={(e) => setNewUser({ ...newUser, cardId: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
                     <Label htmlFor="role">תפקיד</Label>
                     <Select
                       dir="rtl"
-                      value={newUser.role}
-                      onValueChange={(value) => setNewUser({ ...newUser, role: value as UserRole })}
+                      value={newUser.globalRole}
+                      onValueChange={(value) => setNewUser({ ...newUser, globalRole: value as UserRole })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="בחר תפקיד" />
@@ -432,9 +410,7 @@ export default function UsersPage() {
                     <TableHead>שם</TableHead>
                     <TableHead>אימייל</TableHead>
                     <TableHead>מחלקה</TableHead>
-                    <TableHead>מספר כרטיס</TableHead>
                     <TableHead>תפקיד</TableHead>
-                    {/* <TableHead>סטטוס</TableHead> */}
                     <TableHead>כניסה אחרונה</TableHead>
                     <TableHead>פעולות</TableHead>
                   </TableRow>
@@ -445,17 +421,16 @@ export default function UsersPage() {
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.department}</TableCell>
-                      <TableCell>{user.cardId}</TableCell>
                       <TableCell>
                         <Select
                           dir="rtl"
-                          value={user.role}
-                          onValueChange={(value) => handleEditUser(user.id, { role: value as UserRole })}
+                          value={user.globalRole}
+                          onValueChange={(value) => handleEditUser(user.id, { globalRole: value as UserRole })}
                         >
                           <SelectTrigger className="w-[120px]">
                             <SelectValue>
-                              <Badge variant={getRoleBadgeVariant(user.role)}>
-                                {getRoleLabel(user.role)}
+                              <Badge variant={getRoleBadgeVariant(user.globalRole)}>
+                                {getRoleLabel(user.globalRole)}
                               </Badge>
                             </SelectValue>
                           </SelectTrigger>
@@ -466,11 +441,6 @@ export default function UsersPage() {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      {/* <TableCell>
-                        <Badge variant={user.status === "active" ? "default" : "destructive"}>
-                          {user.status === "active" ? "פעיל" : "לא פעיל"}
-                        </Badge>
-                      </TableCell> */}
                       <TableCell>{user.lastLogin}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -541,20 +511,12 @@ export default function UsersPage() {
                 onChange={e => setEditUserDraft(draft => ({ ...draft, department: e.target.value }))}
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-cardId">מספר כרטיס</Label>
-              <Input
-                id="edit-cardId"
-                value={editUserDraft.cardId || ""}
-                onChange={e => setEditUserDraft(draft => ({ ...draft, cardId: e.target.value }))}
-              />
-            </div>
             <div className="grid gap-2" dir="rtl">
               <Label htmlFor="edit-role">תפקיד גלובלי</Label>
               <Select
                 dir="rtl"
-                value={editUserDraft.role || "viewer"}
-                onValueChange={value => setEditUserDraft(draft => ({ ...draft, role: value as UserRole }))}
+                value={editUserDraft.globalRole || "viewer"}
+                onValueChange={value => setEditUserDraft(draft => ({ ...draft, globalRole: value as UserRole }))}
               >
                 <SelectTrigger >
                   <SelectValue placeholder="בחר תפקיד" />
