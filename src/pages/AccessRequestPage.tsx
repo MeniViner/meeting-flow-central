@@ -21,6 +21,7 @@ export default function AccessRequestPage() {
     department: "",
     reason: "",
     employeeId: "",
+    spsClaimId: ""
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,6 +49,7 @@ export default function AccessRequestPage() {
         department: formData.department,
         requestedWorkspaceId: currentWorkspace.id,
         reason: formData.reason,
+        spsClaimId: formData.spsClaimId
       });
 
       toast({

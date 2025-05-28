@@ -1,3 +1,4 @@
+// EnvironmentUsersPage
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { User, UserRole } from "@/types";
+import { authService } from "@/services/authService";
 
 export default function EnvironmentUsersPage() {
   const { currentWorkspace } = useWorkspace();
@@ -161,7 +163,25 @@ export default function EnvironmentUsersPage() {
     if (!currentWorkspace) return;
 
     try {
+      // First update the workspace role
       await userService.addUserToWorkspace(employeeId, currentWorkspace.id, newRole);
+
+      // Then update the global role to match
+      const allUsers = await userService.getAllUsers();
+      const user = allUsers.find(u => u.employeeId === employeeId);
+      if (user) {
+        // Update the user's global role to match the new workspace role
+        const updatedUser = {
+          ...user,
+          globalRole: newRole,
+          updatedAt: new Date().toISOString()
+        };
+        const updatedUsers = allUsers.map(u => 
+          u.employeeId === employeeId ? updatedUser : u
+        );
+        await userService.updateAllUsers(updatedUsers);
+      }
+
       await loadEnvironmentUsers();
 
       toast({
@@ -178,7 +198,14 @@ export default function EnvironmentUsersPage() {
   };
 
   const getUserWorkspaceRole = (user: User): UserRole | null => {
-    if (!currentWorkspace) return null;
+    if (!currentWorkspace) {
+      console.log('getUserWorkspaceRole: currentWorkspace is null');
+      return null;
+    }
+    if (!user || !user.workspaceAccess) {
+      console.log('getUserWorkspaceRole: user or user.workspaceAccess is invalid', { user });
+      return null;
+    }
     const workspaceAccess = user.workspaceAccess.find(wa => wa.workspaceId === currentWorkspace.id);
     return workspaceAccess?.role || null;
   };

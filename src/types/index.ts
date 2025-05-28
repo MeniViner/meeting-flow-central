@@ -1,4 +1,4 @@
-export type UserRole = "owner" | "administrator" | "regular";
+export type UserRole = "owner" | "administrator" | "editor" | "regular";
 
 export type RequestStatus = "pending" | "scheduled" | "ended" | "completed" | "rejected";
 
@@ -10,11 +10,12 @@ export interface WorkspaceAccess {
 export interface User {
   id: string;
   employeeId: string; // Company employee ID
+  spsClaimId: string; // Added for SP authentication
   name: string;
   email: string;
   department: string;
   status: "active" | "inactive";
-  lastLogin: string;
+  lastLogin?: string;
   globalRole: UserRole;
   workspaceAccess: WorkspaceAccess[];
   createdAt: string;
@@ -68,6 +69,7 @@ export interface Workspace {
 export interface AccessRequest {
   id: string;
   employeeId: string;
+  spsClaimId: string; // Added for SP authentication
   name: string;
   email: string;
   department: string;

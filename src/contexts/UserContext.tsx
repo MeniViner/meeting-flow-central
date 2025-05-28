@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { User } from "@/types/user";
+import { User } from "@/types";
 import { txtStore } from "@/services/txtStore";
 import { devUserService } from "@/services/devUserService";
 import { useWorkspace } from "./WorkspaceContext";
@@ -28,14 +28,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [currentWorkspace]);
 
   const loadUsers = async () => {
+    if (!currentWorkspace) return;
     try {
       setIsLoading(true);
       let loadedUsers: User[] = [];
 
       if (process.env.NODE_ENV === "development") {
-        loadedUsers = await devUserService.getUsersByWorkspace(currentWorkspace!.id);
+        loadedUsers = await devUserService.getUsersByWorkspace(currentWorkspace.id);
       } else {
-        const workspaceUsersKey = `users_${currentWorkspace!.id}`;
+        const workspaceUsersKey = `users_${currentWorkspace.id}`;
         loadedUsers = await txtStore.getStrictSP<User[]>(workspaceUsersKey) || [];
       }
 
@@ -60,17 +61,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!currentWorkspace) throw new Error("No workspace selected");
 
     let newUser: User;
-    
+    const workspaceAccess = [
+      ...(user.workspaceAccess || []),
+      { workspaceId: currentWorkspace.id, role: user.globalRole }
+    ];
     if (process.env.NODE_ENV === "development") {
       newUser = await devUserService.addUser({
         ...user,
-        workspaceId: currentWorkspace.id,
+        workspaceAccess,
       });
     } else {
       newUser = {
         ...user,
         id: `user-${Date.now()}`,
-        workspaceId: currentWorkspace.id,
+        workspaceAccess,
       };
       const workspaceUsersKey = `users_${currentWorkspace.id}`;
       const currentUsers = await txtStore.getStrictSP<User[]>(workspaceUsersKey) || [];

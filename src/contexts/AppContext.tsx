@@ -5,7 +5,7 @@ import { txtStore } from "@/services/txtStore";
 import { useNavigate } from "react-router-dom";
 import { WorkspaceProvider, useWorkspace } from "./WorkspaceContext";
 import { userService } from "@/services/userService";
-import { devMeetingService } from "@/services/devMeetingService";
+import { authService } from "@/services/authService";
 
 interface Notification {
   id: string;
@@ -39,6 +39,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const DEV_ADMIN_USER: User = {
   id: "dev-admin",
   employeeId: "DEV-12345",
+  spsClaimId: "dev-admin-claim",
   name: "מנהל מערכת",
   globalRole: "owner",
   email: "admin@example.com",
@@ -66,9 +67,31 @@ const getCardId = async (): Promise<string | null> => {
   if (process.env.NODE_ENV === "development") {
     return "DEV-12345";
   }
-  // In production, implement actual card reading logic
-  // TODO: Implement actual card reading logic
-  return null;
+  
+  try {
+    // Get current user info from SharePoint
+    const currentUserInfo = await authService.getCurrentUser();
+    console.log("Current user info from SharePoint:", currentUserInfo);
+    
+    if (!currentUserInfo) {
+      console.log("No user info from SharePoint");
+      return null;
+    }
+    
+    // Try to get user from our system
+    const user = await userService.getUserBySPSClaimId(currentUserInfo.spsClaimId);
+    console.log("User from system:", user);
+    
+    if (!user) {
+      console.log("User not found in system, redirecting to landing page");
+      return null;
+    }
+    
+    return user.employeeId;
+  } catch (error) {
+    console.error("Error getting card ID:", error);
+    return null;
+  }
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -84,40 +107,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
+        console.log("AppContext.loadInitialData: Starting to load initial data...");
         if (process.env.NODE_ENV === "development") {
-          // In development, always use admin user
+          console.log("AppContext.loadInitialData: Development mode - using admin user");
           setUser(DEV_ADMIN_USER);
         } else {
-          // In production, check employee ID
-          const employeeId = await getEmployeeId();
-          if (!employeeId) {
-            // No employee ID found, show landing page
-            navigate("/landing");
-            return;
-          }
-
-          // Check if user exists
-          const user = await userService.getUserByEmployeeId(employeeId);
+          console.log("AppContext.loadInitialData: Production mode - getting current user");
+          const user = await userService.getCurrentUser();
+          console.log("AppContext.loadInitialData: Got user from userService:", user);
+          
           if (!user) {
-            // User doesn't exist, show landing page
+            console.log("AppContext.loadInitialData: No user found, redirecting to landing page");
             navigate("/landing");
             return;
           }
-
-          // Update last login
-          await userService.upsertUser({
-            employeeId,
-            lastLogin: new Date().toISOString()
-          });
-
+          console.log("AppContext.loadInitialData: Setting user in context:", user);
           setUser(user);
         }
 
         // Load meeting requests if user has access to current workspace
         if (currentWorkspace) {
+          console.log("AppContext.loadInitialData: Loading workspace data for:", currentWorkspace.id);
           const userRole = process.env.NODE_ENV === "development" 
             ? "owner" 
-            : await userService.getUserWorkspaceRole(user?.employeeId || "", currentWorkspace.id);
+            : user?.workspaceAccess.find(access => access.workspaceId === currentWorkspace.id)?.role || null;
+          
+          console.log("AppContext.loadInitialData: User role in workspace:", userRole);
 
           if (userRole) {
             const loadedRequests = await txtStore.getStrictSP<MeetingRequest[]>("meetingRequests", currentWorkspace.id) || [];
@@ -130,7 +145,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error) {
-        console.error("Error loading initial data:", error);
+        console.error("AppContext.loadInitialData: Error loading initial data:", error);
         toast({
           title: "שגיאה",
           description: error instanceof Error ? error.message : "אירעה שגיאה לא ידועה",
@@ -143,15 +158,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     loadInitialData();
   }, [currentWorkspace?.id]);
-
-  // Helper function to get employee ID (mock for development)
-  const getEmployeeId = async (): Promise<string | null> => {
-    if (process.env.NODE_ENV === "development") {
-      return "DEV-12345";
-    }
-    // TODO: Implement actual employee ID reading logic
-    return null;
-  };
 
   // Automatically move scheduled requests to 'ended' after meeting date
   useEffect(() => {
@@ -180,32 +186,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }, 60 * 1000); // Check every minute
     return () => clearInterval(interval);
   }, []);
-
-  const checkUserAccess = async (): Promise<void> => {
-    try {
-      const employeeId = await getEmployeeId();
-      if (!employeeId) {
-        throw new Error("לא נמצא מזהה עובד");
-      }
-
-      // Load users from storage
-      const user = await userService.getUserByEmployeeId(employeeId);
-      if (!user) {
-        throw new Error("אין לך הרשאה לגשת למערכת");
-      }
-
-      setUser(user);
-    } catch (error) {
-      console.error("Error checking user access:", error);
-      toast({
-        title: "שגיאת התחברות",
-        description: error instanceof Error ? error.message : "אירעה שגיאה לא ידועה",
-        variant: "destructive",
-      });
-      navigate("/landing");
-      throw error;
-    }
-  };
 
   const devLoginAsAdmin = () => {
     setUser(DEV_ADMIN_USER);

@@ -1,5 +1,6 @@
 import { User, UserRole, WorkspaceAccess, AccessRequest } from "@/types";
 import { txtStore } from "@/services/txtStore";
+import { authService } from "@/services/authService";
 
 const USERS_KEY = "users";
 const ACCESS_REQUESTS_KEY = "access_requests";
@@ -131,9 +132,11 @@ class UserService {
       this.saveAccessRequestsToStorage(requests);
       return newRequest;
     } else {
+      const currentUserInfo = await authService.getCurrentUser();
       const requests = (await txtStore.getStrictSP<AccessRequest[]>(ACCESS_REQUESTS_KEY)) || [];
       const newRequest: AccessRequest = {
         ...request,
+        spsClaimId: currentUserInfo?.spsClaimId || "",
         id: crypto.randomUUID(),
         status: "pending",
         createdAt: new Date().toISOString(),
@@ -163,12 +166,10 @@ class UserService {
       const requestIndex = requests.findIndex(req => req.id === requestId);
       if (requestIndex === -1) throw new Error("Access request not found");
       const request = requests[requestIndex];
-      request.status = status;
-      request.notes = notes;
-      request.updatedAt = new Date().toISOString();
+      
       if (status === "approved") {
-        // Consistent logic: add user to workspace, create if not exists
-        let user = this.getUsersFromStorage().find(u => u.employeeId === request.employeeId);
+        // Add user to workspace or create new user
+        let user = this.getUsersFromStorage().find(u => u.spsClaimId === request.spsClaimId);
         let allUsers = this.getUsersFromStorage();
         if (user) {
           // Add workspace access if not present
@@ -181,7 +182,7 @@ class UserService {
               role: "regular" as UserRole
             });
             allUsers = allUsers.map(u =>
-              u.employeeId === user!.employeeId ? user! : u
+              u.spsClaimId === user!.spsClaimId ? user! : u
             );
             this.saveUsersToStorage(allUsers);
           }
@@ -190,6 +191,7 @@ class UserService {
           const newUser = {
             id: `user-${Date.now()}`,
             employeeId: request.employeeId,
+            spsClaimId: request.spsClaimId,
             name: request.name,
             email: request.email,
             department: request.department,
@@ -204,6 +206,9 @@ class UserService {
           this.saveUsersToStorage(allUsers);
         }
       }
+
+      // Remove the request from storage
+      requests.splice(requestIndex, 1);
       this.saveAccessRequestsToStorage(requests);
       return request;
     } else {
@@ -211,13 +216,11 @@ class UserService {
       const requestIndex = requests.findIndex(req => req.id === requestId);
       if (requestIndex === -1) throw new Error("Access request not found");
       const request = requests[requestIndex];
-      request.status = status;
-      request.notes = notes;
-      request.updatedAt = new Date().toISOString();
+      
       if (status === "approved") {
-        // Consistent logic: add user to workspace, create if not exists
+        // Add user to workspace or create new user
         let allUsers = (await txtStore.getStrictSP<User[]>(USERS_KEY)) || [];
-        let user = allUsers.find(u => u.employeeId === request.employeeId);
+        let user = allUsers.find(u => u.spsClaimId === request.spsClaimId);
         if (user) {
           // Add workspace access if not present
           const hasAccess = user.workspaceAccess.some(
@@ -229,7 +232,7 @@ class UserService {
               role: "regular" as UserRole
             });
             allUsers = allUsers.map(u =>
-              u.employeeId === user!.employeeId ? user! : u
+              u.spsClaimId === user!.spsClaimId ? user! : u
             );
             await txtStore.updateStrictSP(USERS_KEY, allUsers);
           }
@@ -238,6 +241,7 @@ class UserService {
           const newUser = {
             id: `user-${Date.now()}`,
             employeeId: request.employeeId,
+            spsClaimId: request.spsClaimId,
             name: request.name,
             email: request.email,
             department: request.department,
@@ -252,6 +256,9 @@ class UserService {
           await txtStore.updateStrictSP(USERS_KEY, allUsers);
         }
       }
+
+      // Remove the request from storage
+      requests.splice(requestIndex, 1);
       await txtStore.updateStrictSP(ACCESS_REQUESTS_KEY, requests);
       return request;
     }
@@ -263,6 +270,37 @@ class UserService {
       this.saveUsersToStorage(users);
     } else {
       await txtStore.updateStrictSP(USERS_KEY, users);
+    }
+  }
+
+  async getUserBySPSClaimId(spsClaimId: string): Promise<User | null> {
+    console.log("Looking for user with SPS-ClaimID:", spsClaimId);
+    
+    if (process.env.NODE_ENV === "development") {
+      const users = this.getUsersFromStorage();
+      console.log("Available users:", users.map(u => ({ 
+        name: u.name, 
+        spsClaimId: u.spsClaimId 
+      })));
+      return users.find(user => user.spsClaimId === spsClaimId) || null;
+    } else {
+      const users = (await txtStore.getStrictSP<User[]>(USERS_KEY)) || [];
+      console.log("Available users from TXT store:", users.map(u => ({ 
+        name: u.name, 
+        spsClaimId: u.spsClaimId 
+      })));
+      return users.find(user => user.spsClaimId === spsClaimId) || null;
+    }
+  }
+
+  async getCurrentUser(): Promise<User | null> {
+    try {
+      const currentUserInfo = await authService.getCurrentUser();
+      if (!currentUserInfo) return null;
+      return await this.getUserBySPSClaimId(currentUserInfo.spsClaimId);
+    } catch (error) {
+      console.error("Error getting current user:", error);
+      return null;
     }
   }
 }

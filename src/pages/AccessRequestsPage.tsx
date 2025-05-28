@@ -1,3 +1,4 @@
+// AccessRequestsPage
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +29,6 @@ export default function AccessRequestsPage() {
   const { currentWorkspace } = useWorkspace();
   const [requests, setRequests] = useState<AccessRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [processedRequests, setProcessedRequests] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadRequests();
@@ -37,9 +37,12 @@ export default function AccessRequestsPage() {
   const loadRequests = async () => {
     try {
       const allRequests = await userService.getAccessRequests();
-      // Filter by current workspace
+      // Filter by current workspace and only show pending requests
       const filtered = currentWorkspace
-        ? (allRequests || []).filter((r: AccessRequest) => r.requestedWorkspaceId === currentWorkspace.id)
+        ? (allRequests || []).filter((r: AccessRequest) => 
+            r.requestedWorkspaceId === currentWorkspace.id && 
+            r.status === "pending"
+          )
         : [];
       setRequests(filtered);
     } catch (error) {
@@ -57,8 +60,8 @@ export default function AccessRequestsPage() {
   const handleApproveRequest = async (requestId: string) => {
     try {
       await userService.updateAccessRequestStatus(requestId, "approved");
-      setProcessedRequests(prev => new Set([...prev, requestId]));
-      await loadRequests();
+      // Remove the request from the list immediately
+      setRequests(prev => prev.filter(r => r.id !== requestId));
       toast({
         title: "בקשה אושרה",
         description: "המשתמש נוסף למערכת בהצלחה",
@@ -75,8 +78,8 @@ export default function AccessRequestsPage() {
   const handleRejectRequest = async (requestId: string) => {
     try {
       await userService.updateAccessRequestStatus(requestId, "rejected");
-      setProcessedRequests(prev => new Set([...prev, requestId]));
-      await loadRequests();
+      // Remove the request from the list immediately
+      setRequests(prev => prev.filter(r => r.id !== requestId));
       toast({
         title: "בקשה נדחתה",
         description: "בקשת הגישה נדחתה בהצלחה",
@@ -156,24 +159,22 @@ export default function AccessRequestsPage() {
                             {format(new Date(request.createdAt), "dd/MM/yyyy HH:mm", { locale: he })}
                           </TableCell>
                           <TableCell>
-                            {!processedRequests.has(request.id) && (
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleApproveRequest(request.id)}
-                                >
-                                  אישור
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleRejectRequest(request.id)}
-                                >
-                                  דחייה
-                                </Button>
-                              </div>
-                            )}
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleApproveRequest(request.id)}
+                              >
+                                אישור
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRejectRequest(request.id)}
+                              >
+                                דחייה
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}

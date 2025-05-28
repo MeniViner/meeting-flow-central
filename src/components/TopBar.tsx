@@ -58,7 +58,7 @@ export function TopBar({ className, ...props }: TopBarProps) {
 
   const currentPage = pageTitles[pathname] || {
     title: "לוח בקרה",
-    description: `ברוך הבא, ${user?.name}!`,
+    description: `ברוך הבא, ${(user as any)?.fullName || user?.name || "אורח"}!`,
   };
 
   const formattedTime = currentTime.toLocaleTimeString("he-IL", {
@@ -94,7 +94,7 @@ export function TopBar({ className, ...props }: TopBarProps) {
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden sm:block px-2 py-1 rounded-full bg-muted text-foreground text-xs font-medium">
-            ברוך הבא: {user?.name}
+            ברוך הבא: {(user as any)?.fullName || user?.name || "אורח"}
           </div>
           <div className="text-xs font-medium text-muted-foreground">
             {formattedTime}

@@ -38,16 +38,27 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       setWorkspaces(loadedWorkspaces);
 
-      // Set current workspace from localStorage if exists
+      // First try to get last visited workspace from localStorage
+      const lastVisitedWorkspaceId = localStorage.getItem("lastVisitedWorkspaceId");
+      if (lastVisitedWorkspaceId) {
+        const lastVisitedWorkspace = loadedWorkspaces.find(w => w.id === lastVisitedWorkspaceId);
+        if (lastVisitedWorkspace) {
+          setCurrentWorkspace(lastVisitedWorkspace);
+          return;
+        }
+      }
+
+      // If no last visited workspace, try to get from currentWorkspaceId
       const savedWorkspaceId = localStorage.getItem("currentWorkspaceId");
       if (savedWorkspaceId) {
         const savedWorkspace = loadedWorkspaces.find(w => w.id === savedWorkspaceId);
         if (savedWorkspace) {
           setCurrentWorkspace(savedWorkspace);
+          return;
         }
       }
 
-      // If no current workspace is set and we have workspaces, set the first one
+      // If no saved workspace is found and we have workspaces, set the first one
       if (!currentWorkspace && loadedWorkspaces.length > 0) {
         setCurrentWorkspace(loadedWorkspaces[0]);
       }
@@ -62,6 +73,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const handleSetCurrentWorkspace = (workspace: Workspace) => {
     setCurrentWorkspace(workspace);
     localStorage.setItem("currentWorkspaceId", workspace.id);
+    localStorage.setItem("lastVisitedWorkspaceId", workspace.id);
   };
 
   const handleAddWorkspace = async (workspace: Omit<Workspace, "id">) => {

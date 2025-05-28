@@ -292,9 +292,10 @@ export default function UsersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all" >כל התפקידים</SelectItem>
-                  <SelectItem value="admin">מנהלים</SelectItem>
+                  <SelectItem value="owner">בעלים</SelectItem>
+                  <SelectItem value="administrator">מנהלים</SelectItem>
                   <SelectItem value="editor">עורכים</SelectItem>
-                  <SelectItem value="viewer">צופים</SelectItem>
+                  <SelectItem value="regular">משתמשים רגילים</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -351,9 +352,10 @@ export default function UsersPage() {
                         <SelectValue placeholder="בחר תפקיד" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">מנהל</SelectItem>
+                        <SelectItem value="owner">בעלים</SelectItem>
+                        <SelectItem value="administrator">מנהל</SelectItem>
                         <SelectItem value="editor">עורך</SelectItem>
-                        <SelectItem value="viewer">צופה</SelectItem>
+                        <SelectItem value="regular">משתמש רגיל</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -435,9 +437,10 @@ export default function UsersPage() {
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="admin">מנהל</SelectItem>
+                            <SelectItem value="owner">בעלים</SelectItem>
+                            <SelectItem value="administrator">מנהל</SelectItem>
                             <SelectItem value="editor">עורך</SelectItem>
-                            <SelectItem value="viewer">צופה</SelectItem>
+                            <SelectItem value="regular">משתמש רגיל</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
@@ -522,9 +525,10 @@ export default function UsersPage() {
                   <SelectValue placeholder="בחר תפקיד" />
                 </SelectTrigger>
                 <SelectContent >
-                  <SelectItem value="admin">מנהל</SelectItem>
+                  <SelectItem value="owner">בעלים</SelectItem>
+                  <SelectItem value="administrator">מנהל</SelectItem>
                   <SelectItem value="editor">עורך</SelectItem>
-                  <SelectItem value="viewer">צופה</SelectItem>
+                  <SelectItem value="regular">משתמש רגיל</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -566,10 +570,10 @@ export default function UsersPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="regular">משתמש רגיל</SelectItem>
-                        <SelectItem value="editor">עורך</SelectItem>
-                        <SelectItem value="administrator">מנהל</SelectItem>
                         <SelectItem value="owner">בעלים</SelectItem>
+                        <SelectItem value="administrator">מנהל</SelectItem>
+                        <SelectItem value="editor">עורך</SelectItem>
+                        <SelectItem value="regular">משתמש רגיל</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

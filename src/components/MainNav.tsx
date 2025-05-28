@@ -79,11 +79,8 @@ export default function MainNav({ className }: { className?: string }) {
 
   if (!user) return null;
 
-  // In development, show all items for all users
-  const filteredNavItems = process.env.NODE_ENV === "development"
-    ? navItems
-    : navItems.filter((item) => item.showFor.includes(user.globalRole));
-
+  // Always show all navigation items regardless of role (temporary for testing)
+  const filteredNavItems = navItems;
 
   return (
     <>
