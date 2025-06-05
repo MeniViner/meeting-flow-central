@@ -29,7 +29,7 @@ interface RequestListProps {
 }
 // מציג רשימה של הבקשות שהוגשו על ידי המשתמש הנוכחי
 export function RequestList({ requests, showFilters = true, searchTerm, setSearchTerm, viewMode }: RequestListProps) {
-  const { addMeetingSummary } = useApp();
+  const { addMeetingSummary, user } = useApp();
   const [selectedRequest, setSelectedRequest] = useState<MeetingRequest | null>(null);
   const [editingRequest, setEditingRequest] = useState<MeetingRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">("all");
@@ -42,7 +42,9 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
     
     const matchesStatus = statusFilter === "all" || request.status === statusFilter;
     
-    return matchesSearch && matchesStatus;
+    const matchesUser = user ? request.requesterId === user.id : true;
+    
+    return matchesSearch && matchesStatus && matchesUser;
   });
 
   const canEditRequest = (request: MeetingRequest) => {

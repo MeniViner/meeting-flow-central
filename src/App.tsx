@@ -7,6 +7,8 @@ import { AppProvider } from "@/contexts/AppContext";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { AppLayout } from "@/components/AppLayout";
 import { ThemeProvider } from "next-themes";
+import { TutorialProvider } from "@/contexts/TutorialContext";
+import { TutorialOverlay } from "@/components/tutorial/TutorialOverlay";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import DocumentsPage from "./pages/DocumentsPage";
@@ -35,65 +37,68 @@ const App = () => (
           <BrowserRouter>
             <WorkspaceProvider>
               <AppProvider>
-                <Routes>
-                  <Route path="/landing" element={<LandingPage />} />
-                  <Route path="/request-access" element={<AccessRequestPage />} />
-                  <Route element={<AppLayout />}>
-                    <Route index element={<Dashboard />} />
-                    <Route
-                      path="/admin"
-                      element={
-                        <ProtectedRoute allowedRoles={["admin"]}>
-                          <AdminDashboard />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="/documents" element={<DocumentsPage />} />
-                    <Route
-                      path="/access-requests"
-                      element={
-                        <ProtectedRoute allowedRoles={["admin"]}>
-                          <AccessRequestsPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/users"
-                      element={
-                        <ProtectedRoute allowedRoles={["admin"]}>
-                          <UsersPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/environment-users"
-                      element={
-                        <ProtectedRoute allowedRoles={["admin"]}>
-                          <EnvironmentUsersPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/meetings"
-                      element={
-                        <ProtectedRoute>
-                          <MeetingsPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="/workspaces" element={<WorkspacesPage />} />
-                    <Route
-                      path="/formats"
-                      element={
-                        <ProtectedRoute>
-                          <Formats />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="*" element={<NotFound />} />
-                  </Route>
-                </Routes>
-                <DevHelper />
+                <TutorialProvider>
+                  <Routes>
+                    <Route path="/landing" element={<LandingPage />} />
+                    <Route path="/request-access" element={<AccessRequestPage />} />
+                    <Route element={<AppLayout />}>
+                      <Route index element={<Dashboard />} />
+                      <Route
+                        path="/admin"
+                        element={
+                          <ProtectedRoute allowedRoles={["admin"]}>
+                            <AdminDashboard />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route path="/documents" element={<DocumentsPage />} />
+                      <Route
+                        path="/access-requests"
+                        element={
+                          <ProtectedRoute allowedRoles={["admin"]}>
+                            <AccessRequestsPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/users"
+                        element={
+                          <ProtectedRoute allowedRoles={["admin"]}>
+                            <UsersPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/environment-users"
+                        element={
+                          <ProtectedRoute allowedRoles={["admin"]}>
+                            <EnvironmentUsersPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/meetings"
+                        element={
+                          <ProtectedRoute>
+                            <MeetingsPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route path="/workspaces" element={<WorkspacesPage />} />
+                      <Route
+                        path="/formats"
+                        element={
+                          <ProtectedRoute>
+                            <Formats />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route path="*" element={<NotFound />} />
+                    </Route>
+                  </Routes>
+                  <TutorialOverlay />
+                  <DevHelper />
+                </TutorialProvider>
               </AppProvider>
             </WorkspaceProvider>
           </BrowserRouter>

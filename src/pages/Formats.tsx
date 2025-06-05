@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "../components/ui/dialog";
 import { AnimatePresence, motion } from "framer-motion";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const SORT_OPTIONS = [
   { value: "newest", label: "העלאה אחרונה" },
@@ -123,7 +124,8 @@ export default function Formats() {
           </div>
         </div>
 
-        <div className="max-h-[60vh] overflow-auto">
+        
+        <div className="min-h-[55vh]">
           <AnimatePresence mode="wait">
             {view === "table" ? (
               <motion.table
@@ -143,6 +145,7 @@ export default function Formats() {
                   </tr>
                 </thead>
                 <tbody>
+                  <ScrollArea>
                   <AnimatePresence>
                     {sortedFormats.map(format => (
                       <motion.tr
@@ -168,6 +171,7 @@ export default function Formats() {
                       </motion.tr>
                     ))}
                   </AnimatePresence>
+                  </ScrollArea>
                 </tbody>
               </motion.table>
             ) : (
@@ -207,6 +211,7 @@ export default function Formats() {
             </div>
           )}
         </div>
+        
       </div>
     </div>
   );

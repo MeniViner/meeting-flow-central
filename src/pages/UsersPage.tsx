@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, Trash2, Plus, Filter, Users, ChevronDown, Building2 } from "lucide-react";
+import { Search, Edit, Trash2, Plus, Filter, Users, ChevronDown, Building2, ArrowUpDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { userService } from "@/services/userService";
+import SortIcon from "@/components/SortIcon";
+
 import {
   Select,
   SelectContent,
@@ -28,13 +30,19 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { User, UserRole } from "@/types";
 
+type SortField = 'name' | 'email' | 'department' | 'employeeId' | 'globalRole' | 'createdAt' | 'lastLogin';
+type SortOrder = 'asc' | 'desc';
+
 export default function UsersPage() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [newUser, setNewUser] = useState<Partial<User>>({
     name: "",
     email: "",
@@ -49,6 +57,7 @@ export default function UsersPage() {
   const [workspaceAccessDraft, setWorkspaceAccessDraft] = useState<{ [workspaceId: string]: UserRole }>({});
   const [editUserDialog, setEditUserDialog] = useState<{ open: boolean; user: User | null }>({ open: false, user: null });
   const [editUserDraft, setEditUserDraft] = useState<Partial<User>>({});
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; user: User | null }>({ open: false, user: null });
 
   useEffect(() => {
     loadUsers();
@@ -134,6 +143,7 @@ export default function UsersPage() {
       const updatedUsers = users.filter(user => user.id !== userId);
       await userService.updateAllUsers(updatedUsers);
       setUsers(updatedUsers);
+      setDeleteConfirmDialog({ open: false, user: null });
       toast({
         title: "משתמש נמחק",
         description: "המשתמש נמחק בהצלחה",
@@ -147,14 +157,50 @@ export default function UsersPage() {
     }
   };
 
-  const filteredUsers = users.filter(user => {
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const getSortedUsers = (users: User[]) => {
+    return [...users].sort((a, b) => {
+      let aValue: string | number = a[sortField];
+      let bValue: string | number = b[sortField];
+
+      // Handle date fields
+      if (sortField === 'createdAt' || sortField === 'lastLogin') {
+        aValue = new Date(aValue as string).getTime();
+        bValue = new Date(bValue as string).getTime();
+      }
+
+      // Handle string fields
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortOrder === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      // Handle number fields
+      return sortOrder === 'asc'
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    });
+  };
+
+  const filteredUsers = getSortedUsers(users.filter(user => {
     const matchesSearch = 
-      user.name.includes(searchQuery) || 
-      user.email.includes(searchQuery) ||
-      user.department.includes(searchQuery);
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.employeeId.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === "all" || user.globalRole === roleFilter;
-    return matchesSearch && matchesRole;
-  });
+    const matchesDepartment = !departmentFilter || user.department.toLowerCase().includes(departmentFilter.toLowerCase());
+    return matchesSearch && matchesRole && matchesDepartment;
+  }));
 
   const getRoleBadgeVariant = (role: UserRole) => {
     switch (role) {
@@ -291,7 +337,7 @@ export default function UsersPage() {
                   <SelectValue placeholder="סינון לפי תפקיד" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all" >כל התפקידים</SelectItem>
+                  <SelectItem value="all">כל התפקידים</SelectItem>
                   <SelectItem value="owner">בעלים</SelectItem>
                   <SelectItem value="administrator">מנהלים</SelectItem>
                   <SelectItem value="editor">עורכים</SelectItem>
@@ -299,6 +345,12 @@ export default function UsersPage() {
                 </SelectContent>
               </Select>
 
+              <Input
+                placeholder="סינון לפי מחלקה"
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="max-w-[200px]"
+              />
 
             </div>
             <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
@@ -409,11 +461,48 @@ export default function UsersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>שם</TableHead>
-                    <TableHead>אימייל</TableHead>
-                    <TableHead>מחלקה</TableHead>
-                    <TableHead>תפקיד</TableHead>
-                    <TableHead>כניסה אחרונה</TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('name')} className="flex items-center">
+                        שם
+                        <SortIcon active={sortField === 'name'} order={sortOrder} />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('email')} className="flex items-center">
+                        אימייל
+                        <SortIcon active={sortField === 'email'} order={sortOrder} />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('department')} className="flex items-center">
+                        מחלקה
+                        <SortIcon active={sortField === 'department'} order={sortOrder} />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('employeeId')} className="flex items-center">
+                        מספר עובד
+                        <SortIcon active={sortField === 'employeeId'} order={sortOrder} />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('globalRole')} className="flex items-center">
+                        תפקיד
+                        <SortIcon active={sortField === 'globalRole'} order={sortOrder} />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('createdAt')} className="flex items-center">
+                        תאריך יצירה
+                        <SortIcon active={sortField === 'createdAt'} order={sortOrder} />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('lastLogin')} className="flex items-center">
+                        כניסה אחרונה
+                        <SortIcon active={sortField === 'lastLogin'} order={sortOrder} />
+                      </Button>
+                    </TableHead>
                     <TableHead>פעולות</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -423,6 +512,7 @@ export default function UsersPage() {
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.department}</TableCell>
+                      <TableCell>{user.employeeId}</TableCell>
                       <TableCell>
                         <Select
                           dir="rtl"
@@ -444,6 +534,7 @@ export default function UsersPage() {
                           </SelectContent>
                         </Select>
                       </TableCell>
+                      <TableCell>{new Date(user.createdAt).toLocaleDateString('he-IL')}</TableCell>
                       <TableCell>{user.lastLogin}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -457,7 +548,7 @@ export default function UsersPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => setDeleteConfirmDialog({ open: true, user })}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -466,8 +557,6 @@ export default function UsersPage() {
                             variant="outline"
                             onClick={() => openWorkspaceDialog(user)}
                           >
-                            {/* ניהול מרחבי עבודה
-                            <ChevronDown className="h-4 w-4" /> */}
                             <Building2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -514,17 +603,25 @@ export default function UsersPage() {
                 onChange={e => setEditUserDraft(draft => ({ ...draft, department: e.target.value }))}
               />
             </div>
-            <div className="grid gap-2" dir="rtl">
-              <Label htmlFor="edit-role">תפקיד גלובלי</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-employeeId">מספר עובד</Label>
+              <Input
+                id="edit-employeeId"
+                value={editUserDraft.employeeId || ""}
+                onChange={e => setEditUserDraft(draft => ({ ...draft, employeeId: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-role">תפקיד</Label>
               <Select
                 dir="rtl"
-                value={editUserDraft.globalRole || "viewer"}
-                onValueChange={value => setEditUserDraft(draft => ({ ...draft, globalRole: value as UserRole }))}
+                value={editUserDraft.globalRole}
+                onValueChange={(value) => setEditUserDraft(draft => ({ ...draft, globalRole: value as UserRole }))}
               >
-                <SelectTrigger >
+                <SelectTrigger>
                   <SelectValue placeholder="בחר תפקיד" />
                 </SelectTrigger>
-                <SelectContent >
+                <SelectContent>
                   <SelectItem value="owner">בעלים</SelectItem>
                   <SelectItem value="administrator">מנהל</SelectItem>
                   <SelectItem value="editor">עורך</SelectItem>
@@ -532,10 +629,28 @@ export default function UsersPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-status">סטטוס</Label>
+              <Select
+                dir="rtl"
+                value={editUserDraft.status}
+                onValueChange={(value) => setEditUserDraft(draft => ({ ...draft, status: value as "active" | "inactive" }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="בחר סטטוס" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">פעיל</SelectItem>
+                  <SelectItem value="inactive">לא פעיל</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditUserDialog({ open: false, user: null })}>ביטול</Button>
-            <Button onClick={saveEditUser}>שמור</Button>
+            <Button variant="outline" onClick={() => setEditUserDialog({ open: false, user: null })}>
+              ביטול
+            </Button>
+            <Button onClick={saveEditUser}>שמור שינויים</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -587,6 +702,27 @@ export default function UsersPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmDialog.open} onOpenChange={open => setDeleteConfirmDialog({ open, user: open ? deleteConfirmDialog.user : null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>מחיקת משתמש</DialogTitle>
+            <DialogDescription>
+              האם אתה בטוח שברצונך למחוק את המשתמש {deleteConfirmDialog.user?.name}?
+              פעולה זו אינה ניתנת לביטול.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmDialog({ open: false, user: null })}>
+              ביטול
+            </Button>
+            <Button variant="destructive" onClick={() => deleteConfirmDialog.user && handleDeleteUser(deleteConfirmDialog.user.id)}>
+              מחק
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 

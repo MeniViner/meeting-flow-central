@@ -77,7 +77,7 @@ export function CreateRequestForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" dir="rtl">
+    <form onSubmit={handleSubmit} className="space-y-6" dir="rtl" data-tutorial="request-form">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Right Column - Basic Details */}
         <div className="space-y-4">
@@ -89,6 +89,7 @@ export function CreateRequestForm({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="הזן כותרת פגישה"
               className={errors.title ? "border-red-500" : ""}
+              data-tutorial="request-form-title"
             />
             {errors.title && (
               <p className="text-xs text-red-500">{errors.title}</p>
@@ -106,6 +107,7 @@ export function CreateRequestForm({
                     !deadline && "text-muted-foreground",
                     errors.deadline ? "border-red-500" : ""
                   )}
+                  data-tutorial="request-form-date"
                 >
                   <CalendarIcon className="ml-2 h-4 w-4" />
                   {deadline ? format(deadline, "PPP", { locale: he }) : "בחר תאריך"}
@@ -135,6 +137,7 @@ export function CreateRequestForm({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="ספק פרטים על הפגישה"
               rows={9}
+              data-tutorial="request-form-description"
             />
           </div>
         </div>
@@ -143,7 +146,11 @@ export function CreateRequestForm({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>מסמכים *</Label>
-            <FileUploader onFilesChange={setDocuments} existingFiles={documents} />
+            <FileUploader 
+              onFilesChange={setDocuments} 
+              existingFiles={documents}
+              data-tutorial="request-form-documents"
+            />
             {errors.documents && (
               <p className="text-xs text-red-500">{errors.documents}</p>
             )}
@@ -152,7 +159,12 @@ export function CreateRequestForm({
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" size="lg" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          size="lg" 
+          disabled={isLoading}
+          data-tutorial="request-form-submit"
+        >
           {isLoading ? (
             <>
               <LoadingSpinner className="ml-2 h-4 w-4" />

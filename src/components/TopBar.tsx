@@ -1,14 +1,21 @@
-import { cn } from "@/lib/utils";
-import { useLocation } from "react-router-dom";
-import { useApp } from "@/contexts/AppContext";
-import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import { Sun, Moon } from "lucide-react";
-import { useEffect, useState } from "react";
-import  WorkspaceSelector  from "@/components/WorkspaceSelector";
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useApp } from '@/contexts/AppContext';
+import { Button } from '@/components/ui/button';
+import { Moon, Sun, Bell, User } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import WorkspaceSelector from "@/components/WorkspaceSelector";
 
 interface TopBarProps extends React.HTMLAttributes<HTMLDivElement> {}
+
 
 const pageTitles: Record<string, { title: string; description: string }> = {
   "/": {
@@ -44,7 +51,6 @@ const pageTitles: Record<string, { title: string; description: string }> = {
 export function TopBar({ className, ...props }: TopBarProps) {
   const { pathname } = useLocation();
   const { user } = useApp();
-  const { currentWorkspace } = useWorkspace();
   const { theme, setTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -67,6 +73,10 @@ export function TopBar({ className, ...props }: TopBarProps) {
     second: "2-digit",
     hour12: false,
   });
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   return (
     <div
@@ -99,19 +109,51 @@ export function TopBar({ className, ...props }: TopBarProps) {
           <div className="text-xs font-medium text-muted-foreground">
             {formattedTime}
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-8 w-8"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-4 w-4 text-yellow-400" />
-            ) : (
-              <Moon className="h-4 w-4 text-blue-500" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="h-8 w-8"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+            >
+              <Bell className="h-4 w-4" />
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={(user as any)?.avatar} alt={(user as any)?.fullName || user?.name || "אורח"} />
+                  <AvatarFallback>{(user as any)?.fullName || user?.name || "אורח"}</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>פרופיל</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Bell className="mr-2 h-4 w-4" />
+                  <span>התראות</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>הגדרות</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ export default function WorkspaceSelector() {
   }, [accessibleWorkspaces, currentWorkspace, setCurrentWorkspace]);
 
   // Don't show selector if user only has access to one workspace
-  if (isLoading || !workspaces || accessibleWorkspaces.length <= 1) {
+  if (isLoading || !workspaces || accessibleWorkspaces.length <= 1 ) {
     return null;
   }
 

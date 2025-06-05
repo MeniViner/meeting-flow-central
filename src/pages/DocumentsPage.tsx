@@ -1,7 +1,7 @@
 import { useApp } from "@/contexts/AppContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, File, FileImage, FileSpreadsheet, PresentationIcon, FileX, Table2, Grid } from "lucide-react";
+import { FileText, File, FileImage, FileSpreadsheet, PresentationIcon, FileX, Table2, Grid, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DateDisplay } from "@/components/DateDisplay";
 import { motion, AnimatePresence } from "framer-motion";
@@ -55,6 +55,16 @@ export default function DocumentsPage() {
     { id: "image", label: "תמונות", count: documentsByType.image?.length || 0 },
     { id: "other", label: "קבצים אחרים", count: documentsByType.other?.length || 0 },
   ];
+
+  const handleDownload = (doc: any) => {
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = doc.url; // Assuming doc.url contains the download URL
+    link.download = doc.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="space-y-6">
@@ -222,9 +232,19 @@ export default function DocumentsPage() {
                                 </motion.div>
                                 <CardContent className="p-4">
                                   <div className="space-y-2">
-                                    <h3 className="font-medium truncate" title={doc.name}>
-                                      {doc.name}
-                                    </h3>
+                                    <div className="flex items-center justify-between">
+                                      <h3 className="font-medium truncate" title={doc.name}>
+                                        {doc.name}
+                                      </h3>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleDownload(doc)}
+                                        className="h-8 w-8"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </div>
                                     <div className="text-sm text-muted-foreground">
                                       <p className="truncate">מקור: {doc.requestTitle}</p>
                                       <p className="flex items-center gap-1 text-xs mt-1">הועלה: <DateDisplay date={doc.uploadedAt} /></p>
@@ -252,6 +272,7 @@ export default function DocumentsPage() {
                                 <th className="p-4 text-right font-medium">סוג</th>
                                 <th className="p-4 text-right font-medium">מקור</th>
                                 <th className="p-4 text-right font-medium">תאריך העלאה</th>
+                                <th className="p-4 text-right font-medium">הורדה</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -320,6 +341,16 @@ export default function DocumentsPage() {
                                     </td>
                                     <td className="p-4">
                                       <DateDisplay date={doc.uploadedAt} />
+                                    </td>
+                                    <td className="p-4">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleDownload(doc)}
+                                        className="h-8 w-8"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
                                     </td>
                                   </motion.tr>
                                 );

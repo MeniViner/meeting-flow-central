@@ -235,3 +235,121 @@ html[dir="rtl"] .md\:mr-64 {
 .animate-delay-200 { animation-delay: 0.2s; }
 .animate-delay-300 { animation-delay: 0.3s; }
 .animate-delay-400 { animation-delay: 0.4s; }
+
+/* Tutorial System Styles */
+.tutorial-highlight {
+  position: relative;
+  z-index: 50;
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.tutorial-highlight::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: rgba(59, 130, 246, 0.1);
+  z-index: -1;
+  animation: tutorial-pulse 2s infinite;
+}
+
+@keyframes tutorial-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+}
+
+.tutorial-tooltip {
+  position: absolute;
+  z-index: 100;
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  max-width: 320px;
+  width: 100%;
+  pointer-events: auto;
+}
+
+.tutorial-tooltip::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+}
+
+.tutorial-tooltip[data-position="top"]::before {
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: white;
+}
+
+.tutorial-tooltip[data-position="right"]::before {
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: white;
+}
+
+.tutorial-tooltip[data-position="bottom"]::before {
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: white;
+}
+
+.tutorial-tooltip[data-position="left"]::before {
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: white;
+}
+
+.tutorial-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+  pointer-events: none;
+}
+
+.tutorial-backdrop-active {
+  pointer-events: auto;
+}
+
+/* Dark mode support */
+.dark .tutorial-tooltip {
+  background: #1f2937;
+  color: white;
+}
+
+.dark .tutorial-tooltip[data-position="top"]::before {
+  border-top-color: #1f2937;
+}
+
+.dark .tutorial-tooltip[data-position="right"]::before {
+  border-right-color: #1f2937;
+}
+
+.dark .tutorial-tooltip[data-position="bottom"]::before {
+  border-bottom-color: #1f2937;
+}
+
+.dark .tutorial-tooltip[data-position="left"]::before {
+  border-left-color: #1f2937;
+}
