@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion"
 import { EditRequestForm } from "./EditRequestForm";
 import { FileUploader } from "@/components/FileUploader";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 
 
@@ -30,11 +31,22 @@ interface RequestListProps {
 // מציג רשימה של הבקשות שהוגשו על ידי המשתמש הנוכחי
 export function RequestList({ requests, showFilters = true, searchTerm, setSearchTerm, viewMode }: RequestListProps) {
   const { addMeetingSummary, user } = useApp();
+  const { currentWorkspace } = useWorkspace();
   const [selectedRequest, setSelectedRequest] = useState<MeetingRequest | null>(null);
   const [editingRequest, setEditingRequest] = useState<MeetingRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">("all");
+  // const [userFilter, setUserFilter] = useState<string | "all">("all");
   const [meetingSummaryFile, setMeetingSummaryFile] = useState<Document | null>(null);
   
+  // // Get unique users from requests
+  // const uniqueUsers = Array.from(new Set(requests.map(req => req.requesterId)))
+  //   .map(id => requests.find(req => req.requesterId === id))
+  //   .filter((req): req is MeetingRequest => req !== undefined)
+  //   .map(req => ({
+  //     id: req.requesterId,
+  //     name: req.requesterName
+  //   }));
+
   // Filter requests
   const filteredRequests = requests.filter(request => {
     const matchesSearch = request.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -42,6 +54,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
     
     const matchesStatus = statusFilter === "all" || request.status === statusFilter;
     
+    // const matchesUser = userFilter === "all" ? true : request.requesterId === userFilter;
     const matchesUser = user ? request.requesterId === user.id : true;
     
     return matchesSearch && matchesStatus && matchesUser;
@@ -78,6 +91,23 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
               <SelectItem value="rejected">נדחה</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* <Select
+            value={userFilter}
+            onValueChange={(value) => setUserFilter(value)}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="סנן לפי משתמש" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">כל המשתמשים</SelectItem>
+              {uniqueUsers.map((user) => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select> */}
         </div>
       )}
 
@@ -328,7 +358,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
               {selectedRequest.status === "ended" && !selectedRequest.meetingSummaryFile && (
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded mb-4 flex flex-col gap-2">
                   <strong>לתשומת לבך:</strong> טרם הועלה קובץ סיכום פגישה. נא להעלות קובץ סיכום.
-                  <FileUploader onFilesChange={handleMeetingSummaryChange} existingFiles={meetingSummaryFile ? [meetingSummaryFile] : []} />
+                  <FileUploader onFilesChange={handleMeetingSummaryChange} existingFiles={meetingSummaryFile ? [meetingSummaryFile] : []} sw={currentWorkspace} />
                   <Button
                     className="w-fit mt-2"
                     onClick={async () => {

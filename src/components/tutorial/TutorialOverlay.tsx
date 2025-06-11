@@ -1,3 +1,4 @@
+// src/components/tutorial/TutorialOverlay.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { useTutorial, userTutorialPath, adminTutorialPath } from '../../contexts/TutorialContext';
 import { cn } from '../../lib/utils';

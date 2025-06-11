@@ -1,3 +1,4 @@
+// src/components/tutorial/FixedTutorialButton.tsx
 import React from 'react';
 import { TutorialButton } from './TutorialButton';
 

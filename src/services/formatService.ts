@@ -176,7 +176,7 @@ export const formatService = {
 
   async uploadFormat(file: File, name: string, user: User, SW: any): Promise<Format> {
     if (isDevelopment) {
-      const formats = await this.getFormats();
+      const formats = await this.getFormats(SW);
       const newFormat: Format = {
         id: Date.now().toString(),
         name,
@@ -237,16 +237,78 @@ export const formatService = {
 
   async deleteFormat(id: string, SW: any): Promise<void> {
     if (isDevelopment) {
-      const formats = await this.getFormats();
+      const formats = await this.getFormats(SW);
       const updatedFormats = formats.filter((format) => format.id !== id);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFormats));
       return;
     }
 
-    const response = await fetch(`${API_URL}SW%5Sen/schedules/_api/web/lists/getbytitle('formats')/items('${id}')`, {
+    const contextInfo = await fetch(`https://portal.army.idf/sites/schedule/_api/contextinfo`, {
+      method: "POST",
+      headers: {
+        accept: "application/json;odata=verbose",
+        "Content-Type": "application/json;odata=verbose",
+      },
+      credentials: "include",
+    });
+
+    const contextData = await contextInfo.json();
+    const digest = contextData.d.GetContextWebInformation.FormDigestValue;
+
+    const response = await fetch(`${API_URL}/${SW.englishName}/_api/web/lists/getbytitle('formats')/items('${id}')`, {
       method: "DELETE",
+      headers: {
+        "X-RequestDigest": digest,
+        "IF-MATCH": "*",
+      },
     });
 
     if (!response.ok) throw new Error("Failed to delete format");
+  },
+
+  async updateFormat(id: string, name: string, SW: any): Promise<Format> {
+    if (isDevelopment) {
+      const formats = await this.getFormats(SW);
+      const updatedFormats = formats.map(format => 
+        format.id === id ? { ...format, name } : format
+      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFormats));
+      return updatedFormats.find(format => format.id === id)!;
+    }
+
+    const contextInfo = await fetch(`https://portal.army.idf/sites/schedule/_api/contextinfo`, {
+      method: "POST",
+      headers: {
+        accept: "application/json;odata=verbose",
+        "Content-Type": "application/json;odata=verbose",
+      },
+      credentials: "include",
+    });
+
+    const contextData = await contextInfo.json();
+    const digest = contextData.d.GetContextWebInformation.FormDigestValue;
+
+    const response = await fetch(`${API_URL}/${SW.englishName}/_api/web/lists/getbytitle('formats')/items('${id}')`, {
+      method: "POST",
+      headers: {
+        "X-RequestDigest": digest,
+        "Content-Type": "application/json;odata=verbose",
+        "IF-MATCH": "*",
+        "X-HTTP-Method": "MERGE",
+      },
+      body: JSON.stringify({
+        Title: name,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update format");
+
+    return {
+      id,
+      name,
+      uploadDate: new Date().toISOString(),
+      uploadedBy: "", // This will be updated by the server
+      downloadUrl: "", // This will be updated by the server
+    };
   },
 };

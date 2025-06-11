@@ -1,3 +1,4 @@
+// src/lib/tutorial.ts
 /**
  * Utility functions for the tutorial system
  */

@@ -1,3 +1,4 @@
+// src/components/user/CreateRequestForm.tsx
 import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Upload } from "lucide-react";
 import { he } from "date-fns/locale";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export function CreateRequestForm({ 
   onRequestCreated 
@@ -22,6 +24,7 @@ export function CreateRequestForm({
   onRequestCreated?: () => void 
 }) {
   const { submitRequest, isLoading } = useApp();
+  const { currentWorkspace } = useWorkspace();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -150,6 +153,7 @@ export function CreateRequestForm({
               onFilesChange={setDocuments} 
               existingFiles={documents}
               data-tutorial="request-form-documents"
+              sw={currentWorkspace}
             />
             {errors.documents && (
               <p className="text-xs text-red-500">{errors.documents}</p>

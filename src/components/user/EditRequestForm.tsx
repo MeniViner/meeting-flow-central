@@ -19,6 +19,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { FileUploader } from "@/components/FileUploader";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 const formSchema = z.object({
   title: z.string().min(1, "כותרת הבקשה היא שדה חובה"),
@@ -36,6 +37,7 @@ interface EditRequestFormProps {
 export function EditRequestForm({ request, onRequestUpdated }: EditRequestFormProps) {
   const { toast } = useToast();
   const { updateRequest } = useApp();
+  const { currentWorkspace } = useWorkspace();
   const [title, setTitle] = useState(request.title);
   const [description, setDescription] = useState(request.description);
   const [documents, setDocuments] = useState<Document[]>(request.documents);
@@ -135,7 +137,7 @@ export function EditRequestForm({ request, onRequestUpdated }: EditRequestFormPr
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>מסמכים</Label>
-              <FileUploader onFilesChange={setDocuments} existingFiles={documents} />
+              <FileUploader onFilesChange={setDocuments} existingFiles={documents} sw={currentWorkspace} />
             </div>
           </div>
         </div>

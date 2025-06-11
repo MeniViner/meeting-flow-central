@@ -1,3 +1,4 @@
+// src/contexts/TutorialContext.tsx
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
 export type UserRole = 'user' | 'admin';
