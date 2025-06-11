@@ -4,6 +4,8 @@ export interface CurrentUser {
   lastName: string;
   fullName: string;
   email: string;
+  employeeId: string;
+  department: string;
 }
 
 class AuthService {
@@ -33,13 +35,17 @@ class AuthService {
             const lastName = employee.LastName || "";
             const email = employee.Email || "";
             const fullName = `${firstName} ${lastName}`.trim();
+            const employeeId = employee.EmployeeID || "";
+            const department = employee.Department || "";
 
             const userInfo = {
               spsClaimId,
               firstName,
               lastName,
               fullName,
-              email
+              email,
+              employeeId,
+              department
             };
             
             console.log("Processed user info:", userInfo);

@@ -1,10 +1,10 @@
-import { User, UserRole, WorkspaceAccess, AccessRequest } from "@/types";
+// src/services/userService.ts
+import { User, UserRole, AccessRequest } from "@/types";
 import { txtStore } from "@/services/txtStore";
 import { authService } from "@/services/authService";
 
 const USERS_KEY = "users";
 const ACCESS_REQUESTS_KEY = "access_requests";
-const WORKSPACE_USERS_KEY = "workspace_users";
 
 class UserService {
   // --- LocalStorage helpers (for development) ---
@@ -197,8 +197,11 @@ class UserService {
             department: request.department,
             status: "active" as const,
             lastLogin: new Date().toLocaleString(),
-            globalRole: "regular" as UserRole,
-            workspaceAccess: [{ workspaceId: request.requestedWorkspaceId, role: "regular" as UserRole }],
+            globalRole: "regular" as UserRole, // Default global role
+            workspaceAccess: [{ 
+              workspaceId: request.requestedWorkspaceId, 
+              role: "regular" as UserRole 
+            }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
@@ -247,8 +250,11 @@ class UserService {
             department: request.department,
             status: "active" as const,
             lastLogin: new Date().toLocaleString(),
-            globalRole: "regular" as UserRole,
-            workspaceAccess: [{ workspaceId: request.requestedWorkspaceId, role: "regular" as UserRole }],
+            globalRole: "regular" as UserRole, // Default global role
+            workspaceAccess: [{ 
+              workspaceId: request.requestedWorkspaceId, 
+              role: "regular" as UserRole 
+            }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
@@ -302,6 +308,35 @@ class UserService {
       console.error("Error getting current user:", error);
       return null;
     }
+  }
+
+  // Helper method to check if a user has access to a specific workspace with a specific role
+  async hasWorkspaceAccess(userId: string, workspaceId: string, requiredRole: UserRole): Promise<boolean> {
+    const users = await this.getAllUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) return false;
+
+    const workspaceAccess = user.workspaceAccess.find(wa => wa.workspaceId === workspaceId);
+    if (!workspaceAccess) return false;
+
+    // Check if the user's role in the workspace meets or exceeds the required role
+    const roleHierarchy: { [key in UserRole]: number } = {
+      "owner": 4,
+      "administrator": 3,
+      "editor": 2,
+      "regular": 1
+    };
+
+    return roleHierarchy[workspaceAccess.role] >= roleHierarchy[requiredRole];
+  }
+
+  // Helper method to check if a user has global access to UsersPage
+  async hasGlobalAccess(userId: string): Promise<boolean> {
+    const users = await this.getAllUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) return false;
+
+    return user.globalRole === "owner" || user.globalRole === "administrator";
   }
 }
 

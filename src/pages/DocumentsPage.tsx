@@ -11,7 +11,7 @@ import { useState } from "react";
 
 
 export default function DocumentsPage() {
-  const { requests } = useApp();
+  const { requests, user } = useApp();
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   
   const allDocuments = requests.flatMap(request => 
@@ -20,8 +20,14 @@ export default function DocumentsPage() {
       requestTitle: request.title,
       requestId: request.id,
       requestStatus: request.status,
+      uploadedBy: doc.uploadedBy || request.requesterId,
     }))
-  );
+  ).filter(doc => {
+    if (user?.globalRole === 'owner' || user?.globalRole === 'administrator') {
+      return true;
+    }
+    return doc.uploadedBy === user?.id;
+  });
   
   const documentsByType = allDocuments.reduce((acc, doc) => {
     let type = "other";

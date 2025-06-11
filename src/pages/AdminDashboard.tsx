@@ -154,7 +154,7 @@ export default function AdminDashboard() {
                           />
                         </div>
                         <div>
-                          <p className="font-medium">{request.title}</p>
+                          <p className="font-medium text-right" dir="rtl">{request.title}</p>
                           <p className="text-sm text-muted-foreground">
                             מבקש: {request.requesterName}
                           </p>
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
                           />
                         </div>
                         <div>
-                          <p className="font-medium">{request.title}</p>
+                          <p className="font-medium text-right" dir="rtl">{request.title}</p>
                           <p className="text-sm text-muted-foreground">
                             מבקש: {request.requesterName}
                           </p>

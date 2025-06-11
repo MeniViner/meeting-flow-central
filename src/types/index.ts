@@ -28,6 +28,7 @@ export interface Document {
   url: string;
   type: string;
   uploadedAt: Date;
+  uploadedBy?: string; // Optional field for document ownership
 }
 
 export interface MeetingRequest {

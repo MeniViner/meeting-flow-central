@@ -4,17 +4,21 @@ import { Document } from "@/types";
 import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { formatService } from "@/services/formatService";
+import { toast } from "@/components/ui/use-toast";
 
 interface FileUploaderProps {
   onFilesChange: (files: Document[]) => void;
   existingFiles?: Document[];
   className?: string;
+  sw: any;
 }
 
 export function FileUploader({ 
   onFilesChange, 
   existingFiles = [], 
-  className 
+  className,
+  sw,
 }: FileUploaderProps) {
   const [files, setFiles] = useState<Document[]>(existingFiles);
 
@@ -34,10 +38,24 @@ export function FileUploader({
     }
   };
 
-  const removeFile = (id: string) => {
-    const updatedFiles = files.filter(file => file.id !== id);
-    setFiles(updatedFiles);
-    onFilesChange(updatedFiles);
+  const removeFile = async (fileToDelete: Document) => {
+    try {
+      await formatService.deleteFormat(fileToDelete.name, sw);
+      const updatedFiles = files.filter(file => file.id !== fileToDelete.id);
+      setFiles(updatedFiles);
+      onFilesChange(updatedFiles);
+      toast({
+        title: "הקובץ נמחק בהצלחה",
+        description: `הקובץ ${fileToDelete.name} נמחק בהצלחה.`,
+      });
+    } catch (error) {
+      console.error("Failed to delete file:", error);
+      toast({
+        title: "שגיאה במחיקת הקובץ",
+        description: `לא ניתן למחוק את הקובץ ${fileToDelete.name}.`,
+        variant: "destructive",
+      });
+    }
   };
 
   const getFileIcon = (type: string) => {
@@ -96,7 +114,7 @@ export function FileUploader({
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0"
-                    onClick={() => removeFile(file.id)}
+                    onClick={() => removeFile(file)}
                   >
                     <X className="h-4 w-4 text-red-500 " />
                     <span className="sr-only">הסר קובץ</span>

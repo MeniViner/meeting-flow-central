@@ -1,3 +1,4 @@
+// src/App.tsx
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -46,16 +47,32 @@ const App = () => (
                       <Route
                         path="/admin"
                         element={
-                          <ProtectedRoute allowedRoles={["admin"]}>
+                          <ProtectedRoute 
+                            allowedRoles={["administrator", "owner"]} 
+                            checkWorkspaceRole={true}
+                          >
                             <AdminDashboard />
                           </ProtectedRoute>
                         }
                       />
-                      <Route path="/documents" element={<DocumentsPage />} />
+                      <Route 
+                        path="/documents" 
+                        element={
+                          <ProtectedRoute 
+                            allowedRoles={["regular", "editor", "administrator", "owner"]}
+                            checkWorkspaceRole={true}
+                          >
+                            <DocumentsPage />
+                          </ProtectedRoute>
+                        } 
+                      />
                       <Route
                         path="/access-requests"
                         element={
-                          <ProtectedRoute allowedRoles={["admin"]}>
+                          <ProtectedRoute 
+                            allowedRoles={["administrator", "owner"]}
+                            checkWorkspaceRole={true}
+                          >
                             <AccessRequestsPage />
                           </ProtectedRoute>
                         }
@@ -63,7 +80,10 @@ const App = () => (
                       <Route
                         path="/users"
                         element={
-                          <ProtectedRoute allowedRoles={["admin"]}>
+                          <ProtectedRoute 
+                            allowedRoles={["administrator", "owner"]}
+                            checkWorkspaceRole={false}
+                          >
                             <UsersPage />
                           </ProtectedRoute>
                         }
@@ -71,7 +91,10 @@ const App = () => (
                       <Route
                         path="/environment-users"
                         element={
-                          <ProtectedRoute allowedRoles={["admin"]}>
+                          <ProtectedRoute 
+                            allowedRoles={["administrator", "owner"]}
+                            checkWorkspaceRole={true}
+                          >
                             <EnvironmentUsersPage />
                           </ProtectedRoute>
                         }
@@ -79,16 +102,32 @@ const App = () => (
                       <Route
                         path="/meetings"
                         element={
-                          <ProtectedRoute>
+                          <ProtectedRoute 
+                            allowedRoles={["regular", "editor", "administrator", "owner"]}
+                            checkWorkspaceRole={true}
+                          >
                             <MeetingsPage />
                           </ProtectedRoute>
                         }
                       />
-                      <Route path="/workspaces" element={<WorkspacesPage />} />
+                      <Route 
+                        path="/workspaces" 
+                        element={
+                          <ProtectedRoute 
+                            allowedRoles={["owner"]}
+                            checkWorkspaceRole={true}
+                          >
+                            <WorkspacesPage />
+                          </ProtectedRoute>
+                        } 
+                      />
                       <Route
                         path="/formats"
                         element={
-                          <ProtectedRoute>
+                          <ProtectedRoute 
+                            allowedRoles={["regular", "editor", "administrator", "owner"]}
+                            checkWorkspaceRole={true}
+                          >
                             <Formats />
                           </ProtectedRoute>
                         }

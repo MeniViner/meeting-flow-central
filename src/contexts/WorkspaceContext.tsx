@@ -21,10 +21,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("WorkspaceContext: useEffect triggered. Calling loadWorkspaces.");
     loadWorkspaces();
   }, []);
 
   const loadWorkspaces = async () => {
+    console.log("WorkspaceContext: loadWorkspaces started.");
     try {
       setIsLoading(true);
       let loadedWorkspaces: Workspace[] = [];
@@ -35,25 +37,29 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         const workspaces = await txtStore.getStrictSP<Workspace[]>("workspaces");
         loadedWorkspaces = workspaces || [];
       }
-
+      console.log("WorkspaceContext: Loaded workspaces:", loadedWorkspaces);
       setWorkspaces(loadedWorkspaces);
 
       // First try to get last visited workspace from localStorage
       const lastVisitedWorkspaceId = localStorage.getItem("lastVisitedWorkspaceId");
+      console.log("WorkspaceContext: lastVisitedWorkspaceId from localStorage:", lastVisitedWorkspaceId);
       if (lastVisitedWorkspaceId) {
         const lastVisitedWorkspace = loadedWorkspaces.find(w => w.id === lastVisitedWorkspaceId);
         if (lastVisitedWorkspace) {
           setCurrentWorkspace(lastVisitedWorkspace);
+          console.log("WorkspaceContext: Set currentWorkspace from lastVisitedWorkspaceId:", lastVisitedWorkspace);
           return;
         }
       }
 
       // If no last visited workspace, try to get from currentWorkspaceId
       const savedWorkspaceId = localStorage.getItem("currentWorkspaceId");
+      console.log("WorkspaceContext: savedWorkspaceId from localStorage (fallback):");
       if (savedWorkspaceId) {
         const savedWorkspace = loadedWorkspaces.find(w => w.id === savedWorkspaceId);
         if (savedWorkspace) {
           setCurrentWorkspace(savedWorkspace);
+          console.log("WorkspaceContext: Set currentWorkspace from savedWorkspaceId:", savedWorkspace);
           return;
         }
       }
@@ -61,11 +67,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       // If no saved workspace is found and we have workspaces, set the first one
       if (!currentWorkspace && loadedWorkspaces.length > 0) {
         setCurrentWorkspace(loadedWorkspaces[0]);
+        console.log("WorkspaceContext: Set currentWorkspace to first loaded workspace:", loadedWorkspaces[0]);
       }
     } catch (error) {
-      console.error("Error loading workspaces:", error);
+      console.error("WorkspaceContext: Error loading workspaces:", error);
       setWorkspaces([]); // Ensure we set an empty array on error
     } finally {
+      console.log("WorkspaceContext: loadWorkspaces finished. currentWorkspace is now:", currentWorkspace);
       setIsLoading(false);
     }
   };

@@ -202,7 +202,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                             <DateDisplay date={request.deadline} />
                           </TableCell>
                           <TableCell>{request.requesterName}</TableCell>
-                          <TableCell className="font-medium">
+                          <TableCell className="font-medium text-right" dir="rtl">
                             {request.title}
                           </TableCell>
                         </TableRow>
@@ -227,7 +227,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                       <Card key={request.id} className="overflow-hidden">
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
-                            <CardTitle className="text-lg truncate">{request.title}</CardTitle>
+                            <CardTitle className="text-lg truncate text-right" dir="rtl">{request.title}</CardTitle>
                             <div className="flex items-center gap-2">
                               {request.scheduledTime && (() => {
                                 const d = new Date(request.scheduledTime);

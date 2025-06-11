@@ -1,3 +1,4 @@
+// src/components/user/RequestList.tsx
 import { useState } from "react";
 import { MeetingRequest, RequestStatus, FilterOptions, Document } from "@/types";
 import { RequestStatusBadge } from "@/components/RequestStatusBadge";
@@ -54,10 +55,10 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
     
     const matchesStatus = statusFilter === "all" || request.status === statusFilter;
     
-    // const matchesUser = userFilter === "all" ? true : request.requesterId === userFilter;
-    const matchesUser = user ? request.requesterId === user.id : true;
+    // Ensure we only show requests for the current user
+    const isCurrentUserRequest = request.requesterId === user?.id;
     
-    return matchesSearch && matchesStatus && matchesUser;
+    return matchesSearch && matchesStatus && isCurrentUserRequest;
   });
 
   const canEditRequest = (request: MeetingRequest) => {
@@ -150,7 +151,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                     className="cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => setSelectedRequest(request)}
                   >
-                    <TableCell className="font-medium">{request.title}</TableCell>
+                    <TableCell className="font-medium text-right" dir="rtl">{request.title}</TableCell>
                     <TableCell><RequestStatusBadge status={request.status} /></TableCell>
                     <TableCell><DateDisplay date={request.createdAt} /></TableCell>
                     <TableCell><DateDisplay date={request.deadline} /></TableCell>
@@ -194,7 +195,7 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
                 <Card key={request.id} className="overflow-hidden">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg truncate">{request.title}</CardTitle>
+                      <CardTitle className="text-lg truncate text-right" dir="rtl">{request.title}</CardTitle>
                       <div className="flex items-center gap-2">
                         {request.status === "scheduled" && request.scheduledTime && (() => {
                           const d = new Date(request.scheduledTime);

@@ -152,7 +152,7 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
     <div className="space-y-6">
       <RequestStepper status={request.status} />
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">{request.title}</h3>
+        <h3 className="text-lg font-medium text-right" dir="rtl">{request.title}</h3>
         <RequestStatusBadge status={request.status} />
       </div>
       

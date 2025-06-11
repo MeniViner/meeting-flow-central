@@ -36,14 +36,15 @@ export default function Dashboard() {
   }, [isActive, open, currentStep, nextStep]); // Add dependencies
 
   // Group requests by status
-  const pendingRequests = requests.filter(r => r.status === "pending");
-  const scheduledRequests = requests.filter(r => r.status === "scheduled");
-  const endedRequests = requests.filter(r => r.status === "ended");
-  const completedRequests = requests.filter(r => r.status === "completed");
-  const rejectedRequests = requests.filter(r => r.status === "rejected");
+  const userRequests = requests.filter(r => r.requesterId === user?.id);
+  const pendingRequests = userRequests.filter(r => r.status === "pending");
+  const scheduledRequests = userRequests.filter(r => r.status === "scheduled");
+  const endedRequests = userRequests.filter(r => r.status === "ended");
+  const completedRequests = userRequests.filter(r => r.status === "completed");
+  const rejectedRequests = userRequests.filter(r => r.status === "rejected");
   
   // Find upcoming deadlines
-  const upcomingDeadlines = [...requests]
+  const upcomingDeadlines = [...userRequests]
     .filter(r => r.status !== "completed" && r.status !== "rejected")
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
     .slice(0, 3);
@@ -78,14 +79,13 @@ export default function Dashboard() {
 
   // Filter requests based on selected type
   const filteredRequests = requestTypeTab === "all" 
-    ? requests 
-    : requests.filter(r => r.status === requestTypeTab);
+    ? userRequests 
+    : userRequests.filter(r => r.status === requestTypeTab);
 
   return (
     <div className="container mx-auto p-6">
       <FixedTutorialButton page="dashboard" />
       
-      <div className="flex justify-between items-center mb-6">
         <div className="flex flex-col gap-4">
           <Tabs defaultValue="view" value={activeTab} onValueChange={setActiveTab}>
             <TabsList dir="rtl" data-tutorial="dashboard-tabs">
@@ -181,7 +181,7 @@ export default function Dashboard() {
                           .map((request) => (
                             <li key={request.id} className="flex justify-between items-center">
                               <div>
-                                <p className="text-sm font-medium">{request.title}</p>
+                                <p className="text-sm font-medium text-right" dir="rtl">{request.title}</p>
                                 <div className="flex items-center text-xs text-muted-foreground mt-1">
                                   <Calendar className="h-3 w-3 mr-1" />
                                   <time dateTime={new Date(request.createdAt).toISOString()}>
@@ -327,7 +327,6 @@ export default function Dashboard() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
     </div>
   );
 }

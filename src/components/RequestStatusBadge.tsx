@@ -10,27 +10,27 @@ interface RequestStatusBadgeProps {
 export function RequestStatusBadge({ status, className }: RequestStatusBadgeProps) {
   const statusConfig = {
     pending: {
-      label: "Pending",
+      label: "ממתין לאישור",
       variant: "outline",
       className: "bg-yellow-100 text-status-pending border-status-pending"
     },
     scheduled: {
-      label: "Scheduled",
+      label: "מתוזמן",
       variant: "outline",
       className: "bg-blue-100 text-status-scheduled border-status-scheduled"
     },
     completed: {
-      label: "Completed",
+      label: "הושלם",
       variant: "outline",
       className: "bg-purple-100 text-status-completed border-status-completed"
     },
     rejected: {
-      label: "Rejected",
+      label: "נדחה",
       variant: "outline",
       className: "bg-red-100 text-status-rejected border-status-rejected"
     },
     ended: {
-      label: "Ended",
+      label: "הסתיים - ממתין לסיכום",
       variant: "outline",
       className: "bg-orange-100 text-orange-800 border-orange-800"
     }
@@ -42,7 +42,7 @@ export function RequestStatusBadge({ status, className }: RequestStatusBadgeProp
     // Fallback for unknown status
     return (
       <Badge variant="outline" className={className}>
-        Unknown Status
+        סטטוס לא ידוע
       </Badge>
     );
   }

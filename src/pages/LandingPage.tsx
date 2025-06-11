@@ -1,267 +1,9 @@
-// import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { useWorkspace } from "@/contexts/WorkspaceContext";
-// import { userService } from "@/services/userService";
-// import { useToast } from "@/components/ui/use-toast";
-// import { Button } from "@/components/ui/button";
-// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// import { Building2, Calendar, Users, Shield } from "lucide-react";
-
-// export function LandingPage() {
-//   const { workspaces } = useWorkspace();
-//   const { toast } = useToast();
-//   const navigate = useNavigate();
-//   const [isSubmitting, setIsSubmitting] = useState(false);
-//   const [showForm, setShowForm] = useState(false);
-//   const [formData, setFormData] = useState({
-//     employeeId: "",
-//     name: "",
-//     email: "",
-//     department: "",
-//     requestedWorkspaceId: ""
-//   });
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setIsSubmitting(true);
-
-//     try {
-//       // Check if user already exists
-//       const existingUser = await userService.getUserByEmployeeId(formData.employeeId);
-//       if (existingUser) {
-//         toast({
-//           title: "משתמש קיים",
-//           description: "המשתמש כבר קיים במערכת. אנא פנה למנהל המערכת לקבלת הרשאות.",
-//           variant: "destructive"
-//         });
-//         return;
-//       }
-
-//       // Create access request
-//       await userService.createAccessRequest({
-//         employeeId: formData.employeeId,
-//         name: formData.name,
-//         email: formData.email,
-//         department: formData.department,
-//         requestedWorkspaceId: formData.requestedWorkspaceId
-//       });
-
-//       toast({
-//         title: "בקשת הגישה נשלחה",
-//         description: "בקשת הגישה שלך נשלחה בהצלחה. תקבל התראה כאשר הבקשה תאושר."
-//       });
-
-//       // Reset form and hide it
-//       setFormData({
-//         employeeId: "",
-//         name: "",
-//         email: "",
-//         department: "",
-//         requestedWorkspaceId: ""
-//       });
-//       setShowForm(false);
-//     } catch (error) {
-//       toast({
-//         title: "שגיאה",
-//         description: error instanceof Error ? error.message : "אירעה שגיאה לא ידועה",
-//         variant: "destructive"
-//       });
-//     } finally {
-//       setIsSubmitting(false);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
-//       <div className="container mx-auto px-4 py-8">
-//         {/* Header */}
-//         <header className="flex items-center justify-between mb-12">
-//           <div className="flex items-center gap-4">
-//             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-//               <Calendar className="w-6 h-6 text-primary-foreground" />
-//             </div>
-//             <div>
-//               <h1 className="text-2xl font-bold">מערכת ניהול פגישות</h1>
-//               <p className="text-muted-foreground">מערכת לניהול פגישות וזמנים</p>
-//             </div>
-//           </div>
-//           <div className="flex items-center gap-4">
-//             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Mazi_IDF_Symbol.svg/330px-Mazi_IDF_Symbol.svg.png"
-//              alt="Logo 1" className="h-16" />
-//             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Mafhash-tag.png/330px-Mafhash-tag.png"
-//              alt="Logo 2" className="h-16" />
-//             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/IDF_GOC_Army_Headquarters_From_2020_%28Alternative%29.svg/330px-IDF_GOC_Army_Headquarters_From_2020_%28Alternative%29.svg.png" 
-//              alt="Logo 3" className="h-16" />
-//           </div>
-//         </header>
-
-//         {/* Main Content */}
-//         <div className="max-w-4xl mx-auto text-center mb-12">
-//           <h2 className="text-4xl font-bold mb-4">ברוכים הבאים למערכת ניהול הפגישות</h2>
-//           <p className="text-xl text-muted-foreground mb-8">
-//             מערכת לניהול פגישות, זמנים ותיאומים בארגון
-//           </p>
-//         </div>
-
-//         {/* Features */}
-//         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-//           <Card>
-//             <CardHeader>
-//               <Building2 className="w-8 h-8 mb-2" />
-//               <CardTitle>ניהול פגישות</CardTitle>
-//               <CardDescription>
-//                 ניהול ותיאום פגישות בצורה יעילה ומאורגנת
-//               </CardDescription>
-//             </CardHeader>
-//           </Card>
-//           <Card>
-//             <CardHeader>
-//               <Users className="w-8 h-8 mb-2" />
-//               <CardTitle>ניהול משתמשים</CardTitle>
-//               <CardDescription>
-//                 ניהול הרשאות ומשתמשים במערכת
-//               </CardDescription>
-//             </CardHeader>
-//           </Card>
-//           <Card>
-//             <CardHeader>
-//               <Shield className="w-8 h-8 mb-2" />
-//               <CardTitle>אבטחה מתקדמת</CardTitle>
-//               <CardDescription>
-//                 מערכת מאובטחת עם זיהוי כרטיס חכם
-//               </CardDescription>
-//             </CardHeader>
-//           </Card>
-//         </div>
-
-//         {/* Request Access Button */}
-//         {!showForm && (
-//           <div className="max-w-2xl mx-auto mb-8">
-//             <Button
-//               size="lg"
-//               className="w-full"
-//               onClick={() => setShowForm(true)}
-//             >
-//               שליחת בקשת גישה
-//             </Button>
-//           </div>
-//         )}
-
-//         {/* Request Access Form */}
-//         {showForm && (
-//           <div className="max-w-2xl mx-auto">
-//             <Card>
-//               <CardHeader>
-//                 <CardTitle>בקשת גישה למערכת</CardTitle>
-//                 <CardDescription>
-//                   מלא את הפרטים הבאים כדי לבקש גישה לאחד ממרחבי העבודה
-//                 </CardDescription>
-//               </CardHeader>
-//               <CardContent>
-//                 <form onSubmit={handleSubmit} className="space-y-4">
-//                   <div className="space-y-2">
-//                     <Label htmlFor="employeeId">מספר עובד</Label>
-//                     <Input
-//                       id="employeeId"
-//                       value={formData.employeeId}
-//                       onChange={e => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
-//                       required
-//                     />
-//                   </div>
-
-//                   <div className="space-y-2">
-//                     <Label htmlFor="name">תיאור הסביבה</Label>
-//                     <Input
-//                       id="name"
-//                       value={formData.name}
-//                       onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-//                       required
-//                     />
-//                   </div>
-
-//                   <div className="space-y-2">
-//                     <Label htmlFor="email">דוא"ל</Label>
-//                     <Input
-//                       id="email"
-//                       type="email"
-//                       value={formData.email}
-//                       onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-//                       required
-//                     />
-//                   </div>
-
-//                   <div className="space-y-2">
-//                     <Label htmlFor="department">מחלקה</Label>
-//                     <Input
-//                       id="department"
-//                       value={formData.department}
-//                       onChange={e => setFormData(prev => ({ ...prev, department: e.target.value }))}
-//                       required
-//                     />
-//                   </div>
-
-//                   <div className="space-y-2">
-//                     <Label htmlFor="workspace">מרחב עבודה</Label>
-//                     <Select
-//                       value={formData.requestedWorkspaceId}
-//                       onValueChange={value => setFormData(prev => ({ ...prev, requestedWorkspaceId: value }))}
-//                       required
-//                     >
-//                       <SelectTrigger>
-//                         <SelectValue placeholder="בחר מרחב עבודה" />
-//                       </SelectTrigger>
-//                       <SelectContent>
-//                         {workspaces.map(workspace => (
-//                           <SelectItem key={workspace.id} value={workspace.id}>
-//                             {workspace.longName}
-//                           </SelectItem>
-//                         ))}
-//                       </SelectContent>
-//                     </Select>
-//                   </div>
-
-//                   <div className="flex gap-2">
-//                     <Button
-//                       type="button"
-//                       variant="outline"
-//                       className="w-full"
-//                       onClick={() => setShowForm(false)}
-//                     >
-//                       ביטול
-//                     </Button>
-//                     <Button type="submit" className="w-full" disabled={isSubmitting}>
-//                       {isSubmitting ? "שולח..." : "שלח בקשה"}
-//                     </Button>
-//                   </div>
-//                 </form>
-//               </CardContent>
-//               <CardFooter className="flex justify-center">
-//                 <p className="text-sm text-muted-foreground">
-//                   לאחר אישור הבקשה, תקבל התראה בדוא"ל
-//                 </p>
-//               </CardFooter>
-//             </Card>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// } 
-
-
-
-
-
-
-
-
-import { useState } from "react";
+// src/pages/LandingPage.tsx
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { userService } from "@/services/userService";
+import { authService } from "@/services/authService";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -274,6 +16,88 @@ import {
 } from "@/components/ui/select";
 import { Building2, Calendar, Users, Shield } from "lucide-react";
 
+// SVG Pattern Component
+const BackgroundPattern = () => (
+  <div className="absolute inset-0 -z-10 overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/90" />
+    <svg className="absolute inset-0 h-full w-full opacity-20" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <defs>
+        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5" />
+        </pattern>
+      </defs>
+      <rect width="100" height="100" fill="url(#grid)" />
+    </svg>
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+  </div>
+);
+
+// Wave Animation Component
+const WaveAnimation = () => (
+  <div className="fixed bottom-0 left-0 w-full overflow-hidden leading-none z-0 pointer-events-none">
+    <svg
+      className="relative block w-full h-[200px]"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 1440 320"
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#60A5FA" stopOpacity="0.1" />
+        </linearGradient>
+        <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#60A5FA" stopOpacity="0.05" />
+        </linearGradient>
+      </defs>
+      <path
+        className="fill-[url(#waveGradient1)]"
+        d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+      >
+        <animate
+          attributeName="d"
+          dur="5s"
+          repeatCount="indefinite"
+          values="
+            M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+            M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,218.7C1248,213,1344,235,1392,245.3L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+            M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z
+          "
+          calcMode="spline"
+          keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+        />
+      </path>
+      <path
+        className="fill-[url(#waveGradient2)]"
+        opacity="0.5"
+        d="M0,256L48,261.3C96,267,192,277,288,277.3C384,277,480,267,576,250.7C672,235,768,213,864,197.3C960,181,1056,171,1152,181.3C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+      >
+        <animate
+          attributeName="d"
+          dur="7s"
+          repeatCount="indefinite"
+          values="
+            M0,256L48,261.3C96,267,192,277,288,277.3C384,277,480,267,576,250.7C672,235,768,213,864,197.3C960,181,1056,171,1152,181.3C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+            M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,218.7C1248,213,1344,235,1392,245.3L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+            M0,256L48,261.3C96,267,192,277,288,277.3C384,277,480,267,576,250.7C672,235,768,213,864,197.3C960,181,1056,171,1152,181.3C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z
+          "
+          calcMode="spline"
+          keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+        />
+      </path>
+    </svg>
+  </div>
+);
+
+// Animated Gradient Background
+const AnimatedGradient = () => (
+  <div className="absolute inset-0 -z-20">
+    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-blue-500/20 animate-gradient" />
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-background via-background/95 to-background/90" />
+  </div>
+);
+
 export function LandingPage() {
   const { workspaces } = useWorkspace();
   const { toast } = useToast();
@@ -281,14 +105,86 @@ export function LandingPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [isExistingUser, setIsExistingUser] = useState(false);
   const [formData, setFormData] = useState({
     employeeId: "",
     name: "",
     email: "",
     department: "",
     requestedWorkspaceId: "",
-    reason: ""
+    reason: "",
+    spsClaimId: ""
   });
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [activeCard, setActiveCard] = useState<number | null>(null);
+
+  const handleEmployeeIdChange = async (employeeId: string) => {
+    setFormData(prev => ({ ...prev, employeeId }));
+    
+    // Only proceed if we have a complete employee ID
+    if (employeeId.length >= 7) { // Assuming employee IDs are at least 7 digits
+      try {
+        const userInfo = await authService.getCurrentUser();
+        if (userInfo) {
+          // Check if the employee ID matches
+          const employeeIdFromSharePoint = userInfo.employeeId; // Make sure this matches your SharePoint field
+          if (employeeIdFromSharePoint === employeeId) {
+            setFormData(prev => ({
+              ...prev,
+              name: userInfo.fullName,
+              email: userInfo.email,
+              spsClaimId: userInfo.spsClaimId,
+              department: userInfo.department || "" // Add department if available in SharePoint
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userInfo = await authService.getCurrentUser();
+        if (userInfo) {
+          setFormData(prev => ({
+            ...prev,
+            name: userInfo.fullName,
+            email: userInfo.email,
+            spsClaimId: userInfo.spsClaimId
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (showForm) {
+      fetchUserData();
+    }
+  }, [showForm]);
+
+  useEffect(() => {
+    const checkExistingUser = async () => {
+      try {
+        const userInfo = await authService.getCurrentUser();
+        if (userInfo) {
+          const existingUser = await userService.getUserBySPSClaimId(userInfo.spsClaimId);
+          setIsExistingUser(!!existingUser);
+        }
+      } catch (error) {
+        console.error("Error checking existing user:", error);
+      }
+    };
+
+    checkExistingUser();
+  }, []);
+
+  const handleGetIn = () => {
+    navigate("/dashboard"); // or wherever you want to redirect existing users
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -305,7 +201,10 @@ export function LandingPage() {
         return;
       }
 
-      await userService.createAccessRequest(formData);
+      await userService.createAccessRequest({
+        ...formData,
+        spsClaimId: formData.spsClaimId || "dev-mode"
+      });
 
       toast({
         title: "בקשת הגישה נשלחה",
@@ -318,7 +217,8 @@ export function LandingPage() {
         email: "",
         department: "",
         reason: "",
-        requestedWorkspaceId: ""
+        requestedWorkspaceId: "",
+        spsClaimId: ""
       });
       setShowForm(false);
     } catch (error) {
@@ -332,18 +232,39 @@ export function LandingPage() {
     }
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, index: number) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setMousePosition({ x, y });
+    setActiveCard(index);
+  };
+
+  const handleMouseLeave = () => {
+    setActiveCard(null);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted px-4 py-10" dir="rtl">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/50 relative" dir="rtl">
+      <div className="max-w-7xl mx-auto px-4 py-10 pb-[250px] z-10 relative">
         {/* Header */}
         <header className="flex flex-col lg:flex-row items-center justify-between mb-16 gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <a href="/" className="hover:opacity-80 transition-opacity">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Mafhash-tag.png/330px-Mafhash-tag.png" 
+                alt="מערכת ניהול פגישות" 
+                className="h-12 w-auto"
+              />
+            </a>
             <div>
-              <h1 className="text-2xl font-bold">מערכת ניהול פגישות</h1>
-              <p className="text-muted-foreground">ניהול חכם של זמנים ומשתמשים</p>
+              <h1 className="text-2xl font-semibold text-foreground">
+                ברוכים הבאים למשילות
+              </h1>
+              <p className="text-muted-foreground">
+                <span className="font-bold">מ</span>ערכת <span className="font-bold">ש</span>ליטה <span className="font-bold">ל</span>דיונים <span className="font-bold">ו</span>פגישו<span className="font-bold">ת</span>
+              </p>
             </div>
           </div>
           
@@ -352,32 +273,75 @@ export function LandingPage() {
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Mafhash-tag.png/330px-Mafhash-tag.png" alt="Logo 2" className="h-16" />
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/IDF_GOC_Army_Headquarters_From_2020_%28Alternative%29.svg/330px-IDF_GOC_Army_Headquarters_From_2020_%28Alternative%29.svg.png" alt="Logo 3" className="h-16" />
           </div>
-          
         </header>
 
-        {/* Welcome + Features (hidden when form is shown) */}
+        {/* Welcome + Features */}
         {!showForm && (
           <>
             <div className="max-w-5xl mx-auto text-center mb-16">
-              <h2 className="text-4xl lg:text-5xl font-extrabold mb-4">ברוכים הבאים למערכת ניהול הפגישות</h2>
-              <p className="text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto">
-                ניהול פגישות, משתמשים ותיאומים חכם ומאובטח
-              </p>
             </div>
 
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 text-center">
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
               {[
-                { icon: Building2, title: "ניהול פגישות", desc: "תיאום פגישות בקלות ובמהירות" },
-                { icon: Users, title: "ניהול משתמשים", desc: "שליטה על הרשאות וניהול גישה" },
-                { icon: Shield, title: "אבטחה מתקדמת", desc: "גישה מאובטחת באמצעות כרטיס חכם" }
-              ].map(({ icon: Icon, title, desc }, i) => (
-                <Card key={i} className="group p-6 hover:shadow-xl transition">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="bg-primary/10 text-primary p-4 rounded-full">
-                      <Icon className="w-6 h-6" />
+                {
+                  icon: Building2,
+                  title: "ניהול פגישות חכם",
+                  desc: "תיאום פגישות אוטומטי, מעקב סטטוס, ניהול משתתפים, ותזכורות חכמות. תמיכה במפגשים היברידיים וסינכרון עם Outlook",
+                  features: ["תיאום אוטומטי", "מעקב סטטוס", "תזכורות חכמות", "סינכרון Outlook"],
+                  color: "blue"
+                },
+                {
+                  icon: Users,
+                  title: "ניהול ידע ומסמכים",
+                  desc: "ארכיון דיגיטלי מאובטח, מעקב גרסאות, שיתוף מסמכים מבוקר, ותיעוד החלטות פגישות. תמיכה במגוון פורמטים",
+                  features: ["ארכיון דיגיטלי", "מעקב גרסאות", "שיתוף מבוקר", "תיעוד החלטות"],
+                  color: "blue"
+                },
+                {
+                  icon: Shield,
+                  title: "מעקב ובקרה",
+                  desc: "דוחות ביצוע, ניתוח נתונים, מעקב אחר החלטות, ומערכת התראות חכמה. שמירה על רצף ידע ארגוני",
+                  features: ["דוחות ביצוע", "ניתוח נתונים", "מעקב החלטות", "התראות חכמות"],
+                  color: "blue"
+                }
+              ].map(({ icon: Icon, title, desc, features, color }, i) => (
+                <Card
+                  key={i}
+                  className="group p-6 hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 relative overflow-hidden hover:scale-[1.02]"
+                  onMouseMove={(e) => handleMouseMove(e, i)}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {/* Mouse tracking gradient effect */}
+                  {activeCard === i && (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/5 dark:from-blue-500/10 dark:to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{
+                          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, 
+                            hsl(var(--primary) / 0.2) 0%, 
+                            transparent 50%)`
+                        }}
+                      />
+                    </>
+                  )}
+                  {/* Content */}
+                  <div className="relative flex flex-col items-center gap-4 z-10">
+                    <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 p-4 rounded-full group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="w-8 h-8" />
                     </div>
-                    <CardTitle className="text-lg font-semibold">{title}</CardTitle>
-                    <CardDescription>{desc}</CardDescription>
+                    <CardTitle className="text-xl font-bold text-center">{title}</CardTitle>
+                    <CardDescription className="text-sm leading-relaxed text-center mb-4">
+                      {desc}
+                    </CardDescription>
+                    <div className="w-full space-y-2">
+                      {features.map((feature, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500/50" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -388,8 +352,12 @@ export function LandingPage() {
         {/* Access Button */}
         {!showForm && (
           <div className="max-w-xl mx-auto mb-12">
-            <Button size="lg" className="w-full text-lg" onClick={() => setShowForm(true)}>
-              בקשת גישה למערכת
+            <Button 
+              size="lg" 
+              className="w-full text-lg"
+              onClick={isExistingUser ? handleGetIn : () => setShowForm(true)}
+            >
+              {isExistingUser ? "כניסה למערכת" : "בקשת גישה למערכת"}
             </Button>
           </div>
         )}
@@ -399,15 +367,15 @@ export function LandingPage() {
           <div className="max-w-3xl mx-auto">
             <Card>
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl font-bold">בקשת גישה</CardTitle>
+                <CardTitle className="text-2xl font-semibold">בקשת גישה</CardTitle>
                 <CardDescription>מלא את פרטיך כדי לבקש גישה למרחב עבודה</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[
-                    { id: "name", label: "שם עובד", type: "text" },
-                    { id: "employeeId", label: "מספר עובד", type: "text" },
-                    { id: "email", label: "דוא\"ל", type: "email" },
+                    { id: "employeeId", label: "מספר אישי", type: "text" },
+                    { id: "name", label: "שם", type: "text" },
+                    { id: "email", label: "מייל", type: "email" },
                     { id: "department", label: "מחלקה", type: "text" },
                   ].map(({ id, label, type }) => (
                     <div className="space-y-2" key={id}>
@@ -416,7 +384,13 @@ export function LandingPage() {
                         id={id}
                         type={type}
                         value={(formData as any)[id]}
-                        onChange={(e) => setFormData(prev => ({ ...prev, [id]: e.target.value }))}
+                        onChange={(e) => {
+                          if (id === "employeeId") {
+                            handleEmployeeIdChange(e.target.value);
+                          } else {
+                            setFormData(prev => ({ ...prev, [id]: e.target.value }));
+                          }
+                        }}
                         required
                       />
                     </div>
@@ -454,8 +428,6 @@ export function LandingPage() {
                                 {ws.longName}
                                 </span>
                               </div>
-
-                              
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -480,6 +452,7 @@ export function LandingPage() {
           </div>
         )}
       </div>
+      <WaveAnimation />
     </div>
   );
 }

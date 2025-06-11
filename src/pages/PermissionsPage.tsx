@@ -7,11 +7,9 @@ import { Separator } from "@/components/ui/separator";
 import { User, Shield, Users, Lock, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { useApp } from "@/contexts/AppContext";
 import { toast } from "@/components/ui/use-toast";
 
 export default function PermissionsPage() {
-  const { currentUser } = useApp();
   const [userPermissions, setUserPermissions] = useState({
     canCreateMeetings: true,
     canEditMeetings: true,

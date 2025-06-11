@@ -1,5 +1,5 @@
-// EnvironmentUsersPage
-import { useState, useEffect } from "react";
+// src/pages/EnvironmentUsersPage.tsx
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { User, UserRole } from "@/types";
 import { authService } from "@/services/authService";
+import { useApp } from "@/contexts/AppContext";
 
 type SortField = 'name' | 'email' | 'department' | 'employeeId' | 'globalRole' | 'createdAt' | 'lastLogin';
 type SortOrder = 'asc' | 'desc';
@@ -38,14 +39,14 @@ type SortOrder = 'asc' | 'desc';
 export default function EnvironmentUsersPage() {
   const { currentWorkspace } = useWorkspace();
   const { toast } = useToast();
+  const { users: allUsers, updateUsers } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [departmentFilter, setDepartmentFilter] = useState<string>("");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [sortField, setSortField] = useState<SortField>('name');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [newUser, setNewUser] = useState<Partial<User>>({
     name: "",
     email: "",
@@ -56,32 +57,20 @@ export default function EnvironmentUsersPage() {
     status: "active",
   });
   const [editUserDialog, setEditUserDialog] = useState<{ open: boolean; user: User | null }>({ open: false, user: null });
-  const [editUserDraft, setEditUserDraft] = useState<Partial<User>>({});
+  const [editUserDraft, setEditUserDraft] = useState<User | null>(null);
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; user: User | null }>({ open: false, user: null });
 
-  useEffect(() => {
-    loadUsers();
-  }, [currentWorkspace?.id]);
+  // Filter users for current workspace
+  const workspaceUsers = useMemo(() => {
+    if (!currentWorkspace) return [];
+    return allUsers.filter(user => 
+      user.workspaceAccess.some(wa => wa.workspaceId === currentWorkspace.id)
+    );
+  }, [allUsers, currentWorkspace]);
 
-  const loadUsers = async () => {
-    if (!currentWorkspace) return;
-    try {
-      const allUsers = await userService.getAllUsers();
-      const workspaceUsers = allUsers.filter(user => 
-        user.workspaceAccess.some(wa => wa.workspaceId === currentWorkspace.id)
-      );
-      setUsers(workspaceUsers);
-    } catch (error) {
-      console.error("Error loading users:", error);
-      toast({
-        title: "שגיאה",
-        description: "אירעה שגיאה בטעינת המשתמשים",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    setIsLoading(false);
+  }, [workspaceUsers]);
 
   const handleAddUser = async () => {
     if (!currentWorkspace) return;
@@ -97,9 +86,11 @@ export default function EnvironmentUsersPage() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       } as User;
-      const allUsers = await userService.getAllUsers();
-      await userService.updateAllUsers([...allUsers, newUserWithId]);
-      setUsers([...users, newUserWithId]);
+      
+      const updatedUsers = [...allUsers, newUserWithId];
+      await userService.updateAllUsers(updatedUsers);
+      updateUsers(updatedUsers);
+      
       setNewUser({
         name: "",
         email: "",
@@ -125,12 +116,12 @@ export default function EnvironmentUsersPage() {
 
   const handleEditUser = async (userId: string, updatedUser: Partial<User>) => {
     try {
-      const updatedUsers = users.map(user => {
+      const updatedUsers = allUsers.map(user => {
         if (user.id === userId) {
           // Update the workspace-specific role in workspaceAccess
           const updatedWorkspaceAccess = user.workspaceAccess.map(wa => 
             wa.workspaceId === currentWorkspace?.id 
-              ? { ...wa, role: updatedUser.globalRole as UserRole }
+              ? { ...wa, role: updatedUser.workspaceAccess?.[0]?.role || "regular" }
               : wa
           );
           return { 
@@ -142,7 +133,7 @@ export default function EnvironmentUsersPage() {
         return user;
       });
       await userService.updateAllUsers(updatedUsers);
-      setUsers(updatedUsers);
+      updateUsers(updatedUsers);
       toast({
         title: "משתמש עודכן",
         description: "פרטי המשתמש עודכנו בהצלחה",
@@ -158,18 +149,21 @@ export default function EnvironmentUsersPage() {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const updatedUsers = users.filter(user => user.id !== userId);
-      await userService.updateAllUsers(updatedUsers);
-      setUsers(updatedUsers);
+      const user = workspaceUsers.find(u => u.id === userId);
+      if (!user || !currentWorkspace) return;
+      
+      await userService.removeUserFromWorkspace(user.employeeId, currentWorkspace.id);
+      const updatedUsers = allUsers.filter(u => u.id !== userId);
+      updateUsers(updatedUsers);
       setDeleteConfirmDialog({ open: false, user: null });
       toast({
-        title: "משתמש נמחק",
-        description: "המשתמש נמחק בהצלחה",
+        title: "משתמש הוסר",
+        description: "המשתמש הוסר מהסביבה בהצלחה",
       });
     } catch (error) {
       toast({
         title: "שגיאה",
-        description: "אירעה שגיאה במחיקת המשתמש",
+        description: "אירעה שגיאה בהסרת המשתמש",
         variant: "destructive",
       });
     }
@@ -184,32 +178,16 @@ export default function EnvironmentUsersPage() {
     }
   };
 
-  const getSortedUsers = (users: User[]) => {
-    return [...users].sort((a, b) => {
-      let aValue: string | number = a[sortField];
-      let bValue: string | number = b[sortField];
-
-      // Handle date fields
-      if (sortField === 'createdAt' || sortField === 'lastLogin') {
-        aValue = new Date(aValue as string).getTime();
-        bValue = new Date(bValue as string).getTime();
-      }
-
-      // Handle string fields
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortOrder === 'asc' 
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-
-      // Handle number fields
-      return sortOrder === 'asc'
-        ? (aValue as number) - (bValue as number)
-        : (bValue as number) - (aValue as number);
+  const getSortedUsers = (usersToSort: User[]) => {
+    return [...usersToSort].sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      const modifier = sortOrder === "asc" ? 1 : -1;
+      return aValue > bValue ? modifier : -modifier;
     });
   };
 
-  const filteredUsers = getSortedUsers(users.filter(user => {
+  const filteredUsers = getSortedUsers(workspaceUsers.filter(user => {
     const matchesSearch = 
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -257,9 +235,9 @@ export default function EnvironmentUsersPage() {
     if (!editUserDialog.user) return;
     try {
       const updatedUser = { ...editUserDialog.user, ...editUserDraft, updatedAt: new Date().toISOString() };
-      const updatedUsers = users.map(u => u.id === updatedUser.id ? updatedUser : u);
+      const updatedUsers = allUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
       await userService.updateAllUsers(updatedUsers);
-      setUsers(updatedUsers);
+      updateUsers(updatedUsers);
       setEditUserDialog({ open: false, user: null });
       toast({ title: "המשתמש עודכן", description: "פרטי המשתמש עודכנו בהצלחה" });
     } catch (error) {
@@ -268,7 +246,18 @@ export default function EnvironmentUsersPage() {
   };
 
   if (isLoading) {
-    return <div>טוען...</div>;
+    return <div className="text-center py-10">טוען...</div>;
+  }
+
+  if (!currentWorkspace) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground text-center">
+        <Building2 className="w-16 h-16 mb-4 text-gray-400" />
+        <p className="text-2xl font-semibold mb-2">לא נבחר מרחב עבודה</p>
+        <p className="text-lg mb-6">אנא בחר מרחב עבודה מהתפריט בצד, או צור מרחב עבודה חדש.</p>
+        {/* Optionally, you could add a button to navigate to the workspaces page or open a creation dialog here */}
+      </div>
+    );
   }
 
   return (
@@ -514,8 +503,8 @@ export default function EnvironmentUsersPage() {
               <Label htmlFor="edit-name">שם</Label>
               <Input
                 id="edit-name"
-                value={editUserDraft.name || ""}
-                onChange={e => setEditUserDraft(draft => ({ ...draft, name: e.target.value }))}
+                value={editUserDraft?.name || ""}
+                onChange={e => setEditUserDraft(draft => ({ ...draft!, name: e.target.value }))}
               />
             </div>
             <div className="grid gap-2">
@@ -523,33 +512,33 @@ export default function EnvironmentUsersPage() {
               <Input
                 id="edit-email"
                 type="email"
-                value={editUserDraft.email || ""}
-                onChange={e => setEditUserDraft(draft => ({ ...draft, email: e.target.value }))}
+                value={editUserDraft?.email || ""}
+                onChange={e => setEditUserDraft(draft => ({ ...draft!, email: e.target.value }))}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-department">מחלקה</Label>
               <Input
                 id="edit-department"
-                value={editUserDraft.department || ""}
-                onChange={e => setEditUserDraft(draft => ({ ...draft, department: e.target.value }))}
+                value={editUserDraft?.department || ""}
+                onChange={e => setEditUserDraft(draft => ({ ...draft!, department: e.target.value }))}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-employeeId">מספר עובד</Label>
               <Input
                 id="edit-employeeId"
-                value={editUserDraft.employeeId || ""}
-                onChange={e => setEditUserDraft(draft => ({ ...draft, employeeId: e.target.value }))}
+                value={editUserDraft?.employeeId || ""}
+                onChange={e => setEditUserDraft(draft => ({ ...draft!, employeeId: e.target.value }))}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-role">תפקיד במרחב העבודה</Label>
               <Select
                 dir="rtl"
-                value={editUserDraft.workspaceAccess?.find(wa => wa.workspaceId === currentWorkspace?.id)?.role || "regular"}
+                value={editUserDraft?.workspaceAccess?.find(wa => wa.workspaceId === currentWorkspace?.id)?.role || "regular"}
                 onValueChange={(value) => setEditUserDraft(draft => ({ 
-                  ...draft, 
+                  ...draft!, 
                   globalRole: value as UserRole // We still use globalRole as the temporary storage for the new role
                 }))}
               >

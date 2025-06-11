@@ -1,3 +1,4 @@
+// src/contexts/AppContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, MeetingRequest, RequestStatus, Document } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,12 +16,17 @@ interface Notification {
   read?: boolean;
 }
 
-interface AppContextType {
+export interface AppContextType {
   user: User | null;
   setUser: (user: User | null) => void;
-  isAuthenticated: boolean;
-  requests: MeetingRequest[];
+  users: User[];
+  setUsers: (users: User[]) => void;
+  updateUser: (updatedUser: User) => void;
+  updateUsers: (updatedUsers: User[]) => void;
   isLoading: boolean;
+  requests: MeetingRequest[];
+  setRequests: (requests: MeetingRequest[]) => void;
+  isAuthenticated: boolean;
   logout: () => void;
   submitRequest: (request: Omit<MeetingRequest, "id" | "createdAt" | "requesterId" | "requesterName" | "status">) => Promise<void>;
   updateRequestStatus: (requestId: string, status: RequestStatus, notes?: string) => Promise<void>;
@@ -96,34 +102,42 @@ const getCardId = async (): Promise<string | null> => {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [requests, setRequests] = useState<MeetingRequest[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [requests, setRequests] = useState<MeetingRequest[]>([]);
   const { currentWorkspace } = useWorkspace();
+  const { toast } = useToast();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const navigate = useNavigate();
 
-  // Check user access and load initial data
+  // Update a single user
+  const updateUser = (updatedUser: User) => {
+    setUsers(prevUsers => 
+      prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u)
+    );
+  };
+
+  // Update multiple users
+  const updateUsers = (updatedUsers: User[]) => {
+    setUsers(updatedUsers);
+  };
+
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        console.log("AppContext.loadInitialData: Starting to load initial data...");
-        if (process.env.NODE_ENV === "development") {
-          console.log("AppContext.loadInitialData: Development mode - using admin user");
+        setIsLoading(true);
+
+        // Load current user
+        const currentUser = await userService.getCurrentUser();
+        if (process.env.NODE_ENV === "development" && !currentUser) {
           setUser(DEV_ADMIN_USER);
         } else {
-          console.log("AppContext.loadInitialData: Production mode - getting current user");
-          const user = await userService.getCurrentUser();
-          console.log("AppContext.loadInitialData: Got user from userService:", user);
-          
-          if (!user) {
-            console.log("AppContext.loadInitialData: No user found, redirecting to landing page");
-            navigate("/landing");
-            return;
-          }
-          console.log("AppContext.loadInitialData: Setting user in context:", user);
-          setUser(user);
+          setUser(currentUser);
         }
+
+        // Load all users
+        const allUsers = await userService.getAllUsers();
+        setUsers(allUsers);
 
         // Load meeting requests if user has access to current workspace
         if (currentWorkspace) {
@@ -189,10 +203,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const devLoginAsAdmin = () => {
     setUser(DEV_ADMIN_USER);
-    toast({
-      title: "התחברת כמנהל מערכת",
-      description: "ברוך הבא, מנהל מערכת!",
-    });
     navigate("/");
   };
 
@@ -400,9 +410,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     setUser,
-    isAuthenticated: !!user,
-    requests,
+    users,
+    setUsers,
+    updateUser,
+    updateUsers,
     isLoading,
+    requests,
+    setRequests,
+    isAuthenticated: !!user,
     logout,
     submitRequest,
     updateRequestStatus,
