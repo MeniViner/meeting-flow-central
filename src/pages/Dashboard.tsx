@@ -18,7 +18,7 @@ import { useTutorial, userTutorialPath } from '@/contexts/TutorialContext';
 
 
 export default function Dashboard() {
-  const { requests, currentUser, notifications, user } = useApp();
+  const { requests, notifications, user } = useApp();
   const [activeTab, setActiveTab] = useState("view");
   const [requestTypeTab, setRequestTypeTab] = useState("all");
   const [open, setOpen] = useState(false);

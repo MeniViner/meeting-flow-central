@@ -42,6 +42,7 @@ export interface MeetingRequest {
   status: RequestStatus;
   createdAt: Date;
   scheduledTime?: Date;
+  scheduledEndTime?: Date;
   adminNotes?: string;
   meetingSummaryFile?: {
     name: string;
