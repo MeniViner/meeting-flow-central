@@ -1,3 +1,4 @@
+// src/pages/AdminDashboard.tsx
 import { useApp } from "@/contexts/AppContext";
 import { AdminRequestList } from "@/components/admin/AdminRequestList";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,14 +60,15 @@ export default function AdminDashboard() {
 
   // Real scheduled meetings for the weekly calendar
   const meetingSlots: MeetingSlot[] = requests
-    .filter(r => r.status === "scheduled" && r.scheduledTime)
+    .filter(r => r.status === "scheduled" && r.scheduledTime && r.scheduledEndTime)
     .map(r => {
       const dateObj = new Date(r.scheduledTime as string);
-      if (!isValid(dateObj)) return null;
+      const endTimeObj = new Date(r.scheduledEndTime as string);
+      if (!isValid(dateObj) || !isValid(endTimeObj)) return null;
       return {
         date: format(dateObj, "yyyy-MM-dd"),
         time: format(dateObj, "HH:mm"),
-        label: `${format(dateObj, "HH:mm")} ${r.title ? `- ${r.title}` : ""}`,
+        label: `${format(dateObj, "HH:mm")} - ${format(endTimeObj, "HH:mm")} ${r.title ? `- ${r.title}` : ""}`,
       };
     })
     .filter(Boolean) as MeetingSlot[];
@@ -77,6 +79,7 @@ export default function AdminDashboard() {
     const found = requests.find(r =>
       r.status === "scheduled" &&
       r.scheduledTime &&
+      r.scheduledEndTime &&
       format(new Date(r.scheduledTime as string), "yyyy-MM-dd") === slot.date &&
       format(new Date(r.scheduledTime as string), "HH:mm") === slot.time
     );

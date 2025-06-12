@@ -1,3 +1,4 @@
+// WeeklyTimelineCalendar.tsx
 import React, { useState, useMemo } from "react";
 import { he } from "date-fns/locale";
 import { format, startOfWeek, addDays, isSameDay, isToday } from "date-fns";
@@ -46,9 +47,10 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
           locale={he}
           weekStartsOn={0}
           showOutsideDays
+          disabled={{ before: new Date() }}
           modifiersClassNames={{
             selected: "bg-blue-500 text-white",
-            today: "border border-blue-500"
+            today: "bg-blue-100 text-blue-600 font-bold border-2 border-blue-500"
           }}
         />
       </div>

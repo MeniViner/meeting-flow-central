@@ -1,3 +1,4 @@
+// src/components/user/EditRequestForm.tsx
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -115,6 +116,7 @@ export function EditRequestForm({ request, onRequestUpdated }: EditRequestFormPr
                     onSelect={setDeadline}
                     initialFocus
                     locale={he}
+                    disabled={{ before: new Date() }}
                     className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>

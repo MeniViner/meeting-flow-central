@@ -19,6 +19,7 @@ import { motion } from "framer-motion"
 import { EditRequestForm } from "./EditRequestForm";
 import { FileUploader } from "@/components/FileUploader";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { Label } from "@/components/ui/label";
 
 
 
@@ -358,8 +359,33 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
               
               {selectedRequest.status === "ended" && !selectedRequest.meetingSummaryFile && (
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded mb-4 flex flex-col gap-2">
-                  <strong>לתשומת לבך:</strong> טרם הועלה קובץ סיכום פגישה. נא להעלות קובץ סיכום.
-                  <FileUploader onFilesChange={handleMeetingSummaryChange} existingFiles={meetingSummaryFile ? [meetingSummaryFile] : []} sw={currentWorkspace} />
+                  <strong>לתשומת לבך:</strong> טרם הועלה קובץ סיכום פגישה. נא להעלות קובץ סיכום או להזין שם קובץ.
+                  <div className="flex flex-col gap-4">
+                    <div className="space-y-2">
+                      <Label>העלאת קובץ</Label>
+                      <FileUploader onFilesChange={handleMeetingSummaryChange} existingFiles={meetingSummaryFile ? [meetingSummaryFile] : []} sw={currentWorkspace} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>או הזן שם קובץ</Label>
+                      <Input
+                        placeholder="הזן שם קובץ"
+                        value={meetingSummaryFile?.name || ""}
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setMeetingSummaryFile({
+                              id: `file-${Date.now()}`,
+                              name: e.target.value,
+                              type: "text/plain",
+                              url: e.target.value,
+                              uploadedAt: new Date()
+                            });
+                          } else {
+                            setMeetingSummaryFile(null);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                   <Button
                     className="w-fit mt-2"
                     onClick={async () => {
@@ -379,9 +405,20 @@ export function RequestList({ requests, showFilters = true, searchTerm, setSearc
               {selectedRequest.meetingSummaryFile && (
                 <div>
                   <h4 className="text-sm font-medium mb-1">קובץ סיכום פגישה</h4>
-                  <div className="text-sm text-muted-foreground">
-                    {selectedRequest.meetingSummaryFile.name}
-                  </div>
+                  {selectedRequest.meetingSummaryFile.type === "text/plain" ? (
+                    <div className="text-sm text-muted-foreground">
+                      {selectedRequest.meetingSummaryFile.name}
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                      onClick={() => window.open(selectedRequest.meetingSummaryFile.url, '_blank')}
+                    >
+                      <span>הורד קובץ</span>
+                    </Button>
+                  )}
                 </div>
               )}
               

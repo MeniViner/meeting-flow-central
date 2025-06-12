@@ -1,3 +1,4 @@
+// src/components/TopBar.tsx
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
@@ -23,28 +24,32 @@ const pageTitles: Record<string, { title: string; description: string }> = {
     description: "ברוך הבא!",
   },
   "/admin": {
-    title: "עמוד לוח בקרה",
+    title: " ניהול מערכת",
     description: "ניהול בקשות פגישה",
   },
   "/documents": {
-    title: "עמוד מסמכים",
+    title: " מסמכים",
     description: "צפה ונהל את כל המסמכים הקשורים לפגישות",
   },
   "/users": {
-    title: "עמוד ניהול משתמשים",
+    title: " ניהול משתמשים",
+    description: "ניהול משתמשים והרשאות במערכת",
+  },
+  "/environment-users": {
+    title: " ניהול משתמשי הסביבה",
     description: "ניהול משתמשים והרשאות במערכת",
   },
   "/access-requests": {
-    title: "עמוד בקשות גישה",
+    title: "ניהול בקשות גישה",
     description: "ניהול בקשות גישה למערכת",
   },
   "/workspaces": {
-    title: "עמוד ניהול סביבות עבודה",
+    title: " ניהול סביבות עבודה",
     description: "ניהול סביבות העבודה במערכת",
   },
   "/formats": {
-    title: "עמוד ניהול פורמטים",
-    description: "ניהול פורמטים במערכת",
+    title: "  פורמטים",
+    description: " פורמטים במערכת",
   },
 };
 

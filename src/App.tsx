@@ -25,6 +25,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import WorkspacesPage from "@/pages/WorkspacesPage";
 import Formats from "@/pages/Formats";
 import EnvironmentUsersPage from "@/pages/EnvironmentUsersPage";
+import { WaveAnimation } from "@/components/WaveAnimation";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
           <BrowserRouter>
             <WorkspaceProvider>
               <AppProvider>
+              <WaveAnimation />
                 <TutorialProvider>
                   <Routes>
                     <Route path="/landing" element={<LandingPage />} />

@@ -1,4 +1,5 @@
-import { useState } from "react";
+// src/components/admin/RequestDetails.tsx
+import { useState, useMemo } from "react";
 import { MeetingRequest } from "@/types";
 import { RequestStatusBadge } from "@/components/RequestStatusBadge";
 import { DateDisplay } from "@/components/DateDisplay";
@@ -47,18 +48,33 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
   const [dateInput, setDateInput] = useState(meetingDate ? meetingDate : null);
   const [hourInput, setHourInput] = useState(meetingDate ? meetingDate.getHours().toString().padStart(2, '0') : "00");
   const [minuteInput, setMinuteInput] = useState(meetingDate ? meetingDate.getMinutes().toString().padStart(2, '0') : "00");
-  
+  const [hourInputEnd, setHourInputEnd] = useState(request.scheduledEndTime ? new Date(request.scheduledEndTime).getHours().toString().padStart(2, '0') : (meetingDate ? (new Date(meetingDate.getTime() + 60 * 60 * 1000)).getHours().toString().padStart(2, '0') : "01")); // Default to 1 hour after start or existing end time
+  const [minuteInputEnd, setMinuteInputEnd] = useState(request.scheduledEndTime ? new Date(request.scheduledEndTime).getMinutes().toString().padStart(2, '0') : (meetingDate ? meetingDate.getMinutes().toString().padStart(2, '0') : "00"));
+
   const handleApprove = async () => {
     if (!meetingDate) return;
-    await scheduleMeeting(request.id, meetingDate, adminNotes);
+    const scheduledEndTime = new Date(dateInput!);
+    scheduledEndTime.setHours(parseInt(hourInputEnd));
+    scheduledEndTime.setMinutes(parseInt(minuteInputEnd));
+
+    if (scheduledEndTime <= meetingDate) {
+      toast({
+        title: "שגיאה",
+        description: "שעת סיום הפגישה חייבת להיות לאחר שעת ההתחלה.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await scheduleMeeting(request.id, meetingDate, scheduledEndTime, adminNotes);
     if (onStatusChange) onStatusChange();
   };
-  
+
   const handleReject = async () => {
     await updateRequestStatus(request.id, "rejected", adminNotes);
     if (onStatusChange) onStatusChange();
   };
-  
+
   const handleAddSummary = async () => {
     if (!meetingSummaryFile) return;
     await addMeetingSummary(request.id, meetingSummaryFile);
@@ -66,14 +82,17 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
   };
 
   // Helper to check for double-booking
-  const checkDoubleBooking = (date: Date) => {
-    return requests.some(r =>
-      r.id !== request.id &&
-      r.status === "scheduled" &&
-      r.scheduledTime &&
-      isSameDay(new Date(r.scheduledTime), date) &&
-      new Date(r.scheduledTime).getHours() === date.getHours()
-    );
+  const checkDoubleBooking = (startDate: Date, endDate: Date) => {
+    return requests.some(r => {
+      if (r.id === request.id || r.status !== "scheduled" || !r.scheduledTime || !r.scheduledEndTime) {
+        return false;
+      }
+      const existingStart = new Date(r.scheduledTime);
+      const existingEnd = new Date(r.scheduledEndTime);
+
+      // Check for overlap: (startA < endB) && (endA > startB)
+      return (startDate < existingEnd) && (endDate > existingStart);
+    });
   };
 
   // Handler for date input (using DatePicker)
@@ -85,7 +104,7 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
       localDate.setHours(hours);
       localDate.setMinutes(minutes);
       setMeetingDate(localDate);
-      if (checkDoubleBooking(localDate)) {
+      if (checkDoubleBooking(localDate, new Date(localDate.setHours(parseInt(hourInputEnd), parseInt(minuteInputEnd))))) {
         toast({
           title: "אזהרה",
           description: "כבר קיימת פגישה בשעה זו ביום זה.",
@@ -101,21 +120,46 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
   const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newHour = e.target.value;
     setHourInput(newHour);
-    updateMeetingDateWithTime(newHour, minuteInput);
+    updateMeetingDateWithTime(newHour, minuteInput, hourInputEnd, minuteInputEnd);
   };
   const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newMinute = e.target.value;
     setMinuteInput(newMinute);
-    updateMeetingDateWithTime(hourInput, newMinute);
+    updateMeetingDateWithTime(hourInput, newMinute, hourInputEnd, minuteInputEnd);
   };
-  const updateMeetingDateWithTime = (hour: string, minute: string) => {
+
+  const handleHourChangeEnd = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newHour = e.target.value;
+    setHourInputEnd(newHour);
+    updateMeetingDateWithTime(hourInput, minuteInput, newHour, minuteInputEnd);
+  };
+
+  const handleMinuteChangeEnd = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMinute = e.target.value;
+    setMinuteInputEnd(newMinute);
+    updateMeetingDateWithTime(hourInput, minuteInput, hourInputEnd, newMinute);
+  };
+
+  const updateMeetingDateWithTime = (hour: string, minute: string, hourEnd: string, minuteEnd: string) => {
     if (dateInput) {
       const year = dateInput.getFullYear();
       const month = dateInput.getMonth();
       const day = dateInput.getDate();
       const localDate = new Date(year, month, day, parseInt(hour), parseInt(minute));
+      const localDateEnd = new Date(year, month, day, parseInt(hourEnd), parseInt(minuteEnd));
+
+      if (localDateEnd <= localDate) {
+        toast({
+          title: "אזהרה",
+          description: "שעת סיום הפגישה חייבת להיות לאחר שעת ההתחלה.",
+          variant: "destructive",
+        });
+        setMeetingDate(undefined);
+        return;
+      }
+
       setMeetingDate(localDate);
-      if (checkDoubleBooking(localDate)) {
+      if (checkDoubleBooking(localDate, localDateEnd)) {
         toast({
           title: "אזהרה",
           description: "כבר קיימת פגישה בשעה זו ביום זה.",
@@ -130,13 +174,26 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
   // Handler for rescheduling
   const handleReschedule = async () => {
     if (meetingDate) {
-      await scheduleMeeting(request.id, meetingDate, adminNotes);
       const date = new Date(meetingDate);
-      const timeStr = date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
-      const dateStr = date.toLocaleDateString('he-IL');
+      const scheduledEndTime = new Date(dateInput!);
+      scheduledEndTime.setHours(parseInt(hourInputEnd));
+      scheduledEndTime.setMinutes(parseInt(minuteInputEnd));
+
+      if (scheduledEndTime <= date) {
+        toast({
+          title: "שגיאה",
+          description: "שעת סיום הפגישה חייבת להיות לאחר שעת ההתחלה.",
+          variant: "destructive",
+        });
+        return;
+      }
+      await scheduleMeeting(request.id, meetingDate, scheduledEndTime, adminNotes);
+      const startTimeStr = format(date, "HH:mm", { locale: he });
+      const endTimeStr = format(scheduledEndTime, "HH:mm", { locale: he });
+      const dateStr = format(date, "dd/MM/yyyy", { locale: he });
       addNotification({
         userId: request.requesterId,
-        message: `הפגישה שלך תוזמנה מחדש ל-${timeStr}, ${dateStr}`,
+        message: `הפגישה שלך תוזמנה מחדש ל-${dateStr} בין השעות ${startTimeStr} - ${endTimeStr}`,
       });
       toast({
         title: "הפגישה תוזמנה מחדש",
@@ -148,6 +205,17 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
 
   const requestStatus: import("@/types").RequestStatus = request.status;
 
+  const isMeetingDateTimeValid = useMemo(() => {
+    if (!dateInput || !hourInput || !minuteInput || !hourInputEnd || !minuteInputEnd) {
+      return false;
+    }
+    const start = new Date(dateInput);
+    start.setHours(parseInt(hourInput), parseInt(minuteInput));
+    const end = new Date(dateInput);
+    end.setHours(parseInt(hourInputEnd), parseInt(minuteInputEnd));
+    return end > start;
+  }, [dateInput, hourInput, minuteInput, hourInputEnd, minuteInputEnd]);
+
   return (
     <div className="space-y-6">
       <RequestStepper status={request.status} />
@@ -155,7 +223,7 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
         <h3 className="text-lg font-medium text-right" dir="rtl">{request.title}</h3>
         <RequestStatusBadge status={request.status} />
       </div>
-      
+
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <h4 className="text-sm font-medium mb-1">מבקש</h4>
@@ -191,14 +259,14 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
           )}
         </div> */}
       </div>
-      
+
       <div>
         <h4 className="text-sm font-medium mb-2">מסמכים</h4>
         {request.documents.length > 0 ? (
           <ScrollArea className="h-[110px] rounded-md border p-2">
             <ul className="space-y-1">
               {request.documents.map((doc) => (
-                <li 
+                <li
                   key={doc.id}
                   className="flex items-center p-1 border rounded-md text-sm"
                 >
@@ -212,34 +280,36 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
           <p className="text-sm text-muted-foreground">אין מסמכים</p>
         )}
       </div>
-      
+
       {request.status === "pending" && (
         <>
+          <div className="flex-1">
+            <h4 className="text-sm font-medium mb-2">בחר תאריך לפגישה</h4>
+            <DatePicker
+              selected={dateInput}
+              onChange={handleDateChange}
+              dateFormat="dd/MM/yyyy"
+              className="border rounded px-2 py-1 w-full"
+              placeholderText="בחר תאריך"
+              locale={he}
+              minDate={new Date()}
+            />
+          </div>
+
           <div className="flex flex-row gap-2 items-end mb-4">
             <div className="flex-1">
-              <h4 className="text-sm font-medium mb-2">בחר תאריך לפגישה</h4>
-              <DatePicker
-                selected={dateInput}
-                onChange={handleDateChange}
-                dateFormat="dd/MM/yyyy"
-                className="border rounded px-2 py-1 w-full"
-                placeholderText="בחר תאריך"
-                locale={he}
-              />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-sm font-medium mb-2">בחר שעה לפגישה</h4> 
+              <h4 className="text-sm font-medium mb-2">בחר שעת התחלה לפגישה</h4>
               <div className="flex flex-row items-center justify-center gap-2 border rounded-lg px-3 py-2 shadow-sm">
                 <div className="relative w-14">
-                  <select 
-                    value={minuteInput} 
-                    onChange={handleMinuteChange} 
+                  <select
+                    value={minuteInput}
+                    onChange={handleMinuteChange}
                     className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono"
                     size={3}
                   >
                     {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
-                      <option 
-                        key={m} 
+                      <option
+                        key={m}
                         value={m}
                         className={m === minuteInput ? "bg-blue-100 text-blue-600 font-medium" : ""}
                       >
@@ -255,17 +325,17 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
                 </div>
                 <span className="text-lg font-medium mx-1 text-blue-700 ">:</span>
                 <div className="relative w-14">
-                  <select 
-                    value={hourInput} 
-                    onChange={handleHourChange} 
+                  <select
+                    value={hourInput}
+                    onChange={handleHourChange}
                     className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono "
                     size={3}
                   >
                     {[...Array(24).keys()].map(h => {
                       const hour = h.toString().padStart(2, '0');
                       return (
-                        <option 
-                          key={hour} 
+                        <option
+                          key={hour}
                           value={hour}
                           className={hour === hourInput ? "bg-blue-100 text-blue-600 font-medium" : ""}
                         >
@@ -283,21 +353,90 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
 
               </div>
             </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-medium mb-2">בחר שעת סיום לפגישה</h4>
+              <div className="flex flex-row items-center justify-center gap-2 border rounded-lg px-3 py-2 shadow-sm">
+                <div className="relative w-14">
+                  <select
+                    value={minuteInputEnd}
+                    onChange={handleMinuteChangeEnd}
+                    className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono"
+                    size={3}
+                  >
+                    {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
+                      <option
+                        key={m}
+                        value={m}
+                        className={m === minuteInputEnd ? "bg-blue-100 text-blue-600 font-medium" : ""}
+                      >
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                <span className="text-lg font-medium mx-1 text-blue-700 ">:</span>
+                <div className="relative w-14">
+                  <select
+                    value={hourInputEnd}
+                    onChange={handleHourChangeEnd}
+                    className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono "
+                    size={3}
+                  >
+                    {[...Array(24).keys()].map(h => {
+                      const hour = h.toString().padStart(2, '0');
+                      return (
+                        <option
+                          key={hour}
+                          value={hour}
+                          className={hour === hourInputEnd ? "bg-blue-100 text-blue-600 font-medium" : ""}
+                        >
+                          {hour}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <h4 className="text-sm font-medium mb-2">הערות מנהל</h4>
-            <Textarea
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
-              placeholder="הוסף הערות לגבי הבקשה"
-              rows={3}
-            />
-          </div>
+
           <div className="flex flex-col sm:flex-row gap-2 mt-2">
-            <Button 
-              onClick={handleApprove} 
-              className="flex-1" 
-              disabled={isLoading || !meetingDate || !new Date(meetingDate).toISOString().slice(0,10) || !new Date(meetingDate).toTimeString().slice(0,5)}
+            <div>
+              <h4 className="text-sm font-medium mb-2">הערות מנהל</h4>
+              <Textarea
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="הוסף הערות לגבי הבקשה"
+                rows={3}
+              />
+            </div>
+                        <div>
+              <h4 className="text-sm font-medium mb-2">הערות מנהל</h4>
+              <Textarea
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="הוסף הערות לגבי הבקשה"
+                rows={3}
+              />
+            </div>
+
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-2 mt-2">
+            <Button
+              onClick={handleApprove}
+              className="flex-1"
+              disabled={isLoading || !meetingDate || !isMeetingDateTimeValid || checkDoubleBooking(meetingDate, new Date(dateInput!).setHours(parseInt(hourInputEnd), parseInt(minuteInputEnd)) as any)}
             >
               {isLoading ? (
                 <LoadingSpinner className="mr-2 h-4 w-4" />
@@ -306,10 +445,10 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
               )}
               אשר ותזמן פגישה
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleReject} 
-              className="flex-1" 
+            <Button
+              variant="outline"
+              onClick={handleReject}
+              className="flex-1"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -322,7 +461,7 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
           </div>
         </>
       )}
-      
+
       {request.status === "scheduled" && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-row gap-2 items-end mb-4">
@@ -335,21 +474,22 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
                 className="border rounded px-2 py-1 w-full"
                 placeholderText="בחר תאריך"
                 locale={he}
+                minDate={new Date()}
               />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-medium mb-2">ערוך שעה לפגישה</h4>
+              <h4 className="text-sm font-medium mb-2">ערוך שעת התחלה לפגישה</h4>
               <div className="flex flex-row items-center justify-center gap-2 border rounded-lg px-3 py-2 shadow-sm">
                 <div className="relative w-14">
-                  <select 
-                    value={minuteInput} 
-                    onChange={handleMinuteChange} 
+                  <select
+                    value={minuteInput}
+                    onChange={handleMinuteChange}
                     className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono"
                     size={3}
                   >
                     {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
-                      <option 
-                        key={m} 
+                      <option
+                        key={m}
                         value={m}
                         className={m === minuteInput ? "bg-blue-100 text-blue-600 font-medium" : ""}
                       >
@@ -365,17 +505,17 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
                 </div>
                 <span className="text-lg font-medium mx-1 text-blue-700 ">:</span>
                 <div className="relative w-14">
-                  <select 
-                    value={hourInput} 
-                    onChange={handleHourChange} 
+                  <select
+                    value={hourInput}
+                    onChange={handleHourChange}
                     className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono"
                     size={3}
                   >
                     {[...Array(24).keys()].map(h => {
                       const hour = h.toString().padStart(2, '0');
                       return (
-                        <option 
-                          key={hour} 
+                        <option
+                          key={hour}
                           value={hour}
                           className={hour === hourInput ? "bg-blue-100 text-blue-600 font-medium" : ""}
                         >
@@ -390,19 +530,73 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
                     </svg>
                   </div>
                 </div>
-
+              </div>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-medium mb-2">ערוך שעת סיום לפגישה</h4>
+              <div className="flex flex-row items-center justify-center gap-2 border rounded-lg px-3 py-2 shadow-sm">
+                <div className="relative w-14">
+                  <select
+                    value={minuteInputEnd}
+                    onChange={handleMinuteChangeEnd}
+                    className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono"
+                    size={3}
+                  >
+                    {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
+                      <option
+                        key={m}
+                        value={m}
+                        className={m === minuteInputEnd ? "bg-blue-100 text-blue-600 font-medium" : ""}
+                      >
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                <span className="text-lg font-medium mx-1 text-blue-700 ">:</span>
+                <div className="relative w-14">
+                  <select
+                    value={hourInputEnd}
+                    onChange={handleHourChangeEnd}
+                    className="appearance-none bg-transparent border-none focus:outline-none w-full font-mono"
+                    size={3}
+                  >
+                    {[...Array(24).keys()].map(h => {
+                      const hour = h.toString().padStart(2, '0');
+                      return (
+                        <option
+                          key={hour}
+                          value={hour}
+                          className={hour === hourInputEnd ? "bg-blue-100 text-blue-600 font-medium" : ""}
+                        >
+                          {hour}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           <Button
             onClick={handleReschedule}
-            disabled={isLoading || !meetingDate}
+            disabled={isLoading || !meetingDate || !isMeetingDateTimeValid || checkDoubleBooking(meetingDate, new Date(dateInput!).setHours(parseInt(hourInputEnd), parseInt(minuteInputEnd)) as any)}
           >
             עדכן זמן פגישה
           </Button>
         </div>
       )}
-      
+
       {(requestStatus === "completed" || requestStatus === "rejected") && (
         <>
           {request.adminNotes && (
@@ -411,18 +605,29 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
               <p className="text-sm text-muted-foreground">{request.adminNotes}</p>
             </div>
           )}
-          
+
           {request.meetingSummaryFile && (
             <div>
               <h4 className="text-sm font-medium mb-1">קובץ סיכום פגישה</h4>
-              <div className="text-sm text-muted-foreground">
-                {request.meetingSummaryFile.name}
-              </div>
+              {request.meetingSummaryFile.type === "text/plain" ? (
+                <div className="text-sm text-muted-foreground">
+                  {request.meetingSummaryFile.name}
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={() => window.open(request.meetingSummaryFile.url, '_blank')}
+                >
+                  <span>הורד קובץ</span>
+                </Button>
+              )}
             </div>
           )}
         </>
       )}
-      
+
       {requestStatus === "ended" && !request.meetingSummaryFile && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded mb-4 flex flex-col gap-2">
           <strong>לתשומת לבך:</strong> טרם הועלה קובץ סיכום פגישה.
@@ -432,7 +637,8 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
             onClick={() => {
               addNotification({
                 userId: request.requesterId,
-                message: "נא להעלות קובץ סיכום פגישה לבקשה שלך." });
+                message: "נא להעלות קובץ סיכום פגישה לבקשה שלך."
+              });
               toast({ title: "התראה נשלחה", description: "נשלחה התראה למשתמש להעלות קובץ סיכום." });
             }}
           >
@@ -440,19 +646,19 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
           </Button>
         </div>
       )}
-      {request.meetingSummaryFile && (
+
+      {request.scheduledTime && (
         <div>
-          <h4 className="text-sm font-medium mb-1">קובץ סיכום פגישה</h4>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-            onClick={() => window.open(request.meetingSummaryFile.url, '_blank')}
-          >
-            <span>הורד קובץ</span>
-          </Button>
+          <h4 className="text-sm font-medium mb-1">זמן מתוכנן</h4>
+          <div className="flex items-center text-sm">
+            <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+            <time dateTime={new Date(request.scheduledTime).toISOString()}>
+              {`${format(new Date(request.scheduledTime), "HH:mm", { locale: he })} - ${format(new Date(request.scheduledEndTime!), "HH:mm", { locale: he })}`}
+            </time>
+          </div>
         </div>
       )}
+
     </div>
   );
 }

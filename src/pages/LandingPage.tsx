@@ -15,6 +15,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import { Building2, Calendar, Users, Shield } from "lucide-react";
+import { WaveAnimation } from "@/components/WaveAnimation";
 
 // SVG Pattern Component
 const BackgroundPattern = () => (
@@ -29,64 +30,6 @@ const BackgroundPattern = () => (
       <rect width="100" height="100" fill="url(#grid)" />
     </svg>
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-  </div>
-);
-
-// Wave Animation Component
-const WaveAnimation = () => (
-  <div className="fixed bottom-0 left-0 w-full overflow-hidden leading-none z-0 pointer-events-none">
-    <svg
-      className="relative block w-full h-[200px]"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 1440 320"
-      preserveAspectRatio="none"
-    >
-      <defs>
-        <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#60A5FA" stopOpacity="0.1" />
-        </linearGradient>
-        <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#60A5FA" stopOpacity="0.05" />
-        </linearGradient>
-      </defs>
-      <path
-        className="fill-[url(#waveGradient1)]"
-        d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-      >
-        <animate
-          attributeName="d"
-          dur="5s"
-          repeatCount="indefinite"
-          values="
-            M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
-            M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,218.7C1248,213,1344,235,1392,245.3L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
-            M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z
-          "
-          calcMode="spline"
-          keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
-        />
-      </path>
-      <path
-        className="fill-[url(#waveGradient2)]"
-        opacity="0.5"
-        d="M0,256L48,261.3C96,267,192,277,288,277.3C384,277,480,267,576,250.7C672,235,768,213,864,197.3C960,181,1056,171,1152,181.3C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-      >
-        <animate
-          attributeName="d"
-          dur="7s"
-          repeatCount="indefinite"
-          values="
-            M0,256L48,261.3C96,267,192,277,288,277.3C384,277,480,267,576,250.7C672,235,768,213,864,197.3C960,181,1056,171,1152,181.3C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
-            M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,218.7C1248,213,1344,235,1392,245.3L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
-            M0,256L48,261.3C96,267,192,277,288,277.3C384,277,480,267,576,250.7C672,235,768,213,864,197.3C960,181,1056,171,1152,181.3C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z
-          "
-          calcMode="spline"
-          keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
-        />
-      </path>
-    </svg>
   </div>
 );
 
@@ -246,10 +189,10 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/50 relative" dir="rtl">
-      <div className="max-w-7xl mx-auto px-4 py-10 pb-[250px] z-10 relative">
+    <div className="bg-gradient-to-b from-background via-background/95 to-muted/50 relative" dir="rtl">
+      <div className="max-w-7xl mx-auto px-4 pt-10 pb-[200px] z-10 relative">
         {/* Header */}
-        <header className="flex flex-col lg:flex-row items-center justify-between mb-16 gap-6">
+        <header className="flex flex-col lg:flex-row items-center justify-between mb-0 gap-6">
           <div className="flex items-center gap-4">
             <a href="/" className="hover:opacity-80 transition-opacity">
               <img 
@@ -281,7 +224,7 @@ export function LandingPage() {
             <div className="max-w-5xl mx-auto text-center mb-16">
             </div>
 
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
               {[
                 {
                   icon: Building2,

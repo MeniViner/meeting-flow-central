@@ -1,6 +1,7 @@
+// src/component/devHelper
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
-import { Settings, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 export default function DevHelper() {
   const { devLoginAsAdmin } = useApp();
@@ -10,7 +11,7 @@ export default function DevHelper() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 flex flex-col gap-2 z-20">
+    <div className="fixed bottom-4 left-2 flex flex-col gap-2 z-20">
       <Button
         variant="outline"
         size="icon"
@@ -27,7 +28,7 @@ export default function DevHelper() {
         className="rounded-full w-10 h-10"
         title="התנתק (פיתוח בלבד)"
       >
-        <Settings className="w-4 h-4" />
+        <LogOut className="w-4 h-4" />
       </Button>
     </div>
   );

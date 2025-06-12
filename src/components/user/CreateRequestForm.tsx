@@ -123,6 +123,7 @@ export function CreateRequestForm({
                   onSelect={setDeadline}
                   initialFocus
                   locale={he}
+                  disabled={{ before: new Date() }}
                   className={cn("p-3 pointer-events-auto")}
                 />
               </PopoverContent>

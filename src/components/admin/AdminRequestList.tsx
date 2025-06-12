@@ -1,3 +1,4 @@
+// src/components/admin/AdminRequestList.tsx
 import { useState } from "react";
 import { MeetingRequest, RequestStatus } from "@/types";
 import { RequestStatusBadge } from "@/components/RequestStatusBadge";
@@ -182,11 +183,12 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                               const d = new Date(request.scheduledTime);
                               const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
                               const [day, month] = d.toLocaleDateString('he-IL').split('.');
+                              const endTime = request.scheduledEndTime ? new Date(request.scheduledEndTime).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false }) : "";
                               return (
                                 <span className="flex items-center gap-1">
                                   <CalendarClock className="h-4 w-4 mr-1 text-blue-500  " />
                                   <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-bold">
-                                    {time}
+                                    {time}{endTime && ` - ${endTime}`}
                                   </span>
                                   <span className="rounded-full bg-gray-100 text-gray-800 px-2 py-0.5 text-xs font-bold">
                                     {day}/{month}
@@ -233,10 +235,11 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                                 const d = new Date(request.scheduledTime);
                                 const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
                                 const [day, month] = d.toLocaleDateString('he-IL').split('.');
+                                const endTime = request.scheduledEndTime ? new Date(request.scheduledEndTime).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false }) : "";
                                 return (
                                   <span className="flex items-center gap-1">
                                     <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-bold">
-                                      {time}
+                                      {time}{endTime && ` - ${endTime}`}
                                     </span>
                                     <span className="rounded-full bg-gray-100 text-gray-800 px-2 py-0.5 text-xs font-bold">
                                       {day}/{month}

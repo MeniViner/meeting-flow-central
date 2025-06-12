@@ -30,7 +30,7 @@ export interface AppContextType {
   logout: () => void;
   submitRequest: (request: Omit<MeetingRequest, "id" | "createdAt" | "requesterId" | "requesterName" | "status">) => Promise<void>;
   updateRequestStatus: (requestId: string, status: RequestStatus, notes?: string) => Promise<void>;
-  scheduleMeeting: (requestId: string, scheduledTime: Date, adminNotes?: string) => Promise<void>;
+  scheduleMeeting: (requestId: string, scheduledTime: Date, scheduledEndTime: Date, adminNotes?: string) => Promise<void>;
   addMeetingSummary: (requestId: string, file: File, description?: string) => Promise<void>;
   notifications: Notification[];
   addNotification: (notification: Omit<Notification, "id" | "createdAt" | "read">) => void;
@@ -306,13 +306,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ]);
   };
 
-  const scheduleMeeting = async (requestId: string, scheduledTime: Date, adminNotes?: string) => {
+  const scheduleMeeting = async (requestId: string, scheduledTime: Date, scheduledEndTime: Date, adminNotes?: string) => {
     setIsLoading(true);
     try {
       // Update state
       const updatedRequests = requests.map(req =>
         req.id === requestId
-          ? { ...req, scheduledTime, status: "scheduled" as RequestStatus, adminNotes }
+          ? { ...req, scheduledTime, scheduledEndTime, status: "scheduled" as RequestStatus, adminNotes }
           : req
       );
       setRequests(updatedRequests);
@@ -349,6 +349,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       // Store only the file name
       const fileName = file.name;
+      const fileType = file.type || "text/plain"; // Default to text/plain for text-only entries
       
       // Update state
       const updatedRequests = requests.map(req => 
@@ -358,7 +359,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               meetingSummaryFile: { 
                 name: fileName,
                 url: fileName,
-                type: file.type,
+                type: fileType,
                 uploadedAt: new Date()
               }, 
               status: "completed" as RequestStatus

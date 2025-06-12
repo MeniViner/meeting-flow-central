@@ -134,14 +134,21 @@ export default function MainNav({ className }: { className?: string }) {
 
       <div
         className={cn(
-          "fixed inset-y-0 right-0 z-50 w-64 glass-card border-l shadow-lg transition-all duration-300 ease-in-out md:translate-x-0",
+          "fixed inset-y-0 right-0 z-50 w-64 border-l shadow-lg transition-all duration-300 ease-in-out md:translate-x-0",
           mobileMenuOpen ? "translate-x-0" : "translate-x-[100%]",
           className
         )}
       >
         <div className="flex flex-col h-full">
           <div className="p-4 border-b bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900">
-            <h1 className="text-2xl font-bold mb-1 text-center">משילות</h1>
+            <div className="flex items-center  gap-5">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Mazi_IDF_Symbol.svg/330px-Mazi_IDF_Symbol.svg.png" 
+                alt="משילות לוגו" 
+                className="w-10  h-10 object-contain"
+              />
+              <h1 className="text-2xl font-bold mb-1 text-center">משילות</h1>
+            </div>
             <p className="text-sm text-center mb-2">
               <span className="font-bold">מ</span>ערכת <span className="font-bold">ש</span>ליטה <span className="font-bold">ל</span>דיונים <span className="font-bold">ו</span>לשכות
             </p>
@@ -165,7 +172,7 @@ export default function MainNav({ className }: { className?: string }) {
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-blue-100 dark:hover:bg-slate-700",
                     pathname === item.href
-                      ? "bg-blue-100 dark:bg-slate-700"
+                      ? "bg-blue-200 dark:bg-slate-700"
                       : "transparent"
                   )}
                 >
@@ -202,6 +209,7 @@ export default function MainNav({ className }: { className?: string }) {
               התנתק
             </Button>
           </div>
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/90 dark:from-black/90 to-transparent pointer-events-none" />
         </div>
       </div>
 
