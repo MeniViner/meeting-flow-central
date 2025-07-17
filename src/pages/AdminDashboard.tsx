@@ -15,15 +15,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { RequestDetails } from "@/components/admin/RequestDetails";
 import { FixedTutorialButton } from '@/components/tutorial/FixedTutorialButton';
 import { useTutorial, adminTutorialPath } from '@/contexts/TutorialContext';
+import { Button } from "@/components/ui/button";
+import { LayoutGrid, LayoutList } from "lucide-react";
 
 
 export default function AdminDashboard() {
   const { requests, user } = useApp();
 
-
-    
   const { isActive, currentStep, nextStep } = useTutorial(); // Get tutorial state and functions
-
   // Effect to advance tutorial when the create request modal opens
   useEffect(() => {
     if (isActive && open && adminTutorialPath.steps[currentStep]?.id === 'create-request') {
@@ -104,19 +103,19 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6" >
-      {/* <div>
+      <div>
         <h1 className="text-3xl font-bold tracking-tight">לוח בקרה</h1>
         <p className="text-muted-foreground">
           ניהול בקשות פגישה
         </p>
-      </div> */}
+      </div>
       <FixedTutorialButton page="admin" />
 
-      <Tabs defaultValue="admin" >
+      <Tabs defaultValue="requests" >
         <TabsList data-tutorial="admin-dashboard">
-          <TabsTrigger value="overview">סקירה כללית</TabsTrigger>
-          <TabsTrigger value="weekly">לוח שבועי</TabsTrigger>
-          <TabsTrigger value="requests" >כל הבקשות</TabsTrigger>
+          <TabsTrigger value="overview" id="admin-tab-overview">סקירה כללית</TabsTrigger>
+          <TabsTrigger value="weekly" id="admin-tab-weekly">לוח שבועי</TabsTrigger>
+          <TabsTrigger value="requests" id="admin-tab-requests">כל הבקשות</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">

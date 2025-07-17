@@ -294,12 +294,13 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                   <SelectItem value="rejected">נדחה</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="flex gap-1 border rounded-md">
+              <div className="flex gap-1 border rounded-md" data-tutorial="admin-view">
                 <Button
                   variant={viewMode === "list" ? "secondary" : "ghost"}
                   size="icon"
                   onClick={() => setViewMode("list")}
                   className="rounded-r-none"
+                  id="admin-view-list"
                 >
                   <LayoutList className="h-4 w-4" />
                 </Button>
@@ -308,6 +309,7 @@ export function AdminRequestList({ requests }: AdminRequestListProps) {
                   size="icon"
                   onClick={() => setViewMode("grid")}
                   className="rounded-l-none"
+                  id="admin-view-grid"
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </Button>

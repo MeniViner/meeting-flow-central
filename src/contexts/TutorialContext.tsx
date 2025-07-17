@@ -35,8 +35,6 @@ export const userTutorialPath: TutorialPath = {
       title: 'הבקשות שלי',
       content: 'כאן תמצאו את כל הבקשות לדיון שיצרתם או השתתפתם בהן.',
       position: 'bottom',
-      // required: true,
-      // waitForClickId: 'dashboard-tab-view',
     },
     {
       id: 'dashboard-tab-overview',
@@ -132,6 +130,40 @@ export const adminTutorialPath: TutorialPath = {
       position: 'bottom',
     },
     {
+      id: 'admin-tab-requests',
+      target: '#admin-tab-requests',
+      title: 'כל הבקשות',
+      content: 'כאן תמצאו את כל הבקשות במערכת.',
+      position: 'left',
+    },
+    {
+      id: 'admin-tab-weekly',
+      target: '#admin-tab-weekly',
+      title: 'לוח שבועי',
+      content: 'כאן תמצאו את לוח הפגישות השבועי. לחץ כעת למעבר.',
+      position: 'left',
+      required: true,
+      waitForClickId: 'admin-tab-weekly',
+    },
+    {
+      id: 'admin-tab-overview',
+      target: '#admin-tab-overview',
+      title: 'סקירה כללית',
+      content: 'כאן תמצאו נתונים סטטיסטיים וסקירה על כל הבקשות במערכת. לחץ כעת למעבר.',
+      position: 'left',
+      required: true,
+      waitForClickId: 'admin-tab-overview',
+    },
+    {
+      id: 'admin-tab-back-to-requests',
+      target: '#admin-tab-requests',
+      title: 'חזרה לכל הבקשות',
+      content: 'חזרו ללשונית "כל הבקשות" כדי להמשיך בהדרכה.',
+      position: 'left',
+      required: true,
+      waitForClickId: 'admin-tab-requests',
+    },
+    {
       id: 'admin-requests',
       target: '[data-tutorial="admin-requests"]',
       title: 'ניהול בקשות דיון',
@@ -195,30 +227,22 @@ export const adminTutorialPath: TutorialPath = {
       position: 'top',
     },
     {
-      id: 'admin-multi-required',
-      targets: [
-        '[data-tutorial="admin-title"]',
-        '[data-tutorial="admin-requester"]'
-      ],
-      title: 'שני עמודות נדרשות',
-      content: 'יש לבחור את שתי העמודות כדי להמשיך.',
-      required: true,
-      position: 'top',
-    },
-    {
-      id: 'dashboard-filters',
-      target: '[data-tutorial="admin-filters"]',
-      title: 'סינון בקשות דיון',
-      content: 'השתמשו בפילטרים כדי לסנן את הבקשות דיון לפי סטטוס.',
-      position: 'bottom',
-    },
-    {
-      id: 'dashboard-view',
+      id: 'admin-view-switch',
       target: '[data-tutorial="admin-view"]',
       title: 'החלפת תצוגה',
-      content: 'החליפו בין תצוגת טבלה לתצוגת כרטיסים.',
-      position: 'bottom',
+      content: 'כאן ניתן להחליף בין תצוגת רשימה לתצוגת כרטיסים. לחץ על אחד מהכפתורים כדי להמשיך.',
+      position: 'top',
+      required: true,
+      waitForClickId: 'admin-view-grid', // אפשר גם admin-view-list
     },
+    // {
+    //   id: 'dashboard-filters',
+    //   target: '[data-tutorial="admin-filters"]',
+    //   title: 'סינון בקשות דיון',
+    //   content: 'השתמשו בפילטרים כדי לסנן את הבקשות דיון לפי סטטוס.',
+    //   position: 'bottom',
+    // },
+
 
   ],
 };
