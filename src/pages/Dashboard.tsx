@@ -89,9 +89,9 @@ export default function Dashboard() {
         <div className="flex flex-col gap-4">
           <Tabs defaultValue="view" value={activeTab} onValueChange={setActiveTab}>
             <TabsList dir="rtl" data-tutorial="dashboard-tabs">
-              <TabsTrigger value="view">הבקשות שלי</TabsTrigger>
-              <TabsTrigger value="overview">סקירה כללית</TabsTrigger>
-              <TabsTrigger value="notifications">
+              <TabsTrigger value="view" id="dashboard-tab-view">הבקשות שלי</TabsTrigger>
+              <TabsTrigger value="overview" id="dashboard-tab-overview">סקירה כללית</TabsTrigger>
+              <TabsTrigger value="notifications" id="dashboard-tab-notifications">
                 התראות
                 <Bell className="inline h-4 w-4 mr-5" />
                 {notifications.filter(n => !n.read && n.userId === user?.id).length > 0 && (

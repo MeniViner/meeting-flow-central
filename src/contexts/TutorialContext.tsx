@@ -30,13 +30,49 @@ export const userTutorialPath: TutorialPath = {
       position: 'bottom',
     },
     {
+      id: 'dashboard-tab-view',
+      target: '#dashboard-tab-view',
+      title: 'הבקשות שלי',
+      content: 'כאן תמצאו את כל הבקשות לדיון שיצרתם או השתתפתם בהן.',
+      position: 'bottom',
+      // required: true,
+      // waitForClickId: 'dashboard-tab-view',
+    },
+    {
+      id: 'dashboard-tab-overview',
+      target: '#dashboard-tab-overview',
+      title: 'סקירה כללית',
+      content: '  כאן תמצאו נתונים סטטיסטיים וסקירה על כל הבקשות שלכם. לחץ כעת למעבר.',
+      position: 'left',
+      required: true,
+      waitForClickId: 'dashboard-tab-overview',
+    },
+    {
+      id: 'dashboard-tab-notifications',
+      target: '#dashboard-tab-notifications',
+      title: 'התראות',
+      content: 'כאן תמצאו את כל ההתראות האחרונות שלכם. לחץ כעת למעבר.',
+      position: 'left',
+      required: true,
+      waitForClickId: 'dashboard-tab-notifications',
+    },
+    {
+      id: 'dashboard-tab-back-to-view',
+      target: '#dashboard-tab-view',
+      title: 'חזרה לבקשות שלי',
+      content: 'חזרו ללשונית "הבקשות שלי" כדי להמשיך בהדרכה.',
+      position: 'bottom',
+      required: true,
+      waitForClickId: 'dashboard-tab-view',
+    },
+    {
       id: 'create-request',
       target: '[data-tutorial="create-request"]',
       title: 'יצירת בקשה חדשה',
       content: 'לחצו על כפתור זה כדי ליצור בקשה חדשה לדיון.',
       position: 'bottom',
       required: true,
-      waitForClickId: 'create-request-btn', // Example usage
+      waitForClickId: 'create-request-btn',
     },
     {
       id: 'request-form',
@@ -80,6 +116,7 @@ export const userTutorialPath: TutorialPath = {
       title: 'החלפת תצוגה',
       content: 'החליפו בין תצוגת טבלה לתצוגת כרטיסים.',
       position: 'bottom',
+
     },
   ],
 };
