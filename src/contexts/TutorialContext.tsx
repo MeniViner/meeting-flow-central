@@ -5,11 +5,13 @@ export type UserRole = 'user' | 'admin';
 
 export interface TutorialStep {
   id: string;
-  target: string; // CSS selector for the element to highlight
+  target?: string; // Single selector
+  targets?: string[]; // Multiple selectors
   title: string;
   content: string;
   position: 'top' | 'right' | 'bottom' | 'left';
   required?: boolean;
+  waitForClickId?: string; // New: wait for click on element with this ID
 }
 
 export interface TutorialPath {
@@ -24,16 +26,17 @@ export const userTutorialPath: TutorialPath = {
       id: 'dashboard-tabs',
       target: '[data-tutorial="dashboard-tabs"]',
       title: 'ניווט בלוח הבקרה',
-      content: 'כאן תוכלו לנווט בין הבקשות שלכם, סקירה כללית והתראות.',
+      content: 'כאן תוכלו לנווט בין הבקשות דיון שלכם, סקירה כללית והתראות.',
       position: 'bottom',
     },
     {
       id: 'create-request',
       target: '[data-tutorial="create-request"]',
       title: 'יצירת בקשה חדשה',
-      content: 'לחצו על כפתור זה כדי ליצור בקשה חדשה לפגישה.',
+      content: 'לחצו על כפתור זה כדי ליצור בקשה חדשה לדיון.',
       position: 'bottom',
       required: true,
+      waitForClickId: 'create-request-btn', // Example usage
     },
     {
       id: 'request-form',
@@ -42,23 +45,23 @@ export const userTutorialPath: TutorialPath = {
       content: `
         <div class="space-y-4 text-right">
           <div class="border-b pb-2">
-            <strong class="text-lg">כותרת פגישה:</strong>
-            <p class="text-sm text-muted-foreground">הזינו כותרת ברורה וקצרה שתתאר את מטרת הפגישה. הכותרת צריכה להיות תמציתית אך מספיק ברורה כדי להבין את מטרת הפגישה.</p>
+            <strong class="text-lg">כותרת דיון:</strong>
+            <p class="text-sm text-muted-foreground">הזינו כותרת ברורה וקצרה שתתאר את מטרת הדיון. הכותרת צריכה להיות תמציתית אך מספיק ברורה כדי להבין את מטרת הדיון.</p>
           </div>
           
           <div class="border-b pb-2">
             <strong class="text-lg">מועד מבוקש:</strong>
-            <p class="text-sm text-muted-foreground">בחרו את התאריך והשעה המועדפים עליכם לקיום הפגישה. חשוב לבחור מועד שמתאים לכל המשתתפים.</p>
+            <p class="text-sm text-muted-foreground">בחרו את התאריך והשעה המועדפים עליכם לקיום הדיון. חשוב לבחור מועד שמתאים לכל המשתתפים.</p>
           </div>
           
           <div class="border-b pb-2">
             <strong class="text-lg">תיאור:</strong>
-            <p class="text-sm text-muted-foreground">הוסיפו תיאור מפורט של מטרת הפגישה, הנושאים שיידונו, והתוצאות המצופות. ככל שהתיאור יהיה יותר מפורט, כך יהיה קל יותר להבין את מטרת הפגישה.</p>
+            <p class="text-sm text-muted-foreground">הוסיפו תיאור מפורט של מטרת הדיון, הנושאים שיידונו, והתוצאות המצופות. ככל שהתיאור יהיה יותר מפורט, כך יהיה קל יותר להבין את מטרת הדיון.</p>
           </div>
           
           <div>
             <strong class="text-lg">מסמכים:</strong>
-            <p class="text-sm text-muted-foreground">העלו מסמכים רלוונטיים שיידונו בפגישה או שיעזרו להבין את הנושא. המסמכים יכולים להיות מצגות, דוחות, או כל חומר אחר שיעזור להבין את הנושא.</p>
+            <p class="text-sm text-muted-foreground">העלו מסמכים רלוונטיים שיידונו בדיון או שיעזרו להבין את הנושא. המסמכים יכולים להיות מצגות, דוחות, או כל חומר אחר שיעזור להבין את הנושא.</p>
           </div>
         </div>
       `,
@@ -67,10 +70,9 @@ export const userTutorialPath: TutorialPath = {
     {
       id: 'dashboard-filters',
       target: '[data-tutorial="dashboard-filters"]',
-      title: 'סינון בקשות',
-      content: 'השתמשו בפילטרים כדי לסנן את הבקשות לפי סטטוס.',
+      title: 'סינון בקשות דיון',
+      content: 'השתמשו בפילטרים כדי לסנן את הבקשות דיון לפי סטטוס.',
       position: 'bottom',
-      required: false,
     },
     {
       id: 'dashboard-view',
@@ -78,7 +80,6 @@ export const userTutorialPath: TutorialPath = {
       title: 'החלפת תצוגה',
       content: 'החליפו בין תצוגת טבלה לתצוגת כרטיסים.',
       position: 'bottom',
-      required: false,
     },
   ],
 };
@@ -86,47 +87,102 @@ export const userTutorialPath: TutorialPath = {
 export const adminTutorialPath: TutorialPath = {
   id: 'admin',
   steps: [
-    ...userTutorialPath.steps,
     {
       id: 'admin-dashboard',
       target: '[data-tutorial="admin-dashboard"]',
       title: 'לוח בקרה למנהל',
-      content: 'ברוכים הבאים ללוח הבקרה למנהלים. כאן תוכלו לנהל את כל בקשות הפגישות.',
+      content: 'ברוכים הבאים ללוח הבקרה למנהלים. כאן תוכלו לנהל את כל בקשות הדיון.',
       position: 'bottom',
-      required: true,
     },
     {
       id: 'admin-requests',
       target: '[data-tutorial="admin-requests"]',
-      title: 'ניהול בקשות',
-      content: 'צפו בכל בקשות הפגישות הממתינות לאישור, אישרו או דחו בקשות.',
-      position: 'right',
-      required: true,
+      title: 'ניהול בקשות דיון',
+      content: 'צפו בכל בקשות הדיון הממתינות לאישור, אישרו או דחו בקשות דיון.',
+      position: 'top',
     },
     {
-      id: 'admin-users',
-      target: '[data-tutorial="admin-users"]',
-      title: 'ניהול משתמשים',
-      content: 'נהלו משתמשים במערכת, הוסיפו משתמשים חדשים או עדכנו הרשאות.',
-      position: 'right',
-      required: true,
+      id: 'admin-table-headers',
+      target: '[data-tutorial="admin-table-headers"]',
+      title: 'עמודות טבלת הבקשות דיון',
+      content: 'כאן תוכל לראות את כל העמודות של טבלת הבקשות דיון . כל עמודה מספקת מידע חשוב על כל בקשה.',
+      position: 'bottom',
     },
     {
-      id: 'admin-settings',
-      target: '[data-tutorial="admin-settings"]',
-      title: 'הגדרות מערכת',
-      content: 'הגדירו את הגדרות המערכת, כולל הגדרות התראות והרשאות.',
-      position: 'right',
-      required: true,
+      id: 'admin-title',
+      target: '[data-tutorial="admin-title"]',
+      title: 'כותרת',
+      content: 'כותרת הבקשה לדיון.',
+      position: 'top',
     },
     {
-      id: 'admin-reports',
-      target: '[data-tutorial="admin-reports"]',
-      title: 'דוחות וניתוח',
-      content: 'צפו בדוחות וניתוחים על פעילות המערכת ובקשות פגישות.',
-      position: 'right',
-      required: true,
+      id: 'admin-requester',
+      target: '[data-tutorial="admin-requester"]',
+      title: 'מבקש',
+      content: 'שם המבקש של הדיון.',
+      position: 'top',
     },
+    {
+      id: 'admin-deadline',
+      target: '[data-tutorial="admin-deadline"]',
+      title: 'מועד מבוקש',
+      content: 'המועד המבוקש לדיון.',
+      position: 'top',
+    },
+    {
+      id: 'admin-status',
+      target: '[data-tutorial="admin-status"]',
+      title: 'סטטוס',
+      content: 'הסטטוס הנוכחי של הבקשה.',
+      position: 'top',
+    },
+    {
+      id: 'admin-scheduled',
+      target: '[data-tutorial="admin-scheduled"]',
+      title: 'מועד שנקבע',
+      content: 'המועד שנקבע לדיון.',
+      position: 'top',
+    },
+    {
+      id: 'admin-documents',
+      target: '[data-tutorial="admin-documents"]',
+      title: 'מסמכים',
+      content: 'כאן תראו כמה מסמכים צורפו לבקשה.',
+      position: 'top',
+    },
+    {
+      id: 'admin-actions',
+      target: '[data-tutorial="admin-actions"]',
+      title: 'פעולות',
+      content: 'כאן ניתן לאשר, לדחות או לקבוע מועד לבקשה.',
+      position: 'top',
+    },
+    {
+      id: 'admin-multi-required',
+      targets: [
+        '[data-tutorial="admin-title"]',
+        '[data-tutorial="admin-requester"]'
+      ],
+      title: 'שני עמודות נדרשות',
+      content: 'יש לבחור את שתי העמודות כדי להמשיך.',
+      required: true,
+      position: 'top',
+    },
+    {
+      id: 'dashboard-filters',
+      target: '[data-tutorial="admin-filters"]',
+      title: 'סינון בקשות דיון',
+      content: 'השתמשו בפילטרים כדי לסנן את הבקשות דיון לפי סטטוס.',
+      position: 'bottom',
+    },
+    {
+      id: 'dashboard-view',
+      target: '[data-tutorial="admin-view"]',
+      title: 'החלפת תצוגה',
+      content: 'החליפו בין תצוגת טבלה לתצוגת כרטיסים.',
+      position: 'bottom',
+    },
+
   ],
 };
 

@@ -16,8 +16,13 @@ export const TutorialOverlay: React.FC = () => {
   const { isActive, currentStep, userRole, nextStep, previousStep, endTutorial } = useTutorial();
   const [targetPosition, setTargetPosition] = useState<Position | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<Position | null>(null);
+  const [clicked, setClicked] = useState(false); // For waitForClickId
   const tooltipRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLElement | null>(null);
+
+  // Move these two lines up so 'step' is available for all hooks
+  const currentPath = userRole === 'admin' ? adminTutorialPath : userTutorialPath;
+  const step = currentPath.steps[currentStep];
 
   console.log('TutorialOverlay render:', { isActive, currentStep, userRole });
 
@@ -31,10 +36,6 @@ export const TutorialOverlay: React.FC = () => {
       return;
     }
 
-    const currentPath = userRole === 'admin' ? adminTutorialPath : userTutorialPath;
-    const step = currentPath.steps[currentStep];
-    console.log('Current tutorial step:', step);
-
     if (!step) {
       console.error('No step found for current index:', currentStep);
       setTargetPosition(null);
@@ -42,25 +43,31 @@ export const TutorialOverlay: React.FC = () => {
       return;
     }
 
-    const targetElement = document.querySelector(step.target) as HTMLElement;
-    console.log('Target element found:', !!targetElement);
-    targetRef.current = targetElement;
+    // Support multiple targets
+    let allTargetsExist = true;
+    let mainTargetElement: HTMLElement | null = null;
+    if (step.targets && Array.isArray(step.targets)) {
+      const elements = step.targets.map(sel => document.querySelector(sel) as HTMLElement).filter(Boolean);
+      allTargetsExist = elements.length === step.targets.length;
+      mainTargetElement = elements[0] || null;
+    } else if (step.target) {
+      mainTargetElement = document.querySelector(step.target) as HTMLElement;
+      allTargetsExist = !!mainTargetElement;
+    }
+    targetRef.current = mainTargetElement;
 
-    if (targetElement) {
-      const rect = targetElement.getBoundingClientRect();
+    if (mainTargetElement) {
+      const rect = mainTargetElement.getBoundingClientRect();
       setTargetPosition({
         top: rect.top + window.scrollY,
         left: rect.left + window.scrollX,
         width: rect.width,
         height: rect.height
       });
-      console.log('Target position set:', rect);
     } else {
-      console.log('Target element not found');
       setTargetPosition(null);
     }
-
-  }, [isActive, currentStep, userRole]);
+  }, [isActive, currentStep, userRole, step]);
 
   // Effect to position the tooltip
   useEffect(() => {
@@ -72,9 +79,6 @@ export const TutorialOverlay: React.FC = () => {
     }
 
     console.log('Calculating tooltip position');
-    const currentPath = userRole === 'admin' ? adminTutorialPath : userTutorialPath;
-    const step = currentPath.steps[currentStep];
-
     if (!step) {
        console.error('No step found for current index while positioning tooltip:', currentStep);
        setTooltipPosition(null);
@@ -105,7 +109,19 @@ export const TutorialOverlay: React.FC = () => {
       window.removeEventListener('scroll', handleResizeOrScroll);
     };
 
-  }, [isActive, currentStep, userRole, targetPosition, tooltipRef.current]); // Added dependencies
+  }, [isActive, currentStep, userRole, targetPosition, tooltipRef.current, step]); // Added dependencies
+
+  // Wait for click on specific element if waitForClickId is set
+  useEffect(() => {
+    setClicked(false);
+    if (step && step.waitForClickId) {
+      const el = document.getElementById(step.waitForClickId);
+      if (!el) return;
+      const handler = () => setClicked(true);
+      el.addEventListener('click', handler);
+      return () => el.removeEventListener('click', handler);
+    }
+  }, [step]);
 
   const calculateTooltipPosition = (
     targetRect: DOMRect,
@@ -163,23 +179,43 @@ export const TutorialOverlay: React.FC = () => {
 
   console.log('Rendering tutorial overlay');
 
-  const currentPath = userRole === 'admin' ? adminTutorialPath : userTutorialPath;
-  const step = currentPath.steps[currentStep];
-
   if (!step) {
     console.error('No step found for current index:', currentStep);
     return null;
   }
 
   // Determine if the next button should be disabled
-  const isNextDisabled = step.required === true; // Disable if step requires interaction
+  const isNextDisabled = step.required === true && (
+    (step.waitForClickId ? !clicked : false) ||
+    (step.targets && (!step.targets.every(sel => document.querySelector(sel))) ) ||
+    (step.target && !document.querySelector(step.target))
+  );
 
   return (
     <div className="fixed inset-0 z-[999] pointer-events-none">
       {/* Semi-transparent backdrop */}
       <div className="absolute inset-0 bg-black/30" />
 
-      {/* Highlight overlay */}
+      {/* Highlight overlay for multiple targets */}
+      {step.targets && step.targets.map((sel, idx) => {
+        const el = document.querySelector(sel) as HTMLElement;
+        if (!el) return null;
+        const rect = el.getBoundingClientRect();
+        return (
+          <div
+            key={sel + idx}
+            className="absolute border-2 border-blue-500 rounded-lg bg-blue-500/10"
+            style={{
+              top: rect.top + window.scrollY,
+              left: rect.left + window.scrollX,
+              width: rect.width,
+              height: rect.height,
+            }}
+          />
+        );
+      })}
+
+      {/* Highlight overlay for single target */}
       {targetPosition && (
         <div
           className="absolute border-2 border-blue-500 rounded-lg bg-blue-500/10"

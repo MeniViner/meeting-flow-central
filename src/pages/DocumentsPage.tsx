@@ -1,4 +1,5 @@
 import { useApp } from "@/contexts/AppContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, File, FileImage, FileSpreadsheet, PresentationIcon, FileX, Table2, Grid, Download } from "lucide-react";
@@ -8,13 +9,36 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-
+import { Input } from "@/components/ui/input";
 
 export default function DocumentsPage() {
-  const { requests, user } = useApp();
+  const { requests, user, users } = useApp();
+  const { currentWorkspace } = useWorkspace();
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [search, setSearch] = useState("");
+  const [uploaderFilter, setUploaderFilter] = useState("");
   
-  const allDocuments = requests.flatMap(request => 
+  // Get user's role in the current workspace
+  const workspaceRole = user?.workspaceAccess?.find(
+    access => access.workspaceId === currentWorkspace?.id
+  )?.role;
+
+  // Build uploader options for filter (for editor+)
+  const uploaderOptions = Array.from(
+    new Set(
+      requests.flatMap(request =>
+        request.documents.map(doc => doc.uploadedBy || request.requesterId)
+      )
+    )
+  )
+    .map(id => {
+      const u = users.find(u => u.id === id);
+      return { id, name: u?.name || id };
+    })
+    .filter(opt => opt.id);
+
+  // Filter documents by role, search, and uploader
+  const allDocuments = requests.flatMap(request =>
     request.documents.map(doc => ({
       ...doc,
       requestTitle: request.title,
@@ -23,10 +47,21 @@ export default function DocumentsPage() {
       uploadedBy: doc.uploadedBy || request.requesterId,
     }))
   ).filter(doc => {
-    if (user?.globalRole === 'owner' || user?.globalRole === 'administrator') {
+    // Role-based filtering
+    if (workspaceRole === "owner" || workspaceRole === "administrator" || workspaceRole === "editor") {
       return true;
     }
     return doc.uploadedBy === user?.id;
+  }).filter(doc => {
+    // Search filter (by name)
+    if (search && !doc.name.toLowerCase().includes(search.toLowerCase())) {
+      return false;
+    }
+    // Uploader filter (for editor+)
+    if ((workspaceRole === "owner" || workspaceRole === "administrator" || workspaceRole === "editor") && uploaderFilter) {
+      return doc.uploadedBy === uploaderFilter;
+    }
+    return true;
   });
   
   const documentsByType = allDocuments.reduce((acc, doc) => {
@@ -74,12 +109,32 @@ export default function DocumentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">מסמכים</h1>
-        <p className="text-muted-foreground">
-          צפה ונהל את כל המסמכים הקשורים לפגישות
-        </p>
-      </div> */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-2 w-full md:w-1/2">
+          <Input
+            placeholder="חפש לפי שם מסמך..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full md:w-80"
+            dir="rtl"
+          />
+        </div>
+        {(workspaceRole === "owner" || workspaceRole === "administrator" || workspaceRole === "editor") && (
+          <div className="flex flex-col gap-2 w-full md:w-1/3">
+            <select
+              className="border rounded-md px-3 py-2 text-base text-right bg-background"
+              value={uploaderFilter}
+              onChange={e => setUploaderFilter(e.target.value)}
+              dir="rtl"
+            >
+              <option value="">סנן לפי מעלה המסמך</option>
+              {uploaderOptions.map(opt => (
+                <option key={opt.id} value={opt.id}>{opt.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
       
       <Tabs defaultValue="all" className="space-y-4" dir="rtl">
         <div className="flex items-center justify-between">
@@ -204,6 +259,7 @@ export default function DocumentsPage() {
                             : type.id;
                           
                           const IconComponent = getDocumentIcon(docType);
+                          const uploader = users.find(u => u.id === doc.uploadedBy);
                           
                           return (
                             <motion.div
@@ -212,10 +268,10 @@ export default function DocumentsPage() {
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: index * 0.05, duration: 0.3 }}
                             >
-                              <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200" dir="rtl">
+                              <Card className="overflow-hidden hover:shadow-xl transition-shadow duration-200 border border-gray-200 dark:border-gray-700 rounded-lg" dir="rtl">
                                 <motion.div 
                                   className={cn(
-                                    "h-32 flex items-center justify-center",
+                                    "h-32 flex items-center justify-center border-b",
                                     docType === "pdf" ? "bg-red-50" :
                                     docType === "word" ? "bg-blue-50" :
                                     docType === "excel" ? "bg-green-50" :
@@ -254,6 +310,9 @@ export default function DocumentsPage() {
                                     <div className="text-sm text-muted-foreground">
                                       <p className="truncate">מקור: {doc.requestTitle}</p>
                                       <p className="flex items-center gap-1 text-xs mt-1">הועלה: <DateDisplay date={doc.uploadedAt} /></p>
+                                      {(workspaceRole === "owner" || workspaceRole === "administrator" || workspaceRole === "editor") && (
+                                        <p className="flex items-center gap-1 text-xs mt-1">מעלה: {uploader?.name || doc.uploadedBy}</p>
+                                      )}
                                     </div>
                                   </div>
                                 </CardContent>
@@ -277,6 +336,9 @@ export default function DocumentsPage() {
                                 <th className="p-4 text-right font-medium">שם המסמך</th>
                                 <th className="p-4 text-right font-medium">סוג</th>
                                 <th className="p-4 text-right font-medium">מקור</th>
+                                {(workspaceRole === "owner" || workspaceRole === "administrator" || workspaceRole === "editor") && (
+                                  <th className="p-4 text-right font-medium">מעלה</th>
+                                )}
                                 <th className="p-4 text-right font-medium">תאריך העלאה</th>
                                 <th className="p-4 text-right font-medium">הורדה</th>
                               </tr>
@@ -298,6 +360,7 @@ export default function DocumentsPage() {
                                   : type.id;
                                 
                                 const IconComponent = getDocumentIcon(docType);
+                                const uploader = users.find(u => u.id === doc.uploadedBy);
                                 
                                 return (
                                   <motion.tr 
@@ -345,6 +408,11 @@ export default function DocumentsPage() {
                                         {doc.requestTitle}
                                       </span>
                                     </td>
+                                    {(workspaceRole === "owner" || workspaceRole === "administrator" || workspaceRole === "editor") && (
+                                      <td className="p-4">
+                                        {uploader?.name || doc.uploadedBy}
+                                      </td>
+                                    )}
                                     <td className="p-4">
                                       <DateDisplay date={doc.uploadedAt} />
                                     </td>
@@ -376,3 +444,5 @@ export default function DocumentsPage() {
     </div>
   );
 }
+
+

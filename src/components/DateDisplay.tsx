@@ -1,3 +1,4 @@
+// src // compon // DateDisplay
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
@@ -18,7 +19,13 @@ export function DateDisplay({
   showIcon = false,
   showTime = false,
 }: DateDisplayProps) {
+  if (!date) {
+    return null;
+  }
   const dateObj = date instanceof Date ? date : new Date(date);
+  if (isNaN(dateObj.getTime())) {
+    return null; // Don't render anything if the date is invalid
+  }
   const dateFormat = showTime ? "PPP p" : formatString;
   
   return (

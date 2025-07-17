@@ -12,6 +12,7 @@ interface Notification {
   id: string;
   userId: string;
   message: string;
+  requestName?: string;
   createdAt: Date;
   read?: boolean;
 }
@@ -66,6 +67,36 @@ const fixStatus = (status: string): RequestStatus => {
   // Add more mappings if needed
   return "pending";
 };
+
+const fixRequestDates = (request: any): MeetingRequest => {
+  const fixed = { ...request };
+  const dateFields: (keyof MeetingRequest)[] = ['createdAt', 'deadline', 'scheduledTime', 'scheduledEndTime'];
+  
+  dateFields.forEach(field => {
+    if (fixed[field] && typeof fixed[field] !== 'string') {
+      try {
+        fixed[field] = new Date(fixed[field]).toISOString();
+      } catch (e) {
+        console.error(`Could not convert date for field ${field}`, fixed[field]);
+      }
+    }
+  });
+
+  if (fixed.documents && Array.isArray(fixed.documents)) {
+    fixed.documents = fixed.documents.map((doc: any) => {
+      if (doc.uploadedAt && typeof doc.uploadedAt !== 'string') {
+        return { ...doc, uploadedAt: new Date(doc.uploadedAt).toISOString() };
+      }
+      return doc;
+    });
+  }
+
+  if (fixed.meetingSummaryFile?.uploadedAt && typeof fixed.meetingSummaryFile.uploadedAt !== 'string') {
+    fixed.meetingSummaryFile.uploadedAt = new Date(fixed.meetingSummaryFile.uploadedAt).toISOString();
+  }
+
+  return fixed as MeetingRequest;
+}
 
 // Helper function to get card ID (mock for development)
 const getCardId = async (): Promise<string | null> => {
@@ -149,9 +180,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           console.log("AppContext.loadInitialData: User role in workspace:", userRole);
 
           if (userRole) {
-            const loadedRequests = await txtStore.getStrictSP<MeetingRequest[]>("meetingRequests", currentWorkspace.id) || [];
-            const cleanedRequests = loadedRequests.map(r => ({ ...r, status: fixStatus(r.status) }));
-            const needsSave = cleanedRequests.some((r, i) => r.status !== loadedRequests[i].status);
+            const loadedRequests = await txtStore.getStrictSP<any[]>("meetingRequests", currentWorkspace.id) || [];
+            const cleanedRequests = loadedRequests.map(r => ({ ...fixRequestDates(r), status: fixStatus(r.status) }));
+            
+            const needsSave = JSON.stringify(loadedRequests) !== JSON.stringify(cleanedRequests);
+
             if (needsSave) {
               await txtStore.updateStrictSP("meetingRequests", cleanedRequests, currentWorkspace.id);
             }
@@ -234,7 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         requesterId: user.id,
         requesterName: user.name,
         status: "pending",
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
         documents: requestData.documents.map(doc => ({
           ...doc,
           url: doc.name // Store only the file name
@@ -309,24 +342,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const scheduleMeeting = async (requestId: string, scheduledTime: Date, scheduledEndTime: Date, adminNotes?: string) => {
     setIsLoading(true);
     try {
-      // Update state
-      const updatedRequests = requests.map(req =>
-        req.id === requestId
-          ? { ...req, scheduledTime, scheduledEndTime, status: "scheduled" as RequestStatus, adminNotes }
-          : req
-      );
-      setRequests(updatedRequests);
+      setRequests(prev => {
+        const updatedRequests = prev.map(r =>
+          r.id === requestId
+            ? {
+                ...r,
+                status: "scheduled" as RequestStatus,
+                scheduledTime: scheduledTime.toISOString(),
+                scheduledEndTime: scheduledEndTime.toISOString(),
+                adminNotes,
+              }
+            : r
+        );
+        txtStore.updateStrictSP("meetingRequests", updatedRequests, currentWorkspace.id);
+        return updatedRequests;
+      });
 
-      // Persist to storage
-      await txtStore.updateStrictSP("meetingRequests", updatedRequests, currentWorkspace?.id);
-
-      // Notify user
-      if (user) {
-        addNotification({
-          userId: user.id,
-          message: "הפגישה שלך תוזמנה. בדוק את פרטי הבקשה.",
-        });
-      }
       toast({
         title: "הפגישה נקבעה",
         description: "הפגישה נקבעה בהצלחה",
@@ -360,7 +391,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 name: fileName,
                 url: fileName,
                 type: fileType,
-                uploadedAt: new Date()
+                uploadedAt: new Date().toISOString()
               }, 
               status: "completed" as RequestStatus
             } 

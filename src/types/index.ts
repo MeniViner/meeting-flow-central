@@ -1,3 +1,4 @@
+// src/types/index.ts
 export type UserRole = "owner" | "administrator" | "editor" | "regular";
 
 export type RequestStatus = "pending" | "scheduled" | "ended" | "completed" | "rejected";
@@ -27,7 +28,7 @@ export interface Document {
   name: string;
   url: string;
   type: string;
-  uploadedAt: Date;
+  uploadedAt: string;
   uploadedBy?: string; // Optional field for document ownership
 }
 
@@ -38,24 +39,26 @@ export interface MeetingRequest {
   requesterId: string;
   requesterName: string;
   documents: Document[];
-  deadline: Date;
+  deadline: string;
   status: RequestStatus;
-  createdAt: Date;
-  scheduledTime?: Date;
-  scheduledEndTime?: Date;
+  createdAt: string;
+  scheduledTime?: string;
+  scheduledEndTime?: string;
+  preferredStartTime?: string;
+  preferredEndTime?: string;
   adminNotes?: string;
   meetingSummaryFile?: {
     name: string;
     url: string;
     type: string;
-    uploadedAt: Date;
+    uploadedAt: string;
   };
   summaryReminderSent?: boolean;
 }
 
 export interface FilterOptions {
   status?: RequestStatus;
-  deadline?: Date;
+  deadline?: string;
   searchTerm?: string;
 }
 
@@ -81,4 +84,13 @@ export interface AccessRequest {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  message: string;
+  requestName?: string;
+  createdAt: Date;
+  read?: boolean;
 }

@@ -136,28 +136,6 @@ export function TopBar({ className, ...props }: TopBarProps) {
               <Bell className="h-4 w-4" />
             </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={(user as any)?.avatar} alt={(user as any)?.fullName || user?.name || "אורח"} />
-                  <AvatarFallback>{(user as any)?.fullName || user?.name || "אורח"}</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>פרופיל</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell className="mr-2 h-4 w-4" />
-                  <span>התראות</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>הגדרות</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
       </div>

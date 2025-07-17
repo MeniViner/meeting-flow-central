@@ -271,6 +271,7 @@ export default function Dashboard() {
                     requests={filteredRequests}
                     viewMode={viewMode}
                     searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
                   />
                 </CardContent>
               </Card>
@@ -284,16 +285,16 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent dir="rtl">
                   {notifications.filter(n => n.userId === user?.id).length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center" dir="rtl">
+                    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground text-center" dir="rtl">
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
-                        className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center"
+                        className="flex flex-col items-center justify-center"
                       >
-                        <BellOff className="w-10 h-10 mb-2 text-gray-400" />
-                        <p className="text-lg font-medium">אין התראות חדשות</p>
-                        <p className="text-sm mt-1">הכול מעודכן. תחזור לבדוק מאוחר יותר ✨</p>
+                        <BellOff className="w-14 h-14 mb-4 text-blue-200" />
+                        <p className="text-xl font-bold">אין התראות חדשות</p>
+                        <p className="text-sm mt-2">הכל מעודכן. תחזור לבדוק מאוחר יותר ✨</p>
                       </motion.div>
                     </div>
                   ) : (
@@ -301,25 +302,40 @@ export default function Dashboard() {
                       {notifications
                         .filter(n => n.userId === user?.id)
                         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                        .map((notif) => (
-                          (() => {
-                            const d = new Date(notif.createdAt);
-                            const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
-                            const date = d.toLocaleDateString('he-IL');
-                            const formatted = `${time}, ${date}`;
-                            return (
-                              <li key={notif.id} className={notif.read ? "opacity-70" : "font-bold bg-blue-50 rounded p-2"}>
-                                <div className="flex items-center gap-2">
-                                  <Bell className="h-4 w-4 text-blue-400" />
-                                  <span>{notif.message}</span>
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  {formatted}
-                                </div>
-                              </li>
-                            );
-                          })()
-                        ))}
+                        .map((notif) => {
+                          const d = new Date(notif.createdAt);
+                          const time = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
+                          const date = d.toLocaleDateString('he-IL');
+                          const formatted = `${time}, ${date}`;
+                          return (
+                            <li
+                              key={notif.id}
+                              className={
+                                `flex items-center p-4 rounded-lg shadow-sm border transition bg-white relative ` +
+                                (notif.read ? 'opacity-70' : 'bg-blue-50 border-blue-200')
+                              }
+                            >
+                              {!notif.read && (
+                                <span className="absolute right-0 top-0 h-full w-1 bg-blue-500 rounded-r-lg" />
+                              )}
+                              <div className="flex-shrink-0 mr-4">
+                                <Bell className="h-6 w-6 text-blue-400" />
+                              </div>
+                              <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                {notif.requestName ? (
+                                  <span className="text-base font-semibold text-gray-900">
+                                    הדיון{' '}
+                                    <a href="/" className="text-blue-700 underline hover:text-blue-900 transition font-bold">{notif.requestName}</a>
+                                    {' '}<span className="font-normal text-gray-700">תוזמן ל...</span>
+                                  </span>
+                                ) : (
+                                  <span className="text-base text-gray-900">{notif.message}</span>
+                                )}
+                                <span className="text-xs text-muted-foreground mt-1 self-end">{formatted}</span>
+                              </div>
+                            </li>
+                          );
+                        })}
                     </ul>
                   )}
                 </CardContent>

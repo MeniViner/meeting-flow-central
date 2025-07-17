@@ -37,7 +37,16 @@ function toLocalDateInputValue(date: Date | string | undefined) {
   return `${year}-${month}-${day}`;
 }
 
+const isValidDate = (d: any) => d && !isNaN(new Date(d).getTime());
+
 export function RequestDetails({ request, onStatusChange }: RequestDetailsProps) {
+  if (request.status === 'ended') {
+    console.log('Ended request details:', {
+      id: request.id,
+      scheduledTime: request.scheduledTime,
+      scheduledEndTime: request.scheduledEndTime,
+    });
+  }
   const { updateRequestStatus, scheduleMeeting, addMeetingSummary, isLoading, addNotification, user, requests } = useApp();
   const { toast } = useToast();
   const [adminNotes, setAdminNotes] = useState(request.adminNotes || "");
@@ -194,6 +203,7 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
       addNotification({
         userId: request.requesterId,
         message: `הפגישה שלך תוזמנה מחדש ל-${dateStr} בין השעות ${startTimeStr} - ${endTimeStr}`,
+        requestName: request.title,
       });
       toast({
         title: "הפגישה תוזמנה מחדש",
@@ -250,14 +260,17 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
           </div>
         </div>
 
-        {/* <div>
-          <h4 className="text-sm font-medium mb-1">זמן מתוכנן</h4>
-          {request.scheduledTime ? (
-            <DateDisplay date={request.scheduledTime} showIcon showTime />
-          ) : (
-            <span className="text-muted-foreground">אין זמן מתוכנן</span>
-          )}
-        </div> */}
+        {isValidDate(request.scheduledTime) && isValidDate(request.scheduledEndTime) && (
+          <div>
+            <h4 className="text-sm font-medium mb-1">זמן מתוכנן</h4>
+            <div className="flex items-center text-sm">
+              <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+              <time dateTime={new Date(request.scheduledTime).toISOString()}>
+                {`${format(new Date(request.scheduledTime), "HH:mm", { locale: he })} - ${format(new Date(request.scheduledEndTime!), "HH:mm", { locale: he })}`}
+              </time>
+            </div>
+          </div>
+        )}
       </div>
 
       <div>
@@ -637,25 +650,14 @@ export function RequestDetails({ request, onStatusChange }: RequestDetailsProps)
             onClick={() => {
               addNotification({
                 userId: request.requesterId,
-                message: "נא להעלות קובץ סיכום פגישה לבקשה שלך."
+                message: "נא להעלות קובץ סיכום פגישה לבקשה שלך.",
+                requestName: request.title,
               });
               toast({ title: "התראה נשלחה", description: "נשלחה התראה למשתמש להעלות קובץ סיכום." });
             }}
           >
             שלח התראה למשתמש
           </Button>
-        </div>
-      )}
-
-      {request.scheduledTime && (
-        <div>
-          <h4 className="text-sm font-medium mb-1">זמן מתוכנן</h4>
-          <div className="flex items-center text-sm">
-            <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-            <time dateTime={new Date(request.scheduledTime).toISOString()}>
-              {`${format(new Date(request.scheduledTime), "HH:mm", { locale: he })} - ${format(new Date(request.scheduledEndTime!), "HH:mm", { locale: he })}`}
-            </time>
-          </div>
         </div>
       )}
 

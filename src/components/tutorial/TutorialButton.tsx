@@ -3,7 +3,7 @@ import React from 'react';
 import { useTutorial } from '@/contexts/TutorialContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, X } from 'lucide-react';
 
 interface TutorialButtonProps {
   page: 'dashboard' | 'admin' | 'requests' | 'settings';
@@ -11,10 +11,14 @@ interface TutorialButtonProps {
 }
 
 export const TutorialButton: React.FC<TutorialButtonProps> = ({ page, className }) => {
-  const { startTutorial, isActive } = useTutorial();
+  const { startTutorial, isActive, endTutorial } = useTutorial();
   const navigate = useNavigate();
 
   const handleClick = () => {
+    if (isActive) {
+      endTutorial();
+      return;
+    }
     // Navigate to the appropriate page if not already there
     if (page === 'dashboard') {
       navigate('/'); // Dashboard is the index route
@@ -25,7 +29,6 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({ page, className 
     } else if (page === 'settings') {
       navigate('/workspaces'); // Using workspaces route for settings
     }
-    
     // Start the tutorial for the current page
     startTutorial(page === 'admin' ? 'admin' : 'user');
   };
@@ -33,13 +36,12 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({ page, className 
   return (
     <Button
       onClick={handleClick}
-      disabled={isActive}
       className={className}
       variant="outline"
       size="icon"
-      title="התחל הדרכה"
+      title={isActive ? 'סגור הדרכה' : 'התחל הדרכה'}
     >
-      <GraduationCap className="h-4 w-4" />
+      {isActive ? <X className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
     </Button>
   );
 }; 

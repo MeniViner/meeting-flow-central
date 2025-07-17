@@ -7,7 +7,7 @@ import "react-day-picker/dist/style.css";
 import { Clock } from "lucide-react";
 
 export type MeetingSlot = {
-  date: string; // 'YYYY-MM-DD'
+  date: string; // 'dd/MM/yyyy'
   time: string; // 'HH:mm'
   label: string; // e.g. "AM 8:30"
   id?: string; // optional unique ID
@@ -28,7 +28,7 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
   const slotsByDate: Record<string, MeetingSlot[]> = useMemo(() => {
     const map: Record<string, MeetingSlot[]> = {};
     weekDates.forEach(date => {
-      const key = format(date, "yyyy-MM-dd");
+      const key = format(date, "dd/MM/yyyy");
       map[key] = meetingSlots
         .filter(slot => slot.date === key)
         .sort((a, b) => a.time.localeCompare(b.time));
@@ -65,7 +65,7 @@ export const WeeklyTimelineCalendar: React.FC<WeeklyTimelineCalendarProps> = ({ 
 
           <div className="flex flex-row gap-4 w-full justify-between">
             {weekDates.map((date) => {
-              const key = format(date, "yyyy-MM-dd");
+              const key = format(date, "dd/MM/yyyy");
               const isSelected = isSameDay(date, selectedDate);
               return (
                 <div key={key} className="flex flex-col items-center min-w-[100px]">

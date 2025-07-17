@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Upload } from "lucide-react";
 import { he } from "date-fns/locale";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import ProfessionalTimePicker from '../ProfessionalTimePicker';
 
 export function CreateRequestForm({ 
   onRequestCreated 
@@ -29,6 +30,9 @@ export function CreateRequestForm({
   const [description, setDescription] = useState("");
   const [documents, setDocuments] = useState<Document[]>([]);
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
+  const [preferredStartTime, setPreferredStartTime] = useState("");
+  const [preferredEndTime, setPreferredEndTime] = useState("");
+  const [timeError, setTimeError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
@@ -62,7 +66,9 @@ export function CreateRequestForm({
         title,
         description,
         documents,
-        deadline: deadline!,
+        deadline: deadline!.toISOString(),
+        preferredStartTime,
+        preferredEndTime,
       });
       
       // Reset form
@@ -70,6 +76,8 @@ export function CreateRequestForm({
       setDescription("");
       setDocuments([]);
       setDeadline(undefined);
+      setPreferredStartTime("");
+      setPreferredEndTime("");
       
       if (onRequestCreated) {
         onRequestCreated();
@@ -78,6 +86,19 @@ export function CreateRequestForm({
       console.error("Failed to submit request:", error);
     }
   };
+
+  // Helper to get current time in HH:mm format, rounded up to next 5 minutes
+  function getCurrentTimeHHMM5() {
+    const now = new Date();
+    let minutes = now.getMinutes();
+    let roundedMinutes = Math.ceil(minutes / 5) * 5;
+    let hour = now.getHours();
+    if (roundedMinutes === 60) {
+      hour += 1;
+      roundedMinutes = 0;
+    }
+    return `${hour.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" dir="rtl" data-tutorial="request-form">
@@ -132,6 +153,40 @@ export function CreateRequestForm({
               <p className="text-xs text-red-500">{errors.deadline}</p>
             )}
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="startTime">שעת התחלה רצויה</Label>
+              <ProfessionalTimePicker
+                id="startTime"
+                label=""
+                value={preferredStartTime}
+                onChange={(newTime) => {
+                  setPreferredStartTime(newTime);
+                  if (preferredEndTime && newTime >= preferredEndTime) {
+                    setPreferredEndTime("");
+                  }
+                }}
+                disablePastTimes={!!deadline && (() => { const d = new Date(); return deadline.getDate() === d.getDate() && deadline.getMonth() === d.getMonth() && deadline.getFullYear() === d.getFullYear(); })()}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endTime">שעת סיום רצויה</Label>
+              <ProfessionalTimePicker
+                id="endTime"
+                label=""
+                value={preferredEndTime}
+                onChange={(newTime) => {
+                  setPreferredEndTime(newTime);
+                }}
+                disablePastTimes={!!deadline && (() => { const d = new Date(); return deadline.getDate() === d.getDate() && deadline.getMonth() === d.getMonth() && deadline.getFullYear() === d.getFullYear(); })()}
+                minTime={preferredStartTime}
+              />
+            </div>
+          </div>
+          {timeError && (
+            <div className="col-span-2 text-red-600 text-sm text-right mt-1">{timeError}</div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="description">תיאור</Label>
